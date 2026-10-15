@@ -5,6 +5,7 @@ from flask import Flask,render_template,request,redirect,url_for,flash,abort,sen
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager,UserMixin,login_user,logout_user,login_required,current_user
 from werkzeug.security import generate_password_hash,check_password_hash
+from sqlalchemy import func
 # Redeploy trigger: apply current Render environment settings.
 app=Flask(__name__); app.config["SECRET_KEY"]=os.getenv("SECRET_KEY","dev-only-change-me")
 dburl=os.getenv("DATABASE_URL","sqlite:///flankvpn.db")
@@ -44,11 +45,13 @@ def index(): return render_template("index.html")
 @app.route("/register",methods=["GET","POST"])
 def register():
  if request.method=="POST":
-  nick=request.form.get("nickname","").strip(); email=request.form.get("email","").strip().lower(); pw=request.form.get("password","")
+  nick=request.form.get("nickname","").strip().lower(); email=request.form.get("email","").strip().lower(); pw=request.form.get("password","")
   if len(nick)<3 or len(nick)>40 or "@" not in email or len(pw)<8:
    flash("Проверь ник, email и пароль (не менее 8 символов).","error")
-  elif User.query.filter((User.nickname==nick)|(User.email==email)).first():
-   flash("Этот ник или email уже занят.","error")
+  elif User.query.filter((func.lower(User.nickname)==nick)|(func.lower(User.email)==email)).first():
+   flash("Этот ник или email уже занят. Никнейм не должен повторяться; регистр букв не учитывается.","error")
+  elif EmailVerification.query.filter(func.lower(EmailVerification.nickname)==nick, EmailVerification.email!=email, EmailVerification.expires_at>datetime.utcnow()).first():
+   flash("Этот никнейм уже используется в другой незавершённой регистрации. Выбери другой ник.","error")
   elif not os.getenv("RESEND_API_KEY") or not os.getenv("RESEND_FROM_EMAIL"):
    flash("Регистрация временно недоступна: администратор не настроил отправку email-кодов.","error")
   else:
@@ -97,7 +100,7 @@ def verify_email():
    return redirect(url_for("register"))
   pending.attempts+=1
   if check_password_hash(pending.code_hash,code):
-   if User.query.filter((User.nickname==pending.nickname)|(User.email==pending.email)).first():
+   if User.query.filter((func.lower(User.nickname)==pending.nickname.lower())|(func.lower(User.email)==pending.email.lower())).first():
     db.session.delete(pending); db.session.commit(); session.pop("verify_email",None)
     flash("Этот ник или email уже зарегистрирован. Войди в аккаунт.","error")
     return redirect(url_for("login"))
@@ -110,7 +113,7 @@ def verify_email():
 @app.route("/login",methods=["GET","POST"])
 def login():
  if request.method=="POST":
-  ident=request.form.get("identity","").strip(); u=User.query.filter((User.email==ident.lower())|(User.nickname==ident)).first()
+  ident=request.form.get("identity","").strip(); u=User.query.filter((func.lower(User.email)==ident.lower())|(func.lower(User.nickname)==ident.lower())).first()
   if u and u.check_password(request.form.get("password","")): login_user(u); return redirect(url_for("dashboard"))
   flash("Неверный ник/email или пароль.","error")
  return render_template("auth.html",mode="login")
