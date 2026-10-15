@@ -9,6 +9,7 @@ app=Flask(__name__); app.config["SECRET_KEY"]=os.getenv("SECRET_KEY","dev-only-c
 dburl=os.getenv("DATABASE_URL","sqlite:///lumovpn.db")
 if dburl.startswith("postgres://"): dburl=dburl.replace("postgres://","postgresql://",1)
 app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
+app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
 TARIFFS={"1":{"months":1,"price":199,"title":"1 месяц"},"3":{"months":3,"price":499,"title":"3 месяца"},"12":{"months":12,"price":1499,"title":"12 месяцев"}}
 PAYMENTS={"sbp":{"title":"СБП","detail":os.getenv("PAYMENT_SBP_PHONE","Настройте PAYMENT_SBP_PHONE")},"card":{"title":"Банковская карта","detail":os.getenv("PAYMENT_CARD_NUMBER","Настройте PAYMENT_CARD_NUMBER")}}
