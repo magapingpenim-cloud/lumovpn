@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager,UserMixin,login_user,logout_user,login_required,current_user
 from werkzeug.security import generate_password_hash,check_password_hash
 app=Flask(__name__); app.config["SECRET_KEY"]=os.getenv("SECRET_KEY","dev-only-change-me")
-dburl=os.getenv("DATABASE_URL","sqlite:///lumovpn.db")
+dburl=os.getenv("DATABASE_URL","sqlite:///flankvpn.db")
 if dburl.startswith("postgres://"): dburl=dburl.replace("postgres://","postgresql://",1)
 app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
 app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
@@ -55,8 +55,8 @@ def register():
    try:
     resp=requests.post("https://api.resend.com/emails",
       headers={"Authorization":"Bearer "+os.getenv("RESEND_API_KEY"),"Content-Type":"application/json"},
-      json={"from":os.getenv("RESEND_FROM_EMAIL"),"to":[email],"subject":"Код подтверждения LumoVPN",
-            "html":f"<div style='font-family:Arial,sans-serif'><h2>LumoVPN</h2><p>Твой код подтверждения:</p><p style='font-size:32px;font-weight:bold;letter-spacing:8px'>{code}</p><p>Код действует 10 минут. Если ты не регистрировался, проигнорируй письмо.</p></div>"},
+      json={"from":os.getenv("RESEND_FROM_EMAIL"),"to":[email],"subject":"Код подтверждения FlankVPN",
+            "html":f"<div style='font-family:Arial,sans-serif'><h2>FlankVPN</h2><p>Твой код подтверждения:</p><p style='font-size:32px;font-weight:bold;letter-spacing:8px'>{code}</p><p>Код действует 10 минут. Если ты не регистрировался, проигнорируй письмо.</p></div>"},
       timeout=15)
     resp.raise_for_status()
     if pending:
@@ -155,7 +155,7 @@ def admin_orders():
 def provision(o):
  base=os.getenv("H1_API_BASE","").rstrip("/"); token=os.getenv("H1_API_TOKEN","")
  if not base or not token: raise RuntimeError("Настройте H1_API_BASE и H1_API_TOKEN в переменных окружения.")
- name="lumo_"+str(o.id)+"_"+''.join(secrets.choice(string.ascii_lowercase+string.digits) for _ in range(5)); h={"Authorization":"Bearer "+token,"Content-Type":"application/json"}
+ name="flank_"+str(o.id)+"_"+''.join(secrets.choice(string.ascii_lowercase+string.digits) for _ in range(5)); h={"Authorization":"Bearer "+token,"Content-Type":"application/json"}
  r=requests.post(base+"/create",headers=h,json={"name":name,"days":TARIFFS[o.tariff_key]["months"]*30,"traffic_limit_gb":0,"device_limit":0},timeout=25); r.raise_for_status(); d=r.json()
  if d.get("ok") is False: raise RuntimeError(str(d))
  r=requests.get(base+"/info",headers=h,params={"name":name},timeout=25); r.raise_for_status(); c=r.json().get("client",r.json()); sub=c.get("sub_url") or c.get("subscription_url")
