@@ -7,7 +7,11 @@ from flask_login import LoginManager,UserMixin,login_user,logout_user,login_requ
 from werkzeug.security import generate_password_hash,check_password_hash
 app=Flask(__name__); app.config["SECRET_KEY"]=os.getenv("SECRET_KEY","dev-only-change-me")
 dburl=os.getenv("DATABASE_URL","sqlite:///flankvpn.db")
-if dburl.startswith("postgres://"): dburl=dburl.replace("postgres://","postgresql://",1)
+# Render PostgreSQL URLs use psycopg2, which is installed via psycopg2-binary.
+if dburl.startswith("postgres://"):
+ dburl=dburl.replace("postgres://","postgresql+psycopg2://",1)
+elif dburl.startswith("postgresql://"):
+ dburl=dburl.replace("postgresql://","postgresql+psycopg2://",1)
 app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
 app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
