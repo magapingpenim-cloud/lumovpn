@@ -31,7 +31,7 @@ class EmailVerification(db.Model):
  created_at=db.Column(db.DateTime,default=datetime.utcnow)
 @lm.user_loader
 def load_user(uid): return db.session.get(User,int(uid))
-def is_admin(): return bool(session.get("lumoadmin"))
+def is_admin(): return bool(session.get("flankadmin"))
 @app.context_processor
 def globals_(): return {"tariffs":TARIFFS,"payments":PAYMENTS}
 @app.route("/")
@@ -112,7 +112,7 @@ def login():
 @app.route("/logout",methods=["POST"])
 @login_required
 def logout():
- logout_user(); session.pop("lumoadmin",None); return redirect(url_for("index"))
+ logout_user(); session.pop("flankadmin",None); return redirect(url_for("index"))
 @app.route("/dashboard")
 @login_required
 def dashboard(): return render_template("dashboard.html",orders=Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all())
@@ -144,7 +144,7 @@ def qr(oid):
 @app.route("/admin/login",methods=["GET","POST"])
 def admin_login():
  if request.method=="POST" and request.form.get("username")==os.getenv("ADMIN_USERNAME","admin") and request.form.get("password")==os.getenv("ADMIN_PASSWORD","change-this-now"):
-  session["lumoadmin"]=True; return redirect(url_for("admin_orders"))
+  session["flankadmin"]=True; return redirect(url_for("admin_orders"))
  elif request.method=="POST": flash("Неверные данные администратора.","error")
  return render_template("admin_login.html")
 @app.route("/admin")
