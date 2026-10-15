@@ -156,7 +156,7 @@ def admin_login():
 @app.route("/admin/orders")
 def admin_orders():
  if not is_admin(): return redirect(url_for("admin_login"))
- orders=Order.query.order_by(Order.created_at.desc()).all(); return render_template("admin.html",orders=orders,total_pending=sum(o.amount for o in orders if o.status=="awaiting_review"))
+ orders=Order.query.order_by(Order.created_at.desc()).all(); return render_template("admin.html",orders=orders,total_orders=len(orders),total_pending=sum(o.amount for o in orders if o.status=="awaiting_review"),awaiting_payment_count=sum(1 for o in orders if o.status=="awaiting_payment"),awaiting_review_count=sum(1 for o in orders if o.status=="awaiting_review"),active_count=sum(1 for o in orders if o.status=="active"),error_count=sum(1 for o in orders if o.status=="error"))
 def provision(o):
  base=os.getenv("H1_API_BASE","").rstrip("/"); token=os.getenv("H1_API_TOKEN","")
  if not base or not token: raise RuntimeError("Настройте H1_API_BASE и H1_API_TOKEN в переменных окружения.")
