@@ -151,7 +151,7 @@ def qr(oid):
  im=qrcode.make(o.subscription_url); out=io.BytesIO(); im.save(out,format="PNG"); out.seek(0); return send_file(out,mimetype="image/png")
 @app.route("/admin/login",methods=["GET","POST"])
 def admin_login():
- if request.method=="POST" and request.form.get("username")==os.getenv("ADMIN_USERNAME","admin") and request.form.get("password")==os.getenv("ADMIN_PASSWORD","change-this-now"):
+ if request.method=="POST" and request.form.get("username","").strip().casefold()==os.getenv("ADMIN_USERNAME","admin").strip().casefold() and request.form.get("password","")==os.getenv("ADMIN_PASSWORD","change-this-now"):
   session["flankadmin"]=True; return redirect(url_for("admin_orders"))
  elif request.method=="POST": flash("Неверные данные администратора.","error")
  return render_template("admin_login.html")
