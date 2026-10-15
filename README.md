@@ -1,4 +1,4 @@
-# LumoVPN — сайт-прототип
+# FlankVPN — сайт-прототип
 
 Flask-проект с подтверждением email через Resend, регистрацией и входом, тарифами на 1/3/12 месяцев, историей заказов, ручной заявкой на оплату СБП/картой, админ-проверкой заказа, интеграцией с H1 API и ссылкой подписки/QR.
 
@@ -19,7 +19,7 @@ Flask-проект с подтверждением email через Resend, ре
 - Build Command: `pip install -r requirements.txt`
 - Start Command: `gunicorn app:app`
 - В **Environment** добавь реальные значения `SECRET_KEY`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `H1_API_BASE`, `H1_API_TOKEN`, `H1_SUBSCRIPTION_BASE`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, данные оплаты и `DATABASE_URL`.
-- Отправитель в Resend: `LumoVPN <no-reply@flankvpn.ru>` — используй его только если домен по-прежнему подтверждён и принадлежит тебе.
+- Отправитель в Resend: `FlankVPN <no-reply@flankvpn.ru>` — используй его только если домен по-прежнему подтверждён и принадлежит тебе.
 - Используй постоянную PostgreSQL-базу; SQLite на файловой системе Render может потеряться при redeploy.
 
 ## Email-подтверждение
