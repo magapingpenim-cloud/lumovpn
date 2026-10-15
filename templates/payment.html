@@ -1,1 +1,25 @@
-{% extends "base.html" %}{% block title %}Оплата — FlankVPN{% endblock %}{% block content %}<div class="auth"><div class="card"><div class="eyebrow">ЗАКАЗ #{{order.id}}</div><h1>Оплата подписки</h1><div class="row"><span>{{tariff.title}} · {{payment.title}}</span><b class="price">{{order.amount}} ₽</b></div><div class="paybox"><p class="tiny muted">Реквизиты для перевода</p><h3>{{payment.detail}}</h3><p class="tiny muted">Получатель: {{config.get('PAYMENT_RECIPIENT') or 'настройте PAYMENT_RECIPIENT'}}</p></div><div class="notice"><b>Важно: укажите никнейм в сообщении к оплате</b><p>Напишите именно тот ник, который вы вводили при регистрации: <strong>{{order.nickname}}</strong>.</p></div><p class="tiny muted">После перевода нажмите кнопку ниже. Администратор вручную проверит поступление денег. Не нажимайте, если не оплатили.</p><form method="post" action="{{url_for('paid',oid=order.id)}}"><button class="btn primary full">Я оплатил(а) ↗</button></form><p class="tiny"><a href="{{url_for('dashboard')}}">← В личный кабинет</a></p></div></div>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Оплата — FlankVPN{% endblock %}
+{% block content %}
+<div class="auth">
+  <div class="card">
+    <div class="eyebrow">ЗАКАЗ #{{ order.id }}</div>
+    <h1>Оплата подписки</h1>
+    <div class="row"><span>{{ tariff.title }} · {{ payment.title }}</span><b class="price">{{ order.amount }} ₽</b></div>
+    <div class="paybox">
+      <p class="tiny muted">Реквизиты для перевода</p>
+      <h3>{{ payment.detail }}</h3>
+      <p class="tiny muted">Получатель: {{ config.get('PAYMENT_RECIPIENT') or 'настройте PAYMENT_RECIPIENT' }}</p>
+    </div>
+    <div class="notice payment-warning">
+      <div class="warning-heading">⚠ ВАЖНО: ОБЯЗАТЕЛЬНО УКAЖИТЕ НИКНЕЙМ В СООБЩЕНИИ К ОПЛАТЕ</div>
+      <p>В сообщении к переводу напишите <strong>точно тот никнейм, который вы указали при регистрации</strong>:</p>
+      <div class="nickname-copy"><strong>{{ order.nickname }}</strong></div>
+      <p><strong>Если не указать никнейм или написать его неправильно, платёж может быть не распознан и не будет засчитан до выяснения.</strong> Не указывайте вместо него имя, email или ник другого человека.</p>
+    </div>
+    <p class="tiny muted">После фактического перевода нажмите кнопку ниже. Администратор вручную проверит поступление денег и сопоставит его с никнеймом. Не нажимайте кнопку, если не оплатили.</p>
+    <form method="post" action="{{ url_for('paid', oid=order.id) }}"><button class="btn primary full">Я оплатил(а) ↗</button></form>
+    <p class="tiny"><a href="{{ url_for('dashboard') }}">← В личный кабинет</a></p>
+  </div>
+</div>
+{% endblock %}
