@@ -1,1 +1,53 @@
-{% extends "base.html" %}{% block title %}Админка — FlankVPN{% endblock %}{% block content %}<div class="pagetitle"><div class="eyebrow">FLANKVPN ADMIN</div><h1>Заказы и оплаты</h1><p>Сумма заявок на проверке: <b>{{total_pending}} ₽</b></p></div>{% for o in orders %}<article class="order"><div class="row"><div><b>Ник: {{o.nickname}}</b><p class="tiny muted">{{o.email}} · заказ #{{o.id}}</p><p class="tiny muted">{{tariffs[o.tariff_key].title}} · {{o.payment_method|upper}} · {{o.created_at.strftime('%d.%m.%Y %H:%M')}} UTC</p></div><div class="amount">{{o.amount}} ₽<p class="tiny">{{ {'awaiting_payment':'Ожидает оплаты','awaiting_review':'Проверить оплату','processing':'Создаём доступ','active':'Активна','rejected':'Отклонена','error':'Ошибка выдачи'}.get(o.status,o.status) }}</p></div></div>{% if o.status=='awaiting_review' %}<div class="actions"><form method="post" action="{{url_for('confirm',oid=o.id)}}" onsubmit="return confirm('Проверь поступление {{o.amount}} ₽ от {{o.nickname}} и выдать доступ?')"><button class="btn primary">Оплата получена — выдать доступ</button></form><form method="post" action="{{url_for('reject',oid=o.id)}}"><button class="btn secondary">Отклонить</button></form></div>{% endif %}{% if o.status=='error' %}<p class="error">Ошибка: {{o.error_message}}</p><form method="post" action="{{url_for('confirm',oid=o.id)}}"><button class="btn secondary">Повторить выдачу</button></form>{% endif %}{% if o.subscription_url %}<a href="{{o.subscription_url}}" target="_blank">Открыть JSON-подписку</a>{% endif %}</article>{% else %}<p class="empty">Пока нет заказов.</p>{% endfor %}{% endblock %}
+{% extends "base.html" %}
+{% block title %}Заказы — панель FlankVPN{% endblock %}
+{% block content %}
+<section class="pagetitle">
+  <div class="eyebrow">FLANKVPN ADMIN</div>
+  <h1>Заказы и оплаты</h1>
+  <p class="muted">Всего заказов: <strong>{{ total_orders }}</strong> · Сумма заявок на проверке: <strong>{{ total_pending }} ₽</strong></p>
+</section>
+<section class="admin-stats">
+  <article class="stat-card"><span>Новые — ещё не сообщили об оплате</span><strong>{{ awaiting_payment_count }}</strong></article>
+  <article class="stat-card"><span>Нужно проверить оплату</span><strong>{{ awaiting_review_count }}</strong></article>
+  <article class="stat-card"><span>Активные подписки</span><strong>{{ active_count }}</strong></article>
+  <article class="stat-card"><span>Ошибки выдачи доступа</span><strong>{{ error_count }}</strong></article>
+</section>
+<div class="admin-help">
+  <strong>Как появляются заказы</strong>
+  <p>Заказ создаётся, когда пользователь входит в аккаунт, выбирает тариф и нажимает «Перейти к оплате». После перевода пользователь должен нажать «Я оплатил(а)» — тогда заказ перейдёт в статус «Проверить оплату».</p>
+  <p>Перед выдачей VPN-доступа вручную проверь поступление денег и наличие правильного никнейма в сообщении к переводу.</p>
+</div>
+<h2>Все заказы</h2>
+{% for o in orders %}
+<article class="order">
+  <div class="row">
+    <div>
+      <b>Заказ #{{ o.id }} · Никнейм: {{ o.nickname }}</b>
+      <p class="tiny muted">{{ o.email }}</p>
+      <p class="tiny muted">{{ tariffs[o.tariff_key].title }} · {{ o.payment_method|upper }} · {{ o.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p>
+    </div>
+    <div class="amount">{{ o.amount }} ₽<p class="tiny">{{ {'awaiting_payment':'Ожидает оплаты','awaiting_review':'Проверить оплату','processing':'Создаём доступ','active':'Активна','rejected':'Отклонена','error':'Ошибка выдачи'}.get(o.status,o.status) }}</p></div>
+  </div>
+  {% if o.status == 'awaiting_payment' %}
+    <p class="tiny muted">Пользователь ещё не нажал «Я оплатил(а)». Заказ уже создан, но пока не поступил на проверку.</p>
+  {% endif %}
+  {% if o.status == 'awaiting_review' %}
+  <div class="actions">
+    <form method="post" action="{{ url_for('confirm', oid=o.id) }}" onsubmit="return confirm('Сначала проверь поступление {{ o.amount }} ₽ от {{ o.nickname }}. Выдать доступ?')"><button class="btn primary">Оплата получена — выдать доступ</button></form>
+    <form method="post" action="{{ url_for('reject', oid=o.id) }}"><button class="btn secondary">Отклонить</button></form>
+  </div>
+  {% endif %}
+  {% if o.status == 'error' %}
+    <p class="error">Ошибка выдачи доступа: {{ o.error_message or 'Причина не сохранена.' }}</p>
+    <form method="post" action="{{ url_for('confirm', oid=o.id) }}"><button class="btn secondary">Повторить выдачу</button></form>
+  {% endif %}
+  {% if o.subscription_url %}<p><a href="{{ o.subscription_url }}" target="_blank" rel="noopener">Открыть JSON-подписку</a></p>{% endif %}
+</article>
+{% else %}
+<div class="empty">
+  <strong>В этой базе пока нет заказов.</strong>
+  <p>Чтобы проверить полный путь, войди обычным пользовательским аккаунтом, открой личный кабинет, выбери тариф и нажми «Перейти к оплате». Заказ должен сразу появиться здесь — даже до подтверждения оплаты.</p>
+  <p>Если ты уже создавал заказы раньше, они могли остаться в прежней временной SQLite-базе до подключения PostgreSQL. Старые заказы автоматически в новую базу не переносятся.</p>
+</div>
+{% endfor %}
+{% endblock %}
