@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager,UserMixin,login_user,logout_user,login_required,current_user
 from werkzeug.security import generate_password_hash,check_password_hash
 from sqlalchemy import func
+from html import escape
 # Redeploy trigger: apply current Render environment settings.
 app=Flask(__name__); app.config["SECRET_KEY"]=os.getenv("SECRET_KEY","dev-only-change-me")
 dburl=os.getenv("DATABASE_URL","sqlite:///flankvpn.db")
@@ -19,6 +20,67 @@ app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
 TARIFFS={"1":{"months":1,"price":199,"title":"1 месяц"},"3":{"months":3,"price":499,"title":"3 месяца"},"12":{"months":12,"price":1499,"title":"12 месяцев"}}
 PAYMENTS={"sbp":{"title":"СБП","detail":os.getenv("PAYMENT_SBP_PHONE","Настройте PAYMENT_SBP_PHONE")},"card":{"title":"Банковская карта","detail":os.getenv("PAYMENT_CARD_NUMBER","Настройте PAYMENT_CARD_NUMBER")}}
+
+def notify_admin_telegram(message):
+ token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
+ chat_id=os.getenv("TELEGRAM_CHAT_ID","").strip()
+ if not token or not chat_id:
+  app.logger.info("Telegram notifications are disabled: missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID.")
+  return False
+ try:
+  response=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",
+   json={"chat_id":chat_id,"text":message,"disable_web_page_preview":True},timeout=10)
+  response.raise_for_status()
+  data=response.json()
+  if not data.get("ok"): raise RuntimeError("Telegram Bot API did not confirm the message.")
+  return True
+ except Exception:
+  app.logger.exception("Telegram admin notification failed")
+  return False
+
+def send_subscription_email(order):
+ api_key=os.getenv("RESEND_API_KEY","").strip()
+ sender=os.getenv("RESEND_FROM_EMAIL","").strip()
+ sub_url=(order.subscription_url or "").strip()
+ if not api_key or not sender or not order.email or not sub_url:
+  app.logger.error("Subscription email not sent: missing Resend setting, email, or subscription URL for order %s.",order.id)
+  return False
+ safe_nick=escape(order.nickname or "")
+ safe_url=escape(sub_url,quote=True)
+ subject="Твоя подписка FlankVPN готова"
+ html_body=f"""
+ <div style="margin:0;background:#f2f6fc;padding:28px 12px;font-family:Arial,Helvetica,sans-serif;color:#10203a">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #dce7f5;border-radius:20px;overflow:hidden">
+   <div style="padding:26px 28px;background:#081529;color:#fff">
+    <div style="font-size:12px;letter-spacing:3px;color:#8fe1ff;font-weight:bold">FLANKVPN</div>
+    <h1 style="font-size:25px;margin:12px 0 6px">Твоя подписка готова!</h1>
+    <p style="margin:0;color:#d4e3f7">Заказ #{order.id}</p>
+   </div>
+   <div style="padding:28px">
+    <p>Привет, <strong>{safe_nick}</strong>! VPN-доступ создан.</p>
+    <p>Нажми кнопку ниже, чтобы открыть ссылку подписки и импортировать её в совместимый VPN-клиент.</p>
+    <p style="text-align:center;margin:28px 0">
+     <a href="{safe_url}" style="display:inline-block;padding:14px 22px;border-radius:12px;color:#fff;background:#1769ff;text-decoration:none;font-weight:bold">Открыть подписку</a>
+    </p>
+    <p style="font-size:12px;color:#5c6d85">Если кнопка не открывается, скопируй эту ссылку:</p>
+    <p style="font-size:12px;line-height:1.6;word-break:break-all"><a href="{safe_url}">{safe_url}</a></p>
+    <p style="font-size:12px;color:#718099;margin-top:24px">Если ты не оформлял заказ, можешь проигнорировать это письмо.</p>
+   </div>
+  </div>
+ </div>
+ """
+ text_body=f"FlankVPN: подписка готова. Заказ #{order.id}. Никнейм: {order.nickname}. Ссылка подписки: {sub_url}"
+ try:
+  response=requests.post("https://api.resend.com/emails",
+   headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json",
+    "Idempotency-Key":f"flankvpn-subscription-order-{order.id}"},
+   json={"from":sender,"to":[order.email],"subject":subject,"html":html_body,"text":text_body},
+   timeout=15)
+  response.raise_for_status()
+  return True
+ except Exception:
+  app.logger.exception("Failed to email subscription for order %s to %s.",order.id,order.email)
+  return False
 class User(UserMixin,db.Model):
  id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False)
  def set_password(self,p): self.password_hash=generate_password_hash(p)
@@ -129,7 +191,9 @@ def dashboard(): return render_template("dashboard.html",orders=Order.query.filt
 def checkout():
  k=request.form.get("tariff"); m=request.form.get("method")
  if k not in TARIFFS or m not in PAYMENTS: flash("Выберите тариф и способ оплаты.","error"); return redirect(url_for("dashboard"))
- t=TARIFFS[k]; o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=t["price"],payment_method=m); db.session.add(o); db.session.commit(); return redirect(url_for("payment",oid=o.id))
+ t=TARIFFS[k]; o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=t["price"],payment_method=m); db.session.add(o); db.session.commit()
+ notify_admin_telegram(f"🆕 Новый заказ FlankVPN #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email}\nТариф: {t['title']}\nСумма: {o.amount} ₽\nСпособ: {PAYMENTS[m]['title']}\nСтатус: ожидает оплаты")
+ return redirect(url_for("payment",oid=o.id))
 @app.route("/payment/<int:oid>")
 @login_required
 def payment(oid):
@@ -141,7 +205,10 @@ def payment(oid):
 def paid(oid):
  o=db.session.get(Order,oid)
  if not o or o.user_id!=current_user.id: abort(404)
- if o.status=="awaiting_payment": o.status="awaiting_review"; db.session.commit(); flash("Заявка отправлена. Администратор проверит поступление денег.","success")
+ if o.status=="awaiting_payment":
+  o.status="awaiting_review"; db.session.commit()
+  notify_admin_telegram(f"💳 Клиент заявил об оплате заказа #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email}\nСумма: {o.amount} ₽\nВажно: это заявка клиента; поступление денег нужно проверить вручную.")
+  flash("Заявка отправлена. Администратор проверит поступление денег.","success")
  return redirect(url_for("dashboard"))
 @app.route("/subscription-qr/<int:oid>.png")
 @login_required
@@ -176,7 +243,14 @@ def confirm(oid):
  o=db.session.get(Order,oid)
  if not o: abort(404)
  if o.status not in ("awaiting_review","error"): flash("Нельзя подтвердить заказ в этом статусе.","error"); return redirect(url_for("admin_orders"))
- try: o.status="processing"; db.session.commit(); provision(o); flash("Доступ выдан для "+o.nickname+".","success")
+ try:
+  o.status="processing"; db.session.commit(); provision(o)
+  email_sent=send_subscription_email(o)
+  notify_admin_telegram(f"✅ Доступ создан для заказа #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email}\nСсылка подписки: {o.subscription_url}\nПисьмо клиенту: {'отправлено' if email_sent else 'НЕ отправлено — проверь Resend и логи Render'}")
+  if email_sent:
+   flash("Доступ выдан, ссылка подписки отправлена клиенту на email.","success")
+  else:
+   flash("VPN-доступ создан, но письмо клиенту не отправлено. Проверь настройки RESEND_API_KEY, RESEND_FROM_EMAIL и логи Render.","error")
  except Exception as e: db.session.rollback(); o=db.session.get(Order,oid); o.status="error"; o.error_message=str(e)[:400]; db.session.commit(); app.logger.exception("H1 API error")
  return redirect(url_for("admin_orders"))
 @app.route("/admin/reject/<int:oid>",methods=["POST"])
