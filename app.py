@@ -246,12 +246,14 @@ def confirm(oid):
  try:
   o.status="processing"; db.session.commit(); provision(o)
   email_sent=send_subscription_email(o)
-  notify_admin_telegram(f"✅ Доступ создан для заказа #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email}\nСсылка подписки: {o.subscription_url}\nПисьмо клиенту: {'отправлено' if email_sent else 'НЕ отправлено — проверь Resend и логи Render'}")
+  notify_admin_telegram(f"✅ Доступ создан для заказа #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email}\nПисьмо клиенту: {'отправлено' if email_sent else 'НЕ отправлено — проверь Resend и логи Render'}")
   if email_sent:
    flash("Доступ выдан, ссылка подписки отправлена клиенту на email.","success")
   else:
    flash("VPN-доступ создан, но письмо клиенту не отправлено. Проверь настройки RESEND_API_KEY, RESEND_FROM_EMAIL и логи Render.","error")
- except Exception as e: db.session.rollback(); o=db.session.get(Order,oid); o.status="error"; o.error_message=str(e)[:400]; db.session.commit(); app.logger.exception("H1 API error")
+ except Exception as e:
+  db.session.rollback(); o=db.session.get(Order,oid); o.status="error"; o.error_message=str(e)[:400]; db.session.commit(); app.logger.exception("H1 API error")
+  notify_admin_telegram(f"❌ Не удалось выдать VPN-доступ для заказа #{o.id}\nНикнейм: {o.nickname}\nПричина: {o.error_message}")
  return redirect(url_for("admin_orders"))
 @app.route("/admin/reject/<int:oid>",methods=["POST"])
 def reject(oid):
