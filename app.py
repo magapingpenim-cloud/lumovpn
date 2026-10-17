@@ -18,7 +18,7 @@ elif dburl.startswith("postgresql://"):
 app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
 app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
-TARIFFS={"1":{"months":1,"price":199,"title":"1 месяц"},"3":{"months":3,"price":499,"title":"3 месяца"},"12":{"months":12,"price":1499,"title":"12 месяцев"}}
+TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"1":{"months":1,"price":50,"title":"1 месяц"},"3":{"months":3,"price":150,"title":"3 месяца"},"12":{"months":12,"price":600,"title":"12 месяцев"}}
 PAYMENTS={"sbp":{"title":"СБП","detail":os.getenv("PAYMENT_SBP_PHONE","Настройте PAYMENT_SBP_PHONE")},"card":{"title":"Банковская карта","detail":os.getenv("PAYMENT_CARD_NUMBER","Настройте PAYMENT_CARD_NUMBER")}}
 
 def notify_admin_telegram(message):
@@ -167,8 +167,22 @@ def verify_email():
     flash("Этот ник или email уже зарегистрирован. Войди в аккаунт.","error")
     return redirect(url_for("login"))
    user=User(nickname=pending.nickname,email=pending.email,password_hash=pending.password_hash)
-   db.session.add(user); db.session.delete(pending); db.session.commit(); session.pop("verify_email",None); login_user(user)
-   flash("Email подтверждён. Аккаунт создан!","success")
+   db.session.add(user); db.session.flush()
+   trial=Order(user_id=user.id,nickname=user.nickname,email=user.email,tariff_key="trial",amount=0,payment_method="trial",status="processing")
+   db.session.add(trial); db.session.delete(pending); db.session.commit(); session.pop("verify_email",None); login_user(user)
+   try:
+    provision(trial)
+    email_sent=send_subscription_email(trial)
+    notify_admin_telegram(f"🆓 Бесплатный пробный период выдан\nНикнейм: {trial.nickname}\nEmail: {trial.email}\nСрок: 10 дней\nПисьмо со ссылкой: {'отправлено' if email_sent else 'не отправлено — проверь Resend'}")
+    if email_sent:
+     flash("Аккаунт создан! Твои первые 10 дней FlankVPN бесплатны. Ссылка также отправлена на email.","success")
+    else:
+     flash("Аккаунт создан, а пробный доступ подготовлен. Ссылка видна в личном кабинете; проверь почту и настройки отправки email.","success")
+   except Exception as e:
+    db.session.rollback(); trial=db.session.get(Order,trial.id); trial.status="error"; trial.error_message=str(e)[:400]; db.session.commit()
+    app.logger.exception("Could not provision free FlankVPN trial")
+    notify_admin_telegram(f"⚠️ Не удалось автоматически выдать пробный период\nНикнейм: {trial.nickname}\nEmail: {trial.email}\nПричина: {trial.error_message}")
+    flash("Аккаунт создан, но автоматическая выдача пробного доступа не сработала. Администратор получил уведомление и сможет повторить выдачу.","error")
    return redirect(url_for("dashboard"))
   db.session.commit(); flash("Неверный код. Проверь письмо и попробуй ещё раз.","error")
  return render_template("verify.html",email=email)
@@ -231,7 +245,8 @@ def provision(o):
  base=os.getenv("H1_API_BASE","").rstrip("/"); token=os.getenv("H1_API_TOKEN","")
  if not base or not token: raise RuntimeError("Настройте H1_API_BASE и H1_API_TOKEN в переменных окружения.")
  name="flank_"+str(o.id)+"_"+''.join(secrets.choice(string.ascii_lowercase+string.digits) for _ in range(5)); h={"Authorization":"Bearer "+token,"Content-Type":"application/json"}
- r=requests.post(base+"/create",headers=h,json={"name":name,"days":TARIFFS[o.tariff_key]["months"]*30,"traffic_limit_gb":0,"device_limit":0},timeout=25); r.raise_for_status(); d=r.json()
+ tariff=TARIFFS[o.tariff_key]; days=tariff.get("days",tariff["months"]*30)
+ r=requests.post(base+"/create",headers=h,json={"name":name,"days":days,"traffic_limit_gb":0,"device_limit":0},timeout=25); r.raise_for_status(); d=r.json()
  if d.get("ok") is False: raise RuntimeError(str(d))
  r=requests.get(base+"/info",headers=h,params={"name":name},timeout=25); r.raise_for_status(); c=r.json().get("client",r.json()); sub=c.get("sub_url") or c.get("subscription_url")
  if not sub and c.get("uuid") and os.getenv("H1_SUBSCRIPTION_BASE"): sub=urllib.parse.urljoin(os.getenv("H1_SUBSCRIPTION_BASE").rstrip("/")+"/",c["uuid"])
