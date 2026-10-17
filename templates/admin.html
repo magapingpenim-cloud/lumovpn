@@ -14,7 +14,7 @@
 </section>
 <div class="admin-help">
   <strong>Как появляются заказы</strong>
-  <p>Заказ создаётся, когда пользователь входит в аккаунт, выбирает тариф и нажимает «Перейти к оплате». После перевода пользователь должен нажать «Я оплатил(а)» — тогда заказ перейдёт в статус «Проверить оплату».</p>
+  <p>Платный заказ создаётся, когда пользователь выбирает тариф и нажимает «Перейти к оплате». Новым пользователям бесплатный 10-дневный пробный доступ выдаётся автоматически после подтверждения email.</p>
   <p>Перед выдачей VPN-доступа вручную проверь поступление денег и наличие правильного никнейма в сообщении к переводу.</p>
 </div>
 <h2>Все заказы</h2>
@@ -24,7 +24,7 @@
     <div>
       <b>Заказ #{{ o.id }} · Никнейм: {{ o.nickname }}</b>
       <p class="tiny muted">{{ o.email }}</p>
-      <p class="tiny muted">{{ tariffs[o.tariff_key].title }} · {{ o.payment_method|upper }} · {{ o.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p>
+      <p class="tiny muted">{{ tariffs[o.tariff_key].title }} · {{ 'БЕСПЛАТНЫЙ ТЕСТ' if o.tariff_key == 'trial' else o.payment_method|upper }} · {{ o.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p>
     </div>
     <div class="amount">{{ o.amount }} ₽<p class="tiny">{{ {'awaiting_payment':'Ожидает оплаты','awaiting_review':'Проверить оплату','processing':'Создаём доступ','active':'Активна','rejected':'Отклонена','error':'Ошибка выдачи'}.get(o.status,o.status) }}</p></div>
   </div>
