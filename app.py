@@ -109,6 +109,7 @@ class GameState(db.Model):
  income_per_second=db.Column(db.Integer,default=0,nullable=False)
  autoclicker=db.Column(db.Boolean,default=False,nullable=False)
  contest_points=db.Column(db.Integer,default=0,nullable=False)
+ redeem_count=db.Column(db.Integer,default=0,nullable=False)
  last_tick=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
  user=db.relationship("User",backref=db.backref("game_state",uselist=False))
 
@@ -351,7 +352,8 @@ def game_redeem():
   flash("Укажи количество суток от 1 до 365.","error")
   return redirect(url_for("game"))
  # Progressive pricing: 1st day 10,000 coins, 2nd 20,000, 3rd 30,000, etc.
- cost=COINS_PER_VPN_DAY*days + 2000*(days-1)*days//2
+ unit_price=COINS_PER_VPN_DAY+2000*state.redeem_count
+ cost=unit_price*days
  if state.coins<cost:
   flash(f"Для {days} суток нужно {cost:,} монет, у тебя {state.coins:,}.".replace(",", " "),"error")
   return redirect(url_for("game"))
@@ -573,6 +575,8 @@ with app.app_context():
   game_columns={column["name"] for column in inspect(conn).get_columns("game_state")}
   if "contest_points" not in game_columns:
    conn.execute(text("ALTER TABLE game_state ADD COLUMN contest_points INTEGER NOT NULL DEFAULT 0"))
+  if "redeem_count" not in game_columns:
+   conn.execute(text("ALTER TABLE game_state ADD COLUMN redeem_count INTEGER NOT NULL DEFAULT 0"))
   order_columns={column["name"] for column in inspect(conn).get_columns("orders")}
   if "requested_days" not in order_columns:
    conn.execute(text("ALTER TABLE orders ADD COLUMN requested_days INTEGER"))
