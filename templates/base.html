@@ -20,6 +20,7 @@
         {% if current_user.is_authenticated %}
           <a href="{{ url_for('dashboard') }}">Кабинет</a>
           <a href="{{ url_for('game') }}">Кликер</a>
+          {% if session.get("flankadmin") %}<a href="{{ url_for('admin_orders') }}">Админка</a><a href="{{ url_for('admin_support') }}">Чат клиентов</a>{% endif %}
           <form class="inline" method="post" action="{{ url_for('logout') }}"><button class="navbutton" type="submit">Выйти</button></form>
         {% else %}
           <a href="{{ url_for('login') }}">Войти</a>
