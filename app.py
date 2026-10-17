@@ -481,6 +481,35 @@ def admin_close_support(mid):
  flash("Обращение отмечено как обработанное.","success")
  return redirect(url_for("admin_orders"))
 
+@app.route("/admin/game-contest/award",methods=["POST"])
+def admin_award_game_contest():
+ if not is_admin(): abort(403)
+ campaign=get_game_campaign()
+ now=datetime.utcnow()
+ if now < campaign.end_at:
+  flash("Акция ещё продолжается. Победителя можно назначить после завершения таймера.","error")
+  return redirect(url_for("admin_orders"))
+ if campaign.winner_user_id or campaign.prize_order_id:
+  flash("Победитель акции уже назначен.","error")
+  return redirect(url_for("admin_orders"))
+ winner=User.query.join(GameState,GameState.user_id==User.id).order_by(GameState.contest_points.desc(),User.nickname.asc()).first()
+ if not winner:
+  flash("Нет участников — годовую подписку пока некому выдать.","error")
+  return redirect(url_for("admin_orders"))
+ state=GameState.query.filter_by(user_id=winner.id).first()
+ if not state or state.contest_points<=0:
+  flash("Нет участника с набранными очками.","error")
+  return redirect(url_for("admin_orders"))
+ prize=Order(user_id=winner.id,nickname=winner.nickname,email=winner.email,tariff_key="12",amount=0,payment_method="game",status="awaiting_review",requested_days=365)
+ db.session.add(prize)
+ db.session.flush()
+ campaign.winner_user_id=winner.id
+ campaign.prize_order_id=prize.id
+ db.session.commit()
+ notify_admin_telegram(f"🏆 Победитель месячной акции FlankVPN: {winner.nickname}\\nОчки: {state.contest_points}\\nНаграда: годовая подписка (заказ #{prize.id}). Подтверди заказ в админке, чтобы выдать доступ.")
+ flash(f"Победитель: {winner.nickname} ({state.contest_points} очков). Заказ на годовую подписку создан; подтверди его в списке заказов для выдачи доступа.","success")
+ return redirect(url_for("admin_orders"))
+
 @app.route("/admin/login",methods=["GET","POST"])
 def admin_login():
  if request.method=="POST" and request.form.get("username","").strip().casefold()==os.getenv("ADMIN_USERNAME","admin").strip().casefold() and request.form.get("password","")==os.getenv("ADMIN_PASSWORD","change-this-now"):
@@ -491,7 +520,7 @@ def admin_login():
 @app.route("/admin/orders")
 def admin_orders():
  if not is_admin(): return redirect(url_for("admin_login"))
- orders=Order.query.order_by(Order.created_at.desc()).all(); game_purchases=GamePurchase.query.order_by(GamePurchase.created_at.desc()).all(); support_messages=SupportMessage.query.order_by(SupportMessage.created_at.desc()).all(); return render_template("admin.html",support_messages=support_messages,game_purchases=game_purchases,orders=orders,total_orders=len(orders),total_pending=sum(o.amount for o in orders if o.status=="awaiting_review"),awaiting_payment_count=sum(1 for o in orders if o.status=="awaiting_payment"),awaiting_review_count=sum(1 for o in orders if o.status=="awaiting_review"),active_count=sum(1 for o in orders if o.status=="active"),error_count=sum(1 for o in orders if o.status=="error"))
+ orders=Order.query.order_by(Order.created_at.desc()).all(); game_purchases=GamePurchase.query.order_by(GamePurchase.created_at.desc()).all(); support_messages=SupportMessage.query.order_by(SupportMessage.created_at.desc()).all(); campaign=get_game_campaign(); leaderboard=User.query.join(GameState,GameState.user_id==User.id).order_by(GameState.contest_points.desc(),User.nickname.asc()).limit(10).all(); return render_template("admin.html",support_messages=support_messages,game_purchases=game_purchases,orders=orders,campaign=campaign,leaderboard=leaderboard,now=datetime.utcnow(),total_orders=len(orders),total_pending=sum(o.amount for o in orders if o.status=="awaiting_review"),awaiting_payment_count=sum(1 for o in orders if o.status=="awaiting_payment"),awaiting_review_count=sum(1 for o in orders if o.status=="awaiting_review"),active_count=sum(1 for o in orders if o.status=="active"),error_count=sum(1 for o in orders if o.status=="error"))
 def provision(o):
  base=os.getenv("H1_API_BASE","").rstrip("/"); token=os.getenv("H1_API_TOKEN","")
  if not base or not token: raise RuntimeError("Настройте H1_API_BASE и H1_API_TOKEN в переменных окружения.")
