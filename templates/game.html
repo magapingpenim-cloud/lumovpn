@@ -10,16 +10,25 @@
 <div class="game-wrap"><section class="game-hero"><div class="game-top"><div><div class="eyebrow">FLANKVPN ARCADE</div><h1>Кликер FlankVPN</h1><p style="color:#d1e3f7;margin:5px 0">Кликай по маскоту, собирай монеты и прокачивай доход.</p></div><div><div style="font-size:12px;color:#c4dcf4">ТВОЙ БАЛАНС</div><div class="game-balance"><span id="coin-balance">{{ state.coins }}</span> ◉</div></div></div><div class="game-stats"><div class="game-stat"><div style="font-size:12px;color:#c4dcf4">За клик</div><strong id="click-power">+{{ state.click_power }} ◉</strong></div><div class="game-stat"><div style="font-size:12px;color:#c4dcf4">В секунду</div><strong id="income-rate">+{{ income_rate }} ◉</strong></div><div class="game-stat"><div style="font-size:12px;color:#c4dcf4">Автокликер</div><strong>{{ 'Активен ✓' if state.autoclicker else 'Не куплен' }}</strong></div></div></section>
 <section class="contest-card" data-current-user="{{ current_user.id }}">
  <div class="contest-head">
-  <div><span class="game-pill">🏆 ЕЖЕМЕСЯЧНАЯ АКЦИЯ</span><h2 style="margin:10px 0 5px">Набери больше всех очков</h2><p style="margin:0;color:#526984">Приз: годовая подписка FlankVPN. Результаты считаются отдельно от потраченных монет.</p></div>
+  <div><span class="game-pill">🏆 ЕЖЕМЕСЯЧНАЯ АКЦИЯ</span><h2 style="margin:10px 0 5px">Таблица лидеров</h2><p style="margin:0;color:#526984">Очки определяют итоговое место. Награды после завершения сезона: 1-е место — VPN на 12 месяцев, 2-е — на 3 месяца, 3-е — на 1 месяц.</p></div>
   <div class="contest-timer" id="contest-timer" data-end="{{ campaign.end_at.strftime('%Y-%m-%dT%H:%M:%SZ') }}">Загрузка таймера…</div>
  </div>
- <p style="margin:12px 0 0;color:#526984;font-size:13px">{% if now < campaign.end_at %}Акция завершится через 30 дней после старта. Осталось времени:{% else %}Акция завершена. Администратор определит победителя по итоговым очкам.{% endif %}</p>
- <div class="contest-list">
- {% for player in leaderboard %}
-  <div class="contest-row"><span>{{ loop.index }}. <strong>{{ player.nickname }}</strong>{% if player.id == current_user.id %} <span class="game-pill">Ты</span>{% endif %}</span><strong id="contest-score-{{ player.id }}">{{ player.game_state.contest_points }} очков</strong></div>
- {% else %}
-  <div class="contest-row"><span>Пока нет участников</span><strong>0 очков</strong></div>
- {% endfor %}
+ <p style="margin:12px 0 0;color:#526984;font-size:13px">{% if now < campaign.end_at %}Сезон длится 30 дней. Осталось времени:{% else %}Сезон завершён. Итоговые места определяются по количеству очков.{% endif %}</p>
+ <div class="contest-list" style="overflow-x:auto">
+ <table style="width:100%;border-collapse:collapse;margin-top:10px;text-align:left">
+  <thead><tr style="color:#526984;border-bottom:1px solid #dce5ef"><th style="padding:10px 8px">Место</th><th style="padding:10px 8px">Никнейм</th><th style="padding:10px 8px;text-align:right">Количество очков</th></tr></thead>
+  <tbody>
+  {% for player in leaderboard %}
+   <tr style="border-bottom:1px solid #e7edf4">
+    <td style="padding:10px 8px;white-space:nowrap">{% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}</td>
+    <td style="padding:10px 8px"><strong>{{ player.nickname }}</strong>{% if player.id == current_user.id %} <span class="game-pill">Ты</span>{% endif %}</td>
+    <td style="padding:10px 8px;text-align:right;font-variant-numeric:tabular-nums"><strong id="contest-score-{{ player.id }}">{{ player.game_state.contest_points }}</strong></td>
+   </tr>
+  {% else %}
+   <tr><td colspan="3" style="padding:14px 8px;color:#526984">Пока нет участников — 0 очков.</td></tr>
+  {% endfor %}
+  </tbody>
+ </table>
  </div>
 </section>
 <section class="game-stage"><button type="button" id="mascot" class="mascot" aria-label="Нажми, чтобы заработать монеты"><span class="cat-face" aria-hidden="true">🐱</span></button><p class="tap-hint">Нажимай на маскота — он будет реагировать на каждый удар!</p></section>
