@@ -8,7 +8,7 @@
     <p class="muted payment-intro">Переведи точную сумму и отправь заказ на проверку. Доступ активируется после подтверждения поступления денег.</p>
     <div class="payment-total"><div><span>К оплате</span><strong>{{order.amount}} ₽</strong></div><span class="payment-method-pill">{{payment.title}}</span></div>
     {% if tariff.months %}
-      {% set list_price = 50 * tariff.months %}
+      {% set list_price = 49 * tariff.months %}
       {% set saving = list_price - order.amount %}
       <div class="payment-breakdown">
         <div><span>Тариф</span><strong>{{tariff.months}} {{'месяц' if tariff.months == 1 else ('месяца' if tariff.months in [2,3,4] else 'месяцев')}}</strong></div>
