@@ -394,7 +394,7 @@ def support_send():
   app.logger.exception("Could not save support message")
   flash("Не удалось отправить сообщение. Попробуй ещё раз.","error")
   return redirect(request.referrer or url_for("index"))
- notify_admin_telegram(f"✉️ Новое сообщение в поддержку FlankVPN #{item.id}\\nОт: {item.nickname}\\nEmail: {item.email or 'не указан'}\\nСообщение: {item.message[:1200]}")
+ notify_admin_telegram(f"✉️ Новое сообщение в поддержку FlankVPN #{item.id}\nОт: {item.nickname}\nEmail: {item.email or 'не указан'}\nСообщение: {item.message[:1200]}")
  flash("Сообщение отправлено в поддержку. Мы увидим его в панели администратора.","success")
  return redirect(request.referrer or url_for("index"))
 
