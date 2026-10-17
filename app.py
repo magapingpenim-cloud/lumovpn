@@ -343,9 +343,17 @@ def game_tap():
 @login_required
 def game_redeem():
  state=game_state_for(current_user)
- days=state.coins//COINS_PER_VPN_DAY
- if days<1:
-  flash(f"Нужно минимум {COINS_PER_VPN_DAY:,} монет для обмена на 1 сутки VPN.".replace(",", " "),"error")
+ try:
+  days=int(request.form.get("days","1"))
+ except (TypeError,ValueError):
+  days=0
+ if days<1 or days>365:
+  flash("Укажи количество суток от 1 до 365.","error")
+  return redirect(url_for("game"))
+ # Progressive pricing: 1st day 10,000 coins, 2nd 20,000, 3rd 30,000, etc.
+ cost=COINS_PER_VPN_DAY*days*(days+1)//2
+ if state.coins<cost:
+  flash(f"Для {days} суток нужно {cost:,} монет, у тебя {state.coins:,}.".replace(",", " "),"error")
   return redirect(url_for("game"))
  pending=Order.query.filter_by(user_id=current_user.id,tariff_key="game",status="processing").first()
  if pending:
