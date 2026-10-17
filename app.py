@@ -18,7 +18,7 @@ elif dburl.startswith("postgresql://"):
 app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
 app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
-TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"game":{"months":0,"days":1,"price":0,"title":"Обмен монет кликера на VPN"},"1":{"months":1,"price":49,"title":"1 месяц","discount":0,"save":0},"3":{"months":3,"price":132,"title":"3 месяца","discount":10,"save":15},"12":{"months":12,"price":470,"title":"12 месяцев","discount":20,"save":118}}
+TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"1":{"months":1,"price":49,"title":"1 месяц","discount":0,"save":0},"3":{"months":3,"price":132,"title":"3 месяца","discount":10,"save":15},"12":{"months":12,"price":470,"title":"12 месяцев","discount":20,"save":118}}
 PAYMENTS={"sbp":{"title":"СБП","detail":os.getenv("PAYMENT_SBP_PHONE","Настройте PAYMENT_SBP_PHONE")},"card":{"title":"Банковская карта","detail":os.getenv("PAYMENT_CARD_NUMBER","Настройте PAYMENT_CARD_NUMBER")}}
 
 def notify_admin_telegram(message):
@@ -340,50 +340,6 @@ def game_tap():
  db.session.commit()
  return {"coins":state.coins,"click_power":state.click_power,"income":state.income_per_second + (state.click_power if state.autoclicker else 0),"contest_points":state.contest_points}
 
-@app.route("/game/redeem",methods=["POST"])
-@login_required
-def game_redeem():
- state=game_state_for(current_user)
- try:
-  days=int(request.form.get("days","1"))
- except (TypeError,ValueError):
-  days=0
- if days<1 or days>365:
-  flash("Укажи количество суток от 1 до 365.","error")
-  return redirect(url_for("game"))
- # Progressive pricing: 1st day 10,000 coins, 2nd 20,000, 3rd 30,000, etc.
- unit_price=COINS_PER_VPN_DAY+2000*state.redeem_count
- cost=unit_price*days
- if state.coins<cost:
-  flash(f"Для {days} суток нужно {cost:,} монет, у тебя {state.coins:,}.".replace(",", " "),"error")
-  return redirect(url_for("game"))
- pending=Order.query.filter_by(user_id=current_user.id,tariff_key="game",status="processing").first()
- if pending:
-  flash("У тебя уже обрабатывается обмен VPN-времени. Обнови страницу через минуту.","error")
-  return redirect(url_for("game"))
- order=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key="game",amount=0,payment_method="game",status="processing",requested_days=days)
- db.session.add(order)
- state.coins=0
- state.click_power=1
- state.income_per_second=0
- state.last_tick=datetime.utcnow()
- db.session.commit()
- try:
-  provision(order)
-  state.redeem_count += 1
-  db.session.commit()
-  email_sent=send_subscription_email(order)
-  flash(f"Обмен выполнен: {days} сутки VPN. Монеты, сила тапа и пассивный доход сброшены; автокликер сохранён." + ( " Ссылка отправлена на email." if email_sent else " Ссылка доступна в личном кабинете; письмо не удалось отправить."),"success")
- except Exception as e:
-  db.session.rollback()
-  order=db.session.get(Order,order.id)
-  if order:
-   order.status="error"; order.error_message=str(e)[:400]; db.session.commit()
-  app.logger.exception("Game VPN redemption failed")
-  notify_admin_telegram(f"⚠️ Ошибка обмена монет на VPN для {current_user.nickname}. Заказ #{order.id if order else 'unknown'}. Проверь панель администратора.")
-  flash("Не удалось выдать VPN-время автоматически. Обращение записано; администратор сможет повторить выдачу.","error")
- return redirect(url_for("game"))
-
 @app.route("/game/upgrade/<kind>",methods=["POST"])
 @login_required
 def game_upgrade(kind):
@@ -491,7 +447,7 @@ def admin_close_support(mid):
  item.status="closed"
  db.session.commit()
  flash("Обращение отмечено как обработанное.","success")
- return redirect(url_for("admin_orders"))
+ return redirect(url_for("admin_support"))
 
 @app.route("/admin/game-contest/award",methods=["POST"])
 def admin_award_game_contest():
@@ -532,7 +488,12 @@ def admin_login():
 @app.route("/admin/orders")
 def admin_orders():
  if not is_admin(): return redirect(url_for("admin_login"))
- orders=Order.query.order_by(Order.created_at.desc()).all(); game_purchases=GamePurchase.query.order_by(GamePurchase.created_at.desc()).all(); support_messages=SupportMessage.query.order_by(SupportMessage.created_at.desc()).all(); campaign=get_game_campaign(); leaderboard=User.query.join(GameState,GameState.user_id==User.id).order_by(GameState.contest_points.desc(),User.nickname.asc()).limit(10).all(); return render_template("admin.html",support_messages=support_messages,game_purchases=game_purchases,orders=orders,campaign=campaign,leaderboard=leaderboard,now=datetime.utcnow(),total_orders=len(orders),total_pending=sum(o.amount for o in orders if o.status=="awaiting_review"),awaiting_payment_count=sum(1 for o in orders if o.status=="awaiting_payment"),awaiting_review_count=sum(1 for o in orders if o.status=="awaiting_review"),active_count=sum(1 for o in orders if o.status=="active"),error_count=sum(1 for o in orders if o.status=="error"))
+ orders=Order.query.order_by(Order.created_at.desc()).all(); game_purchases=GamePurchase.query.order_by(GamePurchase.created_at.desc()).all(); campaign=get_game_campaign(); leaderboard=User.query.join(GameState,GameState.user_id==User.id).order_by(GameState.contest_points.desc(),User.nickname.asc()).limit(10).all(); support_new_count=SupportMessage.query.filter_by(status="new").count(); return render_template("admin.html",support_new_count=support_new_count,game_purchases=game_purchases,orders=orders,campaign=campaign,leaderboard=leaderboard,now=datetime.utcnow(),total_orders=len(orders),total_pending=sum(o.amount for o in orders if o.status=="awaiting_review"),awaiting_payment_count=sum(1 for o in orders if o.status=="awaiting_payment"),awaiting_review_count=sum(1 for o in orders if o.status=="awaiting_review"),active_count=sum(1 for o in orders if o.status=="active"),error_count=sum(1 for o in orders if o.status=="error"))
+@app.route("/admin/support")
+def admin_support():
+ if not is_admin(): return redirect(url_for("admin_login"))
+ support_messages=SupportMessage.query.order_by(SupportMessage.created_at.desc()).all()
+ return render_template("admin_support.html",support_messages=support_messages)
 def provision(o):
  base=os.getenv("H1_API_BASE","").rstrip("/"); token=os.getenv("H1_API_TOKEN","")
  if not base or not token: raise RuntimeError("Настройте H1_API_BASE и H1_API_TOKEN в переменных окружения.")
