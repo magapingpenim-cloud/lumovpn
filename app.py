@@ -560,10 +560,10 @@ with app.app_context():
  db.create_all()
  # Add new columns to existing PostgreSQL/SQLite databases without deleting user progress.
  with db.engine.begin() as conn:
-  game_columns={column["name"] for column in inspect(db.engine).get_columns("game_state")}
+  game_columns={column["name"] for column in inspect(conn).get_columns("game_state")}
   if "contest_points" not in game_columns:
    conn.execute(text("ALTER TABLE game_state ADD COLUMN contest_points INTEGER NOT NULL DEFAULT 0"))
-  order_columns={column["name"] for column in inspect(db.engine).get_columns("orders")}
+  order_columns={column["name"] for column in inspect(conn).get_columns("orders")}
   if "requested_days" not in order_columns:
    conn.execute(text("ALTER TABLE orders ADD COLUMN requested_days INTEGER"))
 if __name__=="__main__": app.run(host="0.0.0.0",port=int(os.getenv("PORT","5001")),debug=False)
