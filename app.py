@@ -324,7 +324,7 @@ def game():
  upgrades={k:{**v,"price":v["base"]*(2**(state.click_power-1) if k=="power" else 2**state.income_per_second)} for k,v in GAME_UPGRADES.items()}
  income_rate=state.income_per_second + (state.click_power if state.autoclicker else 0)
  campaign=get_game_campaign()
- leaderboard=User.query.join(GameState,GameState.user_id==User.id).order_by(GameState.contest_points.desc(),User.nickname.asc()).limit(10).all()
+ leaderboard=User.query.join(GameState,GameState.user_id==User.id).order_by(GameState.contest_points.desc(),User.nickname.asc()).limit(100).all()
  return render_template("game.html",state=state,upgrades=upgrades,purchases=purchases,payments=PAYMENTS,income_rate=income_rate,campaign=campaign,leaderboard=leaderboard,now=datetime.utcnow(),coins_per_vpn_day=COINS_PER_VPN_DAY,next_vpn_day_price=COINS_PER_VPN_DAY+2000*state.redeem_count,redeem_count=state.redeem_count)
 
 @app.route("/game/tap",methods=["POST"])
