@@ -506,7 +506,7 @@ def admin_award_game_contest():
  campaign.winner_user_id=winner.id
  campaign.prize_order_id=prize.id
  db.session.commit()
- notify_admin_telegram(f"🏆 Победитель месячной акции FlankVPN: {winner.nickname}\\nОчки: {state.contest_points}\\nНаграда: годовая подписка (заказ #{prize.id}). Подтверди заказ в админке, чтобы выдать доступ.")
+ notify_admin_telegram(f"🏆 Победитель месячной акции FlankVPN: {winner.nickname}\nОчки: {state.contest_points}\nНаграда: годовая подписка (заказ #{prize.id}). Подтверди заказ в админке, чтобы выдать доступ.")
  flash(f"Победитель: {winner.nickname} ({state.contest_points} очков). Заказ на годовую подписку создан; подтверди его в списке заказов для выдачи доступа.","success")
  return redirect(url_for("admin_orders"))
 
