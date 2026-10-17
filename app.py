@@ -130,7 +130,7 @@ def game_state_for(user):
   state=GameState(user_id=user.id); db.session.add(state); db.session.commit()
  now=datetime.utcnow(); elapsed=max(0,min(int((now-state.last_tick).total_seconds()),43200))
  if elapsed:
-  state.coins += elapsed*state.income_per_second
+  state.coins += elapsed*(state.income_per_second + (state.autoclicker and state.click_power or 0))
   state.last_tick=now
   db.session.commit()
  return state
@@ -276,7 +276,8 @@ def game():
  state=game_state_for(current_user)
  purchases=GamePurchase.query.filter_by(user_id=current_user.id).order_by(GamePurchase.created_at.desc()).limit(10).all()
  upgrades={k:{**v,"price":v["base"]*(2**(state.click_power-1) if k=="power" else 2**state.income_per_second)} for k,v in GAME_UPGRADES.items()}
- return render_template("game.html",state=state,upgrades=upgrades,purchases=purchases,payments=PAYMENTS)
+ income_rate=state.income_per_second + (state.click_power if state.autoclicker else 0)
+ return render_template("game.html",state=state,upgrades=upgrades,purchases=purchases,payments=PAYMENTS,income_rate=income_rate)
 
 @app.route("/game/tap",methods=["POST"])
 @login_required
@@ -284,7 +285,7 @@ def game_tap():
  state=game_state_for(current_user)
  state.coins += state.click_power
  db.session.commit()
- return {"coins":state.coins,"click_power":state.click_power,"income":state.income_per_second}
+ return {"coins":state.coins,"click_power":state.click_power,"income":state.income_per_second + (state.click_power if state.autoclicker else 0)}
 
 @app.route("/game/upgrade/<kind>",methods=["POST"])
 @login_required
@@ -364,7 +365,7 @@ def admin_login():
 @app.route("/admin/orders")
 def admin_orders():
  if not is_admin(): return redirect(url_for("admin_login"))
- orders=Order.query.order_by(Order.created_at.desc()).all(); return render_template("admin.html",orders=orders,total_orders=len(orders),total_pending=sum(o.amount for o in orders if o.status=="awaiting_review"),awaiting_payment_count=sum(1 for o in orders if o.status=="awaiting_payment"),awaiting_review_count=sum(1 for o in orders if o.status=="awaiting_review"),active_count=sum(1 for o in orders if o.status=="active"),error_count=sum(1 for o in orders if o.status=="error"))
+ orders=Order.query.order_by(Order.created_at.desc()).all(); game_purchases=GamePurchase.query.order_by(GamePurchase.created_at.desc()).all(); return render_template("admin.html",game_purchases=game_purchases,orders=orders,total_orders=len(orders),total_pending=sum(o.amount for o in orders if o.status=="awaiting_review"),awaiting_payment_count=sum(1 for o in orders if o.status=="awaiting_payment"),awaiting_review_count=sum(1 for o in orders if o.status=="awaiting_review"),active_count=sum(1 for o in orders if o.status=="active"),error_count=sum(1 for o in orders if o.status=="error"))
 def provision(o):
  base=os.getenv("H1_API_BASE","").rstrip("/"); token=os.getenv("H1_API_TOKEN","")
  if not base or not token: raise RuntimeError("Настройте H1_API_BASE и H1_API_TOKEN в переменных окружения.")
