@@ -38,6 +38,23 @@
   <p>Платный заказ создаётся, когда пользователь выбирает тариф и нажимает «Перейти к оплате». Новым пользователям бесплатный 10-дневный пробный доступ выдаётся автоматически после подтверждения email.</p>
   <p>Перед выдачей VPN-доступа вручную проверь поступление денег и наличие правильного никнейма в сообщении к переводу.</p>
 </div>
+<section class="admin-help">
+  <strong>🏆 Ежемесячная акция кликера</strong>
+  <p>Статус: <b>{{ 'Завершена' if now >= campaign.end_at else 'Идёт' }}</b> · Завершение: {{ campaign.end_at.strftime('%d.%m.%Y %H:%M') }} UTC</p>
+  <p>Топ участников по очкам за время акции:</p>
+  {% for player in leaderboard %}
+    <p>{{ loop.index }}. <strong>{{ player.nickname }}</strong> — {{ player.game_state.contest_points }} очков</p>
+  {% else %}
+    <p>Участников пока нет.</p>
+  {% endfor %}
+  {% if campaign.winner_user_id %}
+    <p>Победитель: <strong>{{ campaign.winner_user.nickname }}</strong>. Заказ награды: #{{ campaign.prize_order_id or 'не создан' }}.</p>
+  {% elif now >= campaign.end_at %}
+    <form method="post" action="{{ url_for('admin_award_game_contest') }}" onsubmit="return confirm('Назначить лидера победителем и создать ему заказ на годовую подписку?')"><button class="btn primary" type="submit">Определить победителя и подготовить годовую подписку</button></form>
+  {% else %}
+    <p>После завершения акции здесь появится кнопка определения победителя.</p>
+  {% endif %}
+</section>
 <h2>Все заказы</h2>
 {% for o in orders %}
 <article class="order">
