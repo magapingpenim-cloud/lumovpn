@@ -123,7 +123,7 @@ class GamePurchase(db.Model):
  created_at=db.Column(db.DateTime,default=datetime.utcnow)
  user=db.relationship("User",backref=db.backref("game_purchases",lazy=True))
 
-GAME_UPGRADES={"power":{"title":"Сильнее удар","base":50,"description":"+1 монета за каждый клик"},"income":{"title":"Пассивный доход","base":120,"description":"+1 монета в секунду"}}
+GAME_UPGRADES={"power":{"title":"Сильнее удар","base":35,"description":"+1 монета за каждый клик"},"income":{"title":"Пассивный доход","base":80,"description":"+1 монета в секунду"}}
 def game_state_for(user):
  state=GameState.query.filter_by(user_id=user.id).first()
  if not state:
