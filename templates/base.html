@@ -33,6 +33,41 @@
       {% endwith %}
       {% block content %}{% endblock %}
     </main>
+
+    <style>
+      .support-launch{position:fixed;right:22px;bottom:22px;z-index:1000;border:0;border-radius:999px;padding:14px 19px;background:linear-gradient(135deg,#1769ff,#0b4cc5);color:#fff;font-weight:800;box-shadow:0 12px 34px #0b4cc54d;cursor:pointer}
+      .support-panel{display:none;position:fixed;right:22px;bottom:84px;z-index:1001;width:min(360px,calc(100vw - 28px));padding:18px;border:1px solid #dce7f5;border-radius:20px;background:#fff;color:#10203a;box-shadow:0 20px 60px #07152930}
+      .support-panel.open{display:block}.support-panel h3{margin:0 0 6px}.support-panel p{font-size:13px;color:#687891;margin:0 0 12px}
+      .support-panel input,.support-panel textarea{box-sizing:border-box;width:100%;padding:11px 12px;margin:0 0 10px;border:1px solid #dbe5f1;border-radius:10px;font:inherit}
+      .support-panel textarea{min-height:110px;resize:vertical}.support-panel .support-actions{display:flex;gap:8px}
+      .support-panel button{border:0;border-radius:10px;padding:11px 13px;font-weight:700;cursor:pointer}
+      .support-send{background:#1769ff;color:#fff;flex:1}.support-close{background:#edf2f8;color:#233b5b}
+      @media(max-width:480px){.support-launch{right:14px;bottom:14px}.support-panel{right:14px;bottom:76px}}
+    </style>
+    <button type="button" class="support-launch" id="support-launch" aria-expanded="false" aria-controls="support-panel">💬 Поддержка</button>
+    <section class="support-panel" id="support-panel" aria-label="Чат поддержки">
+      <h3>Поддержка FlankVPN</h3>
+      <p>Напиши нам — обращение появится в панели администратора.</p>
+      <form method="post" action="{{ url_for('support_send') }}">
+        {% if not current_user.is_authenticated %}
+          <input name="nickname" maxlength="80" placeholder="Твоё имя" required>
+          <input name="email" type="email" maxlength="160" placeholder="Email для ответа" required>
+        {% endif %}
+        <textarea name="message" minlength="3" maxlength="2000" placeholder="Чем можем помочь?" required></textarea>
+        <div class="support-actions"><button class="support-send" type="submit">Отправить</button><button class="support-close" type="button" id="support-close">Закрыть</button></div>
+      </form>
+    </section>
+    <script>
+      (function(){
+        const launch=document.getElementById('support-launch');
+        const panel=document.getElementById('support-panel');
+        const close=document.getElementById('support-close');
+        function toggle(open){panel.classList.toggle('open',open);launch.setAttribute('aria-expanded',String(open));if(open){const field=panel.querySelector('textarea');if(field)field.focus();}}
+        launch.addEventListener('click',()=>toggle(!panel.classList.contains('open')));
+        close.addEventListener('click',()=>toggle(false));
+      })();
+    </script>
+
     <footer><span class="footer-brand">FLANKVPN</span><span>·</span><span>Просто подключиться.</span><span class="footer-year">© 2026</span></footer>
   </div>
 </body>
