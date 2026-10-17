@@ -38,7 +38,7 @@
       <div class="plan-period">{{'01' if k=='1' else ('03' if k=='3' else '12')}} МЕСЯЦ{{' ' if k=='1' else ''}}</div>
       <h3>{{t.title}}</h3>
       <div class="price-row"><div class="price">{{t.price}} ₽</div>{% if t.discount %}<span class="discount-pill">−{{t.discount}}%</span>{% endif %}</div>
-      <p class="price-month">≈ {{(t.price / t.months)|round(0)|int}} ₽ в месяц</p>
+      <p class="price-month">≈ {{(t.price / (t.months or 1))|round(0)|int}} ₽ в месяц</p>
       {% if t.discount %}<div class="saving-line"><span>Экономия относительно помесячной оплаты</span><strong>−{{t.save}} ₽</strong></div>{% else %}<div class="saving-line saving-neutral"><span>Оплата за один месяц</span><strong>Гибко</strong></div>{% endif %}
       <ul><li>Личный кабинет</li><li>Ссылка подписки и QR-код</li><li>Инструкция по подключению</li></ul>
       <a class="btn {% if k=='12' or k=='3' %}primary{% else %}secondary{% endif %}" href="{{url_for('register')}}">Выбрать тариф ↗</a>
