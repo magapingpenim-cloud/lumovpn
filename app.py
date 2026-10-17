@@ -5,7 +5,7 @@ from flask import Flask,render_template,request,redirect,url_for,flash,abort,sen
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager,UserMixin,login_user,logout_user,login_required,current_user
 from werkzeug.security import generate_password_hash,check_password_hash
-from sqlalchemy import func
+from sqlalchemy import func, inspect, text
 from html import escape
 # Redeploy trigger: apply current Render environment settings.
 app=Flask(__name__); app.config["SECRET_KEY"]=os.getenv("SECRET_KEY","dev-only-change-me")
@@ -18,7 +18,7 @@ elif dburl.startswith("postgresql://"):
 app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
 app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
-TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"1":{"months":1,"price":49,"title":"1 месяц","discount":0,"save":0},"3":{"months":3,"price":132,"title":"3 месяца","discount":10,"save":15},"12":{"months":12,"price":470,"title":"12 месяцев","discount":20,"save":118}}
+TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"game":{"months":0,"days":1,"price":0,"title":"Обмен монет кликера на VPN"},"1":{"months":1,"price":49,"title":"1 месяц","discount":0,"save":0},"3":{"months":3,"price":132,"title":"3 месяца","discount":10,"save":15},"12":{"months":12,"price":470,"title":"12 месяцев","discount":20,"save":118}}
 PAYMENTS={"sbp":{"title":"СБП","detail":os.getenv("PAYMENT_SBP_PHONE","Настройте PAYMENT_SBP_PHONE")},"card":{"title":"Банковская карта","detail":os.getenv("PAYMENT_CARD_NUMBER","Настройте PAYMENT_CARD_NUMBER")}}
 
 def notify_admin_telegram(message):
@@ -88,7 +88,7 @@ class User(UserMixin,db.Model):
  def set_password(self,p): self.password_hash=generate_password_hash(p)
  def check_password(self,p): return check_password_hash(self.password_hash,p)
 class Order(db.Model):
- id=db.Column(db.Integer,primary_key=True); user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False); nickname=db.Column(db.String(40),nullable=False); email=db.Column(db.String(160),nullable=False); tariff_key=db.Column(db.String(8),nullable=False); amount=db.Column(db.Integer,nullable=False); payment_method=db.Column(db.String(12),nullable=False); status=db.Column(db.String(24),default="awaiting_payment"); created_at=db.Column(db.DateTime,default=datetime.utcnow); subscription_url=db.Column(db.Text); error_message=db.Column(db.Text)
+ id=db.Column(db.Integer,primary_key=True); user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False); nickname=db.Column(db.String(40),nullable=False); email=db.Column(db.String(160),nullable=False); tariff_key=db.Column(db.String(8),nullable=False); amount=db.Column(db.Integer,nullable=False); payment_method=db.Column(db.String(12),nullable=False); status=db.Column(db.String(24),default="awaiting_payment"); created_at=db.Column(db.DateTime,default=datetime.utcnow); subscription_url=db.Column(db.Text); error_message=db.Column(db.Text); requested_days=db.Column(db.Integer)
  user=db.relationship("User",backref=db.backref("orders",lazy=True))
 class EmailVerification(db.Model):
  id=db.Column(db.Integer,primary_key=True)
@@ -108,6 +108,7 @@ class GameState(db.Model):
  click_power=db.Column(db.Integer,default=1,nullable=False)
  income_per_second=db.Column(db.Integer,default=0,nullable=False)
  autoclicker=db.Column(db.Boolean,default=False,nullable=False)
+ contest_points=db.Column(db.Integer,default=0,nullable=False)
  last_tick=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
  user=db.relationship("User",backref=db.backref("game_state",uselist=False))
 
@@ -135,14 +136,46 @@ class SupportMessage(db.Model):
  user=db.relationship("User",backref=db.backref("support_messages",lazy=True))
 
 
+class GameCampaign(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ start_at=db.Column(db.DateTime,nullable=False)
+ end_at=db.Column(db.DateTime,nullable=False)
+ winner_user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=True)
+ winner_user=db.relationship("User")
+ prize_order_id=db.Column(db.Integer,nullable=True)
+
+def get_game_campaign():
+ campaign=db.session.get(GameCampaign,1)
+ if not campaign:
+  now=datetime.utcnow()
+  campaign=GameCampaign(id=1,start_at=now,end_at=now+timedelta(days=30))
+  db.session.add(campaign)
+  try:
+   db.session.commit()
+  except Exception:
+   db.session.rollback()
+   campaign=db.session.get(GameCampaign,1)
+ return campaign
+
 GAME_UPGRADES={"power":{"title":"Сильнее удар","base":35,"description":"+1 монета за каждый клик"},"income":{"title":"Пассивный доход","base":80,"description":"+1 монета в секунду"}}
+COINS_PER_VPN_DAY=10000
+
 def game_state_for(user):
  state=GameState.query.filter_by(user_id=user.id).first()
  if not state:
   state=GameState(user_id=user.id); db.session.add(state); db.session.commit()
- now=datetime.utcnow(); elapsed=max(0,min(int((now-state.last_tick).total_seconds()),43200))
+ now=datetime.utcnow()
+ campaign=get_game_campaign()
+ previous_tick=state.last_tick
+ elapsed=max(0,min(int((now-previous_tick).total_seconds()),43200))
  if elapsed:
-  state.coins += elapsed*(state.income_per_second + (state.autoclicker and state.click_power or 0))
+  rate=state.income_per_second + (state.click_power if state.autoclicker else 0)
+  state.coins += elapsed*rate
+  contest_start=max(previous_tick,campaign.start_at)
+  contest_end=min(now,campaign.end_at)
+  contest_seconds=max(0,int((contest_end-contest_start).total_seconds()))
+  if contest_seconds:
+   state.contest_points += contest_seconds*rate
   state.last_tick=now
   db.session.commit()
  return state
@@ -289,15 +322,55 @@ def game():
  purchases=GamePurchase.query.filter_by(user_id=current_user.id).order_by(GamePurchase.created_at.desc()).limit(10).all()
  upgrades={k:{**v,"price":v["base"]*(2**(state.click_power-1) if k=="power" else 2**state.income_per_second)} for k,v in GAME_UPGRADES.items()}
  income_rate=state.income_per_second + (state.click_power if state.autoclicker else 0)
- return render_template("game.html",state=state,upgrades=upgrades,purchases=purchases,payments=PAYMENTS,income_rate=income_rate)
+ campaign=get_game_campaign()
+ leaderboard=User.query.join(GameState,GameState.user_id==User.id).order_by(GameState.contest_points.desc(),User.nickname.asc()).limit(10).all()
+ return render_template("game.html",state=state,upgrades=upgrades,purchases=purchases,payments=PAYMENTS,income_rate=income_rate,campaign=campaign,leaderboard=leaderboard,now=datetime.utcnow(),coins_per_vpn_day=COINS_PER_VPN_DAY)
 
 @app.route("/game/tap",methods=["POST"])
 @login_required
 def game_tap():
  state=game_state_for(current_user)
- state.coins += state.click_power
+ gained=state.click_power
+ state.coins += gained
+ campaign=get_game_campaign()
+ now=datetime.utcnow()
+ if campaign.start_at <= now < campaign.end_at:
+  state.contest_points += gained
  db.session.commit()
- return {"coins":state.coins,"click_power":state.click_power,"income":state.income_per_second + (state.click_power if state.autoclicker else 0)}
+ return {"coins":state.coins,"click_power":state.click_power,"income":state.income_per_second + (state.click_power if state.autoclicker else 0),"contest_points":state.contest_points}
+
+@app.route("/game/redeem",methods=["POST"])
+@login_required
+def game_redeem():
+ state=game_state_for(current_user)
+ days=state.coins//COINS_PER_VPN_DAY
+ if days<1:
+  flash(f"Нужно минимум {COINS_PER_VPN_DAY:,} монет для обмена на 1 сутки VPN.".replace(",", " "),"error")
+  return redirect(url_for("game"))
+ pending=Order.query.filter_by(user_id=current_user.id,tariff_key="game",status="processing").first()
+ if pending:
+  flash("У тебя уже обрабатывается обмен VPN-времени. Обнови страницу через минуту.","error")
+  return redirect(url_for("game"))
+ order=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key="game",amount=0,payment_method="game",status="processing",requested_days=days)
+ db.session.add(order)
+ state.coins=0
+ state.click_power=1
+ state.income_per_second=0
+ state.last_tick=datetime.utcnow()
+ db.session.commit()
+ try:
+  provision(order)
+  email_sent=send_subscription_email(order)
+  flash(f"Обмен выполнен: {days} сутки VPN. Монеты, сила тапа и пассивный доход сброшены; автокликер сохранён." + ( " Ссылка отправлена на email." if email_sent else " Ссылка доступна в личном кабинете; письмо не удалось отправить."),"success")
+ except Exception as e:
+  db.session.rollback()
+  order=db.session.get(Order,order.id)
+  if order:
+   order.status="error"; order.error_message=str(e)[:400]; db.session.commit()
+  app.logger.exception("Game VPN redemption failed")
+  notify_admin_telegram(f"⚠️ Ошибка обмена монет на VPN для {current_user.nickname}. Заказ #{order.id if order else 'unknown'}. Проверь панель администратора.")
+  flash("Не удалось выдать VPN-время автоматически. Обращение записано; администратор сможет повторить выдачу.","error")
+ return redirect(url_for("game"))
 
 @app.route("/game/upgrade/<kind>",methods=["POST"])
 @login_required
@@ -423,7 +496,7 @@ def provision(o):
  base=os.getenv("H1_API_BASE","").rstrip("/"); token=os.getenv("H1_API_TOKEN","")
  if not base or not token: raise RuntimeError("Настройте H1_API_BASE и H1_API_TOKEN в переменных окружения.")
  name="flank_"+str(o.id)+"_"+''.join(secrets.choice(string.ascii_lowercase+string.digits) for _ in range(5)); h={"Authorization":"Bearer "+token,"Content-Type":"application/json"}
- tariff=TARIFFS[o.tariff_key]; days=tariff.get("days",tariff["months"]*30)
+ tariff=TARIFFS[o.tariff_key]; days=o.requested_days or tariff.get("days",tariff["months"]*30)
  r=requests.post(base+"/create",headers=h,json={"name":name,"days":days,"traffic_limit_gb":0,"device_limit":0},timeout=25); r.raise_for_status(); d=r.json()
  if d.get("ok") is False: raise RuntimeError(str(d))
  r=requests.get(base+"/info",headers=h,params={"name":name},timeout=25); r.raise_for_status(); c=r.json().get("client",r.json()); sub=c.get("sub_url") or c.get("subscription_url")
@@ -454,5 +527,14 @@ def reject(oid):
  o=db.session.get(Order,oid)
  if o and o.status=="awaiting_review": o.status="rejected"; db.session.commit()
  return redirect(url_for("admin_orders"))
-with app.app_context(): db.create_all()
+with app.app_context():
+ db.create_all()
+ # Add new columns to existing PostgreSQL/SQLite databases without deleting user progress.
+ with db.engine.begin() as conn:
+  game_columns={column["name"] for column in inspect(db.engine).get_columns("game_state")}
+  if "contest_points" not in game_columns:
+   conn.execute(text("ALTER TABLE game_state ADD COLUMN contest_points INTEGER NOT NULL DEFAULT 0"))
+  order_columns={column["name"] for column in inspect(db.engine).get_columns("orders")}
+  if "requested_days" not in order_columns:
+   conn.execute(text("ALTER TABLE orders ADD COLUMN requested_days INTEGER"))
 if __name__=="__main__": app.run(host="0.0.0.0",port=int(os.getenv("PORT","5001")),debug=False)
