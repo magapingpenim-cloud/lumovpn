@@ -1,5 +1,26 @@
 {% extends "base.html" %}
-{% block title %}Заказы — панель FlankVPN{% endblock %}
+{% block title %}Заказы — панель FlankVPN
+<h2>Сообщения поддержки</h2>
+<p class="muted">Все сообщения, отправленные через кнопку «Поддержка» на сайте.</p>
+{% for m in support_messages %}
+<article class="order">
+  <div class="row">
+    <div>
+      <b>Обращение #{{ m.id }} · {{ m.nickname }}</b>
+      <p class="tiny muted">{{ m.email or 'Email не указан' }} · {{ m.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p>
+    </div>
+    <div class="amount"><p class="tiny">{{ 'Обработано' if m.status == 'closed' else 'Новое обращение' }}</p></div>
+  </div>
+  <p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ m.message }}</p>
+  {% if m.status != 'closed' %}
+  <form method="post" action="{{ url_for('admin_close_support',mid=m.id) }}"><button class="btn secondary" type="submit">Отметить обработанным</button></form>
+  {% endif %}
+</article>
+{% else %}
+<p class="empty">Сообщений пока нет. Когда клиент напишет через кнопку поддержки, обращение появится здесь.</p>
+{% endfor %}
+
+{% endblock %}
 {% block content %}
 <section class="pagetitle">
   <div class="eyebrow">FLANKVPN ADMIN</div>
