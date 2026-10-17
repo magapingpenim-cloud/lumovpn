@@ -1,30 +1,66 @@
 {% extends "base.html" %}
-{% block title %}FlankVPN — Свобода подключений{% endblock %}
+{% block title %}FlankVPN — подключение без лишних сложностей{% endblock %}
 {% block content %}
-<section class="hero">
-  <div class="eyebrow">ПРОСТО · БЫСТРО · ПРИВАТНО</div>
-  <h1>Подключайся свободно.<br><span>Оставайся собой.</span></h1>
-  <p>Выбери тариф, получи свою ссылку подписки и подключись через удобный VPN-клиент.</p>
-  <div class="actions"><a class="btn primary" href="{{url_for('register')}}">Начать ↗</a><a class="btn glass" href="#tariffs">Посмотреть тарифы</a></div>
-  <div class="checks">✓ Простая настройка　 ✓ Личный кабинет　 ✓ QR-подключение</div>
+<section class="hero hero-advanced">
+  <div class="hero-copy">
+    <div class="eyebrow"><span class="live-dot"></span> FLANKVPN · ТВОЁ ПОДКЛЮЧЕНИЕ</div>
+    <h1>Интернет —<br><span>по твоим правилам.</span></h1>
+    <p>Понятная подписка, личный кабинет и быстрый старт через совместимый VPN-клиент. Без запутанных инструкций и лишних экранов.</p>
+    <div class="actions"><a class="btn primary" href="{{url_for('register')}}">Начать бесплатно ↗</a><a class="btn glass" href="#tariffs">Сравнить тарифы</a></div>
+    <div class="checks"><span>✓ 10 дней пробного доступа</span><span>✓ QR и ссылка подписки</span><span>✓ Управление в кабинете</span></div>
+  </div>
+  <div class="hero-orbit" aria-hidden="true">
+    <div class="orbit-ring orbit-ring-one"></div><div class="orbit-ring orbit-ring-two"></div>
+    <div class="orbit-core"><img src="{{url_for('static', filename='flankvpn-logo.svg')}}" alt=""><span>FLANKVPN</span><small>CONNECTED BY DESIGN</small></div>
+    <div class="orbit-chip chip-top">● Просто</div><div class="orbit-chip chip-bottom">Защищённое соединение*</div>
+  </div>
 </section>
-<section class="callout" id="trial">
-  <div><div class="eyebrow">ПОПРОБУЙ БЕСПЛАТНО</div><h2>10 дней FlankVPN — за наш счёт</h2><p>Зарегистрируйся и подтверди email. Пробный доступ выдаётся автоматически, без оплаты.</p></div>
-  <a class="btn primary" href="{{url_for('register')}}">Получить 10 дней ↗</a>
+<div class="trust-strip">
+  <div><strong>10 дней</strong><span>пробного доступа</span></div>
+  <div><strong>3 тарифа</strong><span>под разные сроки</span></div>
+  <div><strong>QR + ссылка</strong><span>для импорта подписки</span></div>
+</div>
+<section class="feature-section">
+  <div class="section-heading"><div class="eyebrow">ПРОСТОЙ СТАРТ</div><h2>Всё нужное — в одном месте</h2><p>От регистрации до управления подпиской — понятные шаги и аккуратный интерфейс.</p></div>
+  <div class="feature-grid">
+    <article class="feature-card"><div class="feature-icon">↗</div><h3>Быстрый старт</h3><p>Создай аккаунт, подтверди email и получи пробный доступ, если серверная выдача настроена.</p><span class="feature-number">01 / START</span></article>
+    <article class="feature-card"><div class="feature-icon">⌘</div><h3>Подписка под рукой</h3><p>В личном кабинете можно открыть ссылку подписки, скопировать её или использовать QR-код.</p><span class="feature-number">02 / ACCESS</span></article>
+    <article class="feature-card"><div class="feature-icon">◷</div><h3>Понятные тарифы</h3><p>Выбирай срок заранее: чем дольше подписка, тем ниже стоимость в пересчёте на месяц.</p><span class="feature-number">03 / PRICING</span></article>
+  </div>
 </section>
-<section id="tariffs">
-  <div class="eyebrow">ТАРИФЫ</div><h2>Выбери свой срок</h2>
-  <div class="plans">
+<section id="tariffs" class="pricing-section">
+  <div class="section-heading"><div class="eyebrow">ПРОЗРАЧНАЯ ЦЕНА</div><h2>Выбери свой срок</h2><p>Без скрытых расчётов: стоимость и экономия указаны прямо на карточке.</p></div>
+  <div class="plans plans-advanced">
     {% for k,t in tariffs.items() if k != 'trial' %}
-    <article class="plan">
+    <article class="plan plan-advanced {% if k=='12' %}plan-best{% endif %}">
       {% if k=='3' %}<b class="popular">Популярный</b>{% endif %}
-      <h3>{{t.title}}</h3><div class="price">{{t.price}} ₽</div><p>Доступ на {{t.months}} мес.</p>
-      <ul><li>Личный кабинет</li><li>JSON-подписка и QR</li><li>Простое подключение</li></ul>
-      <a class="btn {% if k=='3' %}primary{% else %}secondary{% endif %}" href="{{url_for('register')}}">Выбрать</a>
+      {% if k=='12' %}<b class="popular best-badge">Выгоднее всего</b>{% endif %}
+      <div class="plan-period">{{'01' if k=='1' else ('03' if k=='3' else '12')}} МЕСЯЦ{{' ' if k=='1' else ''}}</div>
+      <h3>{{t.title}}</h3>
+      <div class="price-row"><div class="price">{{t.price}} ₽</div>{% if t.discount %}<span class="discount-pill">−{{t.discount}}%</span>{% endif %}</div>
+      <p class="price-month">≈ {{(t.price / t.months)|round(0)|int}} ₽ в месяц</p>
+      {% if t.discount %}<div class="saving-line"><span>Экономия относительно помесячной оплаты</span><strong>−{{t.save}} ₽</strong></div>{% else %}<div class="saving-line saving-neutral"><span>Оплата за один месяц</span><strong>Гибко</strong></div>{% endif %}
+      <ul><li>Личный кабинет</li><li>Ссылка подписки и QR-код</li><li>Инструкция по подключению</li></ul>
+      <a class="btn {% if k=='12' or k=='3' %}primary{% else %}secondary{% endif %}" href="{{url_for('register')}}">Выбрать тариф ↗</a>
     </article>
     {% endfor %}
   </div>
-  <p class="muted tiny">Оплата платных тарифов проверяется администратором вручную; доступ выдаётся после подтверждения.</p>
+  <p class="muted tiny pricing-note">10 дней пробного доступа доступны после регистрации. Платный доступ активируется после проверки оплаты администратором. *VPN не гарантирует абсолютную анонимность или безопасность на любом устройстве.</p>
 </section>
-<section class="callout"><div><h2>Готов подключиться?</h2><p>Создай аккаунт за минуту и начни с 10 бесплатных дней.</p></div><a class="btn primary" href="{{url_for('register')}}">Создать аккаунт ↗</a></section>
+<section class="steps-section">
+  <div class="section-heading"><div class="eyebrow">КАК ЭТО РАБОТАЕТ</div><h2>Три шага до подключения</h2></div>
+  <div class="steps-grid">
+    <div class="step"><span>01</span><div><h3>Создай аккаунт</h3><p>Подтверди адрес электронной почты.</p></div></div>
+    <div class="step"><span>02</span><div><h3>Выбери тариф</h3><p>Оформи пробный доступ или выбери срок подписки.</p></div></div>
+    <div class="step"><span>03</span><div><h3>Импортируй подписку</h3><p>Используй ссылку или QR-код в совместимом клиенте.</p></div></div>
+  </div>
+</section>
+<section class="faq-section">
+  <div class="section-heading"><div class="eyebrow">FAQ</div><h2>Частые вопросы</h2></div>
+  <details class="faq-item"><summary>Как получить пробный доступ?</summary><p>Зарегистрируйся и подтверди email. Пробный доступ рассчитан на 10 дней; его выдача зависит от доступности и настройки VPN-сервера.</p></details>
+  <details class="faq-item"><summary>Как оплатить подписку?</summary><p>Выбери тариф и способ оплаты на сайте. После перевода сообщи об оплате — администратор проверит поступление средств и подтвердит заказ.</p></details>
+  <details class="faq-item"><summary>Как подключиться к VPN?</summary><p>После активации подписки открой личный кабинет и используй ссылку подписки или QR-код в совместимом VPN-клиенте. Следуй инструкции для своего устройства.</p></details>
+  <details class="faq-item"><summary>Почему выгоднее тариф на 12 месяцев?</summary><p>Стоимость годового тарифа ниже, чем оплата 12 месяцев по отдельности. Экономия отображается на карточке до оформления заказа.</p></details>
+</section>
+<section class="callout callout-advanced"><div><div class="eyebrow">ГОТОВ НАЧАТЬ?</div><h2>Начни с пробного доступа</h2><p>Зарегистрируйся и посмотри, как устроен FlankVPN.</p></div><a class="btn primary" href="{{url_for('register')}}">Создать аккаунт ↗</a></section>
 {% endblock %}
