@@ -99,6 +99,42 @@ class EmailVerification(db.Model):
  expires_at=db.Column(db.DateTime,nullable=False)
  attempts=db.Column(db.Integer,default=0)
  created_at=db.Column(db.DateTime,default=datetime.utcnow)
+
+
+class GameState(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ user_id=db.Column(db.Integer,db.ForeignKey("user.id"),unique=True,nullable=False)
+ coins=db.Column(db.Integer,default=0,nullable=False)
+ click_power=db.Column(db.Integer,default=1,nullable=False)
+ income_per_second=db.Column(db.Integer,default=0,nullable=False)
+ autoclicker=db.Column(db.Boolean,default=False,nullable=False)
+ last_tick=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+ user=db.relationship("User",backref=db.backref("game_state",uselist=False))
+
+class GamePurchase(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False)
+ nickname=db.Column(db.String(40),nullable=False)
+ email=db.Column(db.String(160),nullable=False)
+ item_key=db.Column(db.String(40),nullable=False)
+ amount=db.Column(db.Integer,nullable=False,default=100)
+ payment_method=db.Column(db.String(12),nullable=False)
+ status=db.Column(db.String(24),nullable=False,default="awaiting_payment")
+ created_at=db.Column(db.DateTime,default=datetime.utcnow)
+ user=db.relationship("User",backref=db.backref("game_purchases",lazy=True))
+
+GAME_UPGRADES={"power":{"title":"Сильнее удар","base":50,"description":"+1 монета за каждый клик"},"income":{"title":"Пассивный доход","base":120,"description":"+1 монета в секунду"}}
+def game_state_for(user):
+ state=GameState.query.filter_by(user_id=user.id).first()
+ if not state:
+  state=GameState(user_id=user.id); db.session.add(state); db.session.commit()
+ now=datetime.utcnow(); elapsed=max(0,min(int((now-state.last_tick).total_seconds()),43200))
+ if elapsed:
+  state.coins += elapsed*state.income_per_second
+  state.last_tick=now
+  db.session.commit()
+ return state
+
 @lm.user_loader
 def load_user(uid): return db.session.get(User,int(uid))
 def is_admin(): return bool(session.get("flankadmin"))
@@ -232,6 +268,92 @@ def qr(oid):
  o=db.session.get(Order,oid)
  if not o or o.user_id!=current_user.id or not o.subscription_url: abort(404)
  im=qrcode.make(o.subscription_url); out=io.BytesIO(); im.save(out,format="PNG"); out.seek(0); return send_file(out,mimetype="image/png")
+
+
+@app.route("/game")
+@login_required
+def game():
+ state=game_state_for(current_user)
+ purchases=GamePurchase.query.filter_by(user_id=current_user.id).order_by(GamePurchase.created_at.desc()).limit(10).all()
+ upgrades={k:{**v,"price":v["base"]*(2**(state.click_power-1) if k=="power" else 2**state.income_per_second)} for k,v in GAME_UPGRADES.items()}
+ return render_template("game.html",state=state,upgrades=upgrades,purchases=purchases,payments=PAYMENTS)
+
+@app.route("/game/tap",methods=["POST"])
+@login_required
+def game_tap():
+ state=game_state_for(current_user)
+ state.coins += state.click_power
+ db.session.commit()
+ return {"coins":state.coins,"click_power":state.click_power,"income":state.income_per_second}
+
+@app.route("/game/upgrade/<kind>",methods=["POST"])
+@login_required
+def game_upgrade(kind):
+ if kind not in GAME_UPGRADES: abort(404)
+ state=game_state_for(current_user)
+ price=GAME_UPGRADES[kind]["base"]*(2**(state.click_power-1) if kind=="power" else 2**state.income_per_second)
+ if state.coins<price:
+  flash("Не хватает игровых монет для улучшения.","error")
+ else:
+  state.coins-=price
+  if kind=="power": state.click_power+=1
+  else: state.income_per_second+=1
+  db.session.commit(); flash("Улучшение куплено!","success")
+ return redirect(url_for("game"))
+
+@app.route("/game/buy/autoclicker",methods=["POST"])
+@login_required
+def game_buy_autoclicker():
+ state=game_state_for(current_user)
+ if state.autoclicker:
+  flash("Автокликер уже активирован.","success"); return redirect(url_for("game"))
+ method=request.form.get("method","")
+ if method not in PAYMENTS: abort(400)
+ existing=GamePurchase.query.filter_by(user_id=current_user.id,item_key="autoclicker",status="awaiting_payment").first()
+ if existing:
+  flash("У тебя уже есть незавершённая заявка. Продолжи оплату ниже.","error"); return redirect(url_for("game_payment",pid=existing.id))
+ purchase=GamePurchase(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,item_key="autoclicker",amount=100,payment_method=method)
+ db.session.add(purchase); db.session.commit()
+ notify_admin_telegram(f"🕹️ Заявка на автокликер FlankVPN #{purchase.id}\\nНикнейм: {purchase.nickname}\\nEmail: {purchase.email}\\nСумма: 100 ₽\\nСпособ: {PAYMENTS[method]['title']}\\nОжидает оплаты")
+ return redirect(url_for("game_payment",pid=purchase.id))
+
+@app.route("/game/payment/<int:pid>")
+@login_required
+def game_payment(pid):
+ purchase=db.session.get(GamePurchase,pid)
+ if not purchase or purchase.user_id!=current_user.id: abort(404)
+ return render_template("game_payment.html",purchase=purchase,payment=PAYMENTS[purchase.payment_method])
+
+@app.route("/game/payment/<int:pid>/paid",methods=["POST"])
+@login_required
+def game_paid(pid):
+ purchase=db.session.get(GamePurchase,pid)
+ if not purchase or purchase.user_id!=current_user.id: abort(404)
+ if purchase.status=="awaiting_payment":
+  purchase.status="awaiting_review"; db.session.commit()
+  notify_admin_telegram(f"💳 Заявка на автокликер #{purchase.id}: клиент сообщил об оплате\\nНикнейм: {purchase.nickname}\\nСумма: {purchase.amount} ₽\\nСпособ: {PAYMENTS[purchase.payment_method]['title']}\\nПоступление нужно проверить вручную.")
+  flash("Заявка отправлена администратору. Автокликер включится после проверки оплаты.","success")
+ return redirect(url_for("game"))
+
+@app.route("/admin/game-purchase/<int:pid>/confirm",methods=["POST"])
+def admin_confirm_game_purchase(pid):
+ if not is_admin(): abort(403)
+ purchase=db.session.get(GamePurchase,pid)
+ if not purchase: abort(404)
+ if purchase.status=="awaiting_review":
+  state=game_state_for(purchase.user); state.autoclicker=True; purchase.status="active"; db.session.commit()
+  notify_admin_telegram(f"✅ Автокликер активирован для {purchase.nickname}, заявка #{purchase.id}.")
+ flash("Автокликер активирован." if purchase.status=="active" else "Сначала клиент должен сообщить об оплате.","success" if purchase.status=="active" else "error")
+ return redirect(url_for("admin_orders"))
+
+@app.route("/admin/game-purchase/<int:pid>/reject",methods=["POST"])
+def admin_reject_game_purchase(pid):
+ if not is_admin(): abort(403)
+ purchase=db.session.get(GamePurchase,pid)
+ if purchase and purchase.status in ("awaiting_payment","awaiting_review"):
+  purchase.status="rejected"; db.session.commit()
+ return redirect(url_for("admin_orders"))
+
 @app.route("/admin/login",methods=["GET","POST"])
 def admin_login():
  if request.method=="POST" and request.form.get("username","").strip().casefold()==os.getenv("ADMIN_USERNAME","admin").strip().casefold() and request.form.get("password","")==os.getenv("ADMIN_PASSWORD","change-this-now"):
