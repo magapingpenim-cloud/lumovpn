@@ -47,7 +47,8 @@ def send_subscription_email(order):
   return False
  safe_nick=escape(order.nickname or "")
  safe_url=escape(sub_url,quote=True)
- subject="Твоя подписка FlankVPN готова"
+ subject="Твой бесплатный пробный период FlankVPN готов" if order.tariff_key=="trial" else "Твоя подписка FlankVPN готова"
+ trial_note="<p><strong>Пробный период:</strong> 10 дней бесплатно с момента подключения.</p>" if order.tariff_key=="trial" else ""
  html_body=f"""
  <div style="margin:0;background:#f2f6fc;padding:28px 12px;font-family:Arial,Helvetica,sans-serif;color:#10203a">
   <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #dce7f5;border-radius:20px;overflow:hidden">
@@ -58,6 +59,7 @@ def send_subscription_email(order):
    </div>
    <div style="padding:28px">
     <p>Привет, <strong>{safe_nick}</strong>! VPN-доступ создан.</p>
+    {trial_note}
     <p>Нажми кнопку ниже, чтобы открыть ссылку подписки и импортировать её в совместимый VPN-клиент.</p>
     <p style="text-align:center;margin:28px 0">
      <a href="{safe_url}" style="display:inline-block;padding:14px 22px;border-radius:12px;color:#fff;background:#1769ff;text-decoration:none;font-weight:bold">Открыть подписку</a>
@@ -69,7 +71,7 @@ def send_subscription_email(order):
   </div>
  </div>
  """
- text_body=f"FlankVPN: подписка готова. Заказ #{order.id}. Никнейм: {order.nickname}. Ссылка подписки: {sub_url}"
+ text_body=(f"FlankVPN: бесплатный пробный период на 10 дней. Заказ #{order.id}. " if order.tariff_key=="trial" else f"FlankVPN: подписка готова. Заказ #{order.id}. ") + f"Никнейм: {order.nickname}. Ссылка подписки: {sub_url}"
  try:
   response=requests.post("https://api.resend.com/emails",
    headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json",
@@ -204,7 +206,7 @@ def dashboard(): return render_template("dashboard.html",orders=Order.query.filt
 @login_required
 def checkout():
  k=request.form.get("tariff"); m=request.form.get("method")
- if k not in TARIFFS or m not in PAYMENTS: flash("Выберите тариф и способ оплаты.","error"); return redirect(url_for("dashboard"))
+ if k not in TARIFFS or k=="trial" or m not in PAYMENTS: flash("Выберите платный тариф и способ оплаты.","error"); return redirect(url_for("dashboard"))
  t=TARIFFS[k]; o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=t["price"],payment_method=m); db.session.add(o); db.session.commit()
  notify_admin_telegram(f"🆕 Новый заказ FlankVPN #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email}\nТариф: {t['title']}\nСумма: {o.amount} ₽\nСпособ: {PAYMENTS[m]['title']}\nСтатус: ожидает оплаты")
  return redirect(url_for("payment",oid=o.id))
