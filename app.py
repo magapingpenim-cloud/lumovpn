@@ -324,7 +324,7 @@ def game():
  income_rate=state.income_per_second + (state.click_power if state.autoclicker else 0)
  campaign=get_game_campaign()
  leaderboard=User.query.join(GameState,GameState.user_id==User.id).order_by(GameState.contest_points.desc(),User.nickname.asc()).limit(10).all()
- return render_template("game.html",state=state,upgrades=upgrades,purchases=purchases,payments=PAYMENTS,income_rate=income_rate,campaign=campaign,leaderboard=leaderboard,now=datetime.utcnow(),coins_per_vpn_day=COINS_PER_VPN_DAY)
+ return render_template("game.html",state=state,upgrades=upgrades,purchases=purchases,payments=PAYMENTS,income_rate=income_rate,campaign=campaign,leaderboard=leaderboard,now=datetime.utcnow(),coins_per_vpn_day=COINS_PER_VPN_DAY,next_vpn_day_price=COINS_PER_VPN_DAY+2000*state.redeem_count,redeem_count=state.redeem_count)
 
 @app.route("/game/tap",methods=["POST"])
 @login_required
@@ -368,6 +368,8 @@ def game_redeem():
  db.session.commit()
  try:
   provision(order)
+  state.redeem_count += 1
+  db.session.commit()
   email_sent=send_subscription_email(order)
   flash(f"Обмен выполнен: {days} сутки VPN. Монеты, сила тапа и пассивный доход сброшены; автокликер сохранён." + ( " Ссылка отправлена на email." if email_sent else " Ссылка доступна в личном кабинете; письмо не удалось отправить."),"success")
  except Exception as e:
