@@ -1,31 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Заказы — панель FlankVPN
-<h2>Сообщения поддержки</h2>
-<p class="muted">Все сообщения, отправленные через кнопку «Поддержка» на сайте.</p>
-{% for m in support_messages %}
-<article class="order">
-  <div class="row">
-    <div>
-      <b>Обращение #{{ m.id }} · {{ m.nickname }}</b>
-      <p class="tiny muted">{{ m.email or 'Email не указан' }} · {{ m.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p>
-    </div>
-    <div class="amount"><p class="tiny">{{ 'Обработано' if m.status == 'closed' else 'Новое обращение' }}</p></div>
-  </div>
-  <p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ m.message }}</p>
-  {% if m.status != 'closed' %}
-  <form method="post" action="{{ url_for('admin_close_support',mid=m.id) }}"><button class="btn secondary" type="submit">Отметить обработанным</button></form>
-  {% endif %}
-</article>
-{% else %}
-<p class="empty">Сообщений пока нет. Когда клиент напишет через кнопку поддержки, обращение появится здесь.</p>
-{% endfor %}
-
-{% endblock %}
+{% block title %}Заказы — панель FlankVPN{% endblock %}
 {% block content %}
 <section class="pagetitle">
   <div class="eyebrow">FLANKVPN ADMIN</div>
   <h1>Заказы и оплаты</h1>
   <p class="muted">Всего заказов: <strong>{{ total_orders }}</strong> · Сумма заявок на проверке: <strong>{{ total_pending }} ₽</strong></p>
+  <div class="actions" style="margin-top:16px"><a class="btn secondary" href="{{ url_for('admin_orders') }}">Заказы и оплаты</a><a class="btn secondary" href="{{ url_for('admin_support') }}">Чат с клиентами{% if support_new_count %} · {{ support_new_count }} новых{% endif %}</a></div>
 </section>
 <section class="admin-stats">
   <article class="stat-card"><span>Новые — ещё не сообщили об оплате</span><strong>{{ awaiting_payment_count }}</strong></article>
@@ -33,61 +13,26 @@
   <article class="stat-card"><span>Активные подписки</span><strong>{{ active_count }}</strong></article>
   <article class="stat-card"><span>Ошибки выдачи доступа</span><strong>{{ error_count }}</strong></article>
 </section>
-<div class="admin-help">
-  <strong>Как появляются заказы</strong>
-  <p>Платный заказ создаётся, когда пользователь выбирает тариф и нажимает «Перейти к оплате». Новым пользователям бесплатный 10-дневный пробный доступ выдаётся автоматически после подтверждения email.</p>
-  <p>Перед выдачей VPN-доступа вручную проверь поступление денег и наличие правильного никнейма в сообщении к переводу.</p>
-</div>
+<div class="admin-help"><strong>Как появляются заказы</strong><p>Платный заказ создаётся, когда пользователь выбирает тариф и нажимает «Перейти к оплате». Новым пользователям бесплатный 10-дневный пробный доступ выдаётся автоматически после подтверждения email.</p><p>Перед выдачей VPN-доступа вручную проверь поступление денег.</p></div>
 <section class="admin-help">
   <strong>🏆 Ежемесячная акция кликера</strong>
   <p>Статус: <b>{{ 'Завершена' if now >= campaign.end_at else 'Идёт' }}</b> · Завершение: {{ campaign.end_at.strftime('%d.%m.%Y %H:%M') }} UTC</p>
   <p>Топ участников по очкам за время акции:</p>
-  {% for player in leaderboard %}
-    <p>{{ loop.index }}. <strong>{{ player.nickname }}</strong> — {{ player.game_state.contest_points }} очков</p>
-  {% else %}
-    <p>Участников пока нет.</p>
-  {% endfor %}
-  {% if campaign.winner_user_id %}
-    <p>Победитель: <strong>{{ campaign.winner_user.nickname }}</strong>. Заказ награды: #{{ campaign.prize_order_id or 'не создан' }}.</p>
-  {% elif now >= campaign.end_at %}
-    <form method="post" action="{{ url_for('admin_award_game_contest') }}" onsubmit="return confirm('Назначить лидера победителем и создать ему заказ на годовую подписку?')"><button class="btn primary" type="submit">Определить победителя и подготовить годовую подписку</button></form>
-  {% else %}
-    <p>После завершения акции здесь появится кнопка определения победителя.</p>
-  {% endif %}
+  {% for player in leaderboard %}<p>{{ loop.index }}. <strong>{{ player.nickname }}</strong> — {{ player.game_state.contest_points }} очков</p>{% else %}<p>Участников пока нет.</p>{% endfor %}
+  {% if campaign.winner_user_id %}<p>Победитель: <strong>{{ campaign.winner_user.nickname }}</strong>. Заказ награды: #{{ campaign.prize_order_id or 'не создан' }}.</p>
+  {% elif now >= campaign.end_at %}<form method="post" action="{{ url_for('admin_award_game_contest') }}" onsubmit="return confirm('Назначить лидера победителем и создать ему заказ на годовую подписку?')"><button class="btn primary" type="submit">Определить победителя и подготовить годовую подписку</button></form>
+  {% else %}<p>После завершения акции здесь появится кнопка определения победителя.</p>{% endif %}
 </section>
 <h2>Все заказы</h2>
 {% for o in orders %}
 <article class="order">
-  <div class="row">
-    <div>
-      <b>Заказ #{{ o.id }} · Никнейм: {{ o.nickname }}</b>
-      <p class="tiny muted">{{ o.email }}</p>
-      <p class="tiny muted">{{ tariffs[o.tariff_key].title }} · {{ 'БЕСПЛАТНЫЙ ТЕСТ' if o.tariff_key == 'trial' else o.payment_method|upper }} · {{ o.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p>
-    </div>
-    <div class="amount">{{ o.amount }} ₽<p class="tiny">{{ {'awaiting_payment':'Ожидает оплаты','awaiting_review':'Проверить оплату','processing':'Создаём доступ','active':'Активна','rejected':'Отклонена','error':'Ошибка выдачи'}.get(o.status,o.status) }}</p></div>
-  </div>
-  {% if o.status == 'awaiting_payment' %}
-    <p class="tiny muted">Пользователь ещё не нажал «Я оплатил(а)». Заказ уже создан, но пока не поступил на проверку.</p>
-  {% endif %}
-  {% if o.status == 'awaiting_review' %}
-  <div class="actions">
-    <form method="post" action="{{ url_for('confirm', oid=o.id) }}" onsubmit="return confirm('Сначала проверь поступление {{ o.amount }} ₽ от {{ o.nickname }}. Выдать доступ?')"><button class="btn primary">Оплата получена — выдать доступ</button></form>
-    <form method="post" action="{{ url_for('reject', oid=o.id) }}"><button class="btn secondary">Отклонить</button></form>
-  </div>
-  {% endif %}
-  {% if o.status == 'error' %}
-    <p class="error">Ошибка выдачи доступа: {{ o.error_message or 'Причина не сохранена.' }}</p>
-    <form method="post" action="{{ url_for('confirm', oid=o.id) }}"><button class="btn secondary">Повторить выдачу</button></form>
-  {% endif %}
+  <div class="row"><div><b>Заказ #{{ o.id }} · Никнейм: {{ o.nickname }}</b><p class="tiny muted">{{ o.email }}</p><p class="tiny muted">{{ tariffs.get(o.tariff_key, {'title': 'Старый заказ обмена монет'}).title }} · {{ 'БЕСПЛАТНЫЙ ТЕСТ' if o.tariff_key == 'trial' else o.payment_method|upper }} · {{ o.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p></div><div class="amount">{{ o.amount }} ₽<p class="tiny">{{ {'awaiting_payment':'Ожидает оплаты','awaiting_review':'Проверить оплату','processing':'Создаём доступ','active':'Активна','rejected':'Отклонена','error':'Ошибка выдачи'}.get(o.status,o.status) }}</p></div></div>
+  {% if o.status == 'awaiting_payment' %}<p class="tiny muted">Пользователь ещё не нажал «Я оплатил(а)». Заказ создан, но пока не поступил на проверку.</p>{% endif %}
+  {% if o.status == 'awaiting_review' %}<div class="actions"><form method="post" action="{{ url_for('confirm', oid=o.id) }}" onsubmit="return confirm('Сначала проверь поступление {{ o.amount }} ₽ от {{ o.nickname }}. Выдать доступ?')"><button class="btn primary">Оплата получена — выдать доступ</button></form><form method="post" action="{{ url_for('reject', oid=o.id) }}"><button class="btn secondary">Отклонить</button></form></div>{% endif %}
+  {% if o.status == 'error' %}<p class="error">Ошибка выдачи доступа: {{ o.error_message or 'Причина не сохранена.' }}</p><form method="post" action="{{ url_for('confirm', oid=o.id) }}"><button class="btn secondary">Повторить выдачу</button></form>{% endif %}
   {% if o.subscription_url %}<p><a href="{{ o.subscription_url }}" target="_blank" rel="noopener">Открыть JSON-подписку</a></p>{% endif %}
 </article>
-{% else %}
-<div class="empty">
-  <strong>В этой базе пока нет заказов.</strong>
-  <p>Чтобы проверить полный путь, войди обычным пользовательским аккаунтом, открой личный кабинет, выбери тариф и нажми «Перейти к оплате». Заказ должен сразу появиться здесь — даже до подтверждения оплаты.</p>
-  <p>Если ты уже создавал заказы раньше, они могли остаться в прежней временной SQLite-базе до подключения PostgreSQL. Старые заказы автоматически в новую базу не переносятся.</p>
-</div>
-{% endfor %}
-<h2>Заявки на автокликер</h2><p class="muted">Автокликер стоит 100 ₽. Активируй его только после проверки поступления оплаты.</p>
-{% for p in game_purchases %}<article class="order"><div class="row"><div><b>Заявка #{{ p.id }} · {{ p.nickname }}</b><p class="tiny muted">{{ p.email }} · {{ p.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p><p class="tiny muted">Автокликер · {{ p.payment_method|upper }}</p></div><div class="amount">{{ p.amount }} ₽<p class="tiny">{{ {'awaiting_payment':'Ожидает оплаты','awaiting_review':'Проверить оплату','active':'Активирован','rejected':'Отклонена'}.get(p.status,p.status) }}</p></div></div>{% if p.status == 'awaiting_payment' %}<p class="tiny muted">Пользователь ещё не отправил подтверждение оплаты.</p>{% endif %}{% if p.status == 'awaiting_review' %}<div class="actions"><form method="post" action="{{ url_for('admin_confirm_game_purchase',pid=p.id) }}" onsubmit="return confirm('Проверь поступление 100 ₽. Активировать автокликер?')"><button class="btn primary">Оплата получена — активировать</button></form><form method="post" action="{{ url_for('admin_reject_game_purchase',pid=p.id) }}"><button class="btn secondary">Отклонить</button></form></div>{% endif %}</article>{% else %}<p class="empty">Заявок на автокликер пока нет.</p>{% endfor %}
+{% else %}<div class="empty"><strong>В этой базе пока нет заказов.</strong><p>Когда клиент выберет тариф и перейдёт к оплате, заказ появится здесь.</p></div>{% endfor %}
+<h2>Заявки на автокликер</h2><p class="muted">Активируй автокликер только после проверки оплаты.</p>
+{% for p in game_purchases %}<article class="order"><div class="row"><div><b>Заявка #{{ p.id }} · {{ p.nickname }}</b><p class="tiny muted">{{ p.email }} · {{ p.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p><p class="tiny muted">Автокликер · {{ p.payment_method|upper }}</p></div><div class="amount">{{ p.amount }} ₽<p class="tiny">{{ {'awaiting_payment':'Ожидает оплаты','awaiting_review':'Проверить оплату','active':'Активирован','rejected':'Отклонена'}.get(p.status,p.status) }}</p></div></div>{% if p.status == 'awaiting_payment' %}<p class="tiny muted">Пользователь ещё не отправил подтверждение оплаты.</p>{% endif %}{% if p.status == 'awaiting_review' %}<div class="actions"><form method="post" action="{{ url_for('admin_confirm_game_purchase',pid=p.id) }}" onsubmit="return confirm('Проверь поступление {{ p.amount }} ₽. Активировать автокликер?')"><button class="btn primary">Оплата получена — активировать</button></form><form method="post" action="{{ url_for('admin_reject_game_purchase',pid=p.id) }}"><button class="btn secondary">Отклонить</button></form></div>{% endif %}</article>{% else %}<p class="empty">Заявок на автокликер пока нет.</p>{% endfor %}
 {% endblock %}
