@@ -577,7 +577,9 @@ with app.app_context():
    conn.execute(text("ALTER TABLE game_state ADD COLUMN contest_points INTEGER NOT NULL DEFAULT 0"))
   if "redeem_count" not in game_columns:
    conn.execute(text("ALTER TABLE game_state ADD COLUMN redeem_count INTEGER NOT NULL DEFAULT 0"))
-  order_columns={column["name"] for column in inspect(conn).get_columns("orders")}
+  # SQLAlchemy names the Order model table "order" by default (singular).
+  order_table=Order.__tablename__
+  order_columns={column["name"] for column in inspect(conn).get_columns(order_table)}
   if "requested_days" not in order_columns:
-   conn.execute(text("ALTER TABLE orders ADD COLUMN requested_days INTEGER"))
+   conn.execute(text(f'ALTER TABLE "{order_table}" ADD COLUMN requested_days INTEGER'))
 if __name__=="__main__": app.run(host="0.0.0.0",port=int(os.getenv("PORT","5001")),debug=False)
