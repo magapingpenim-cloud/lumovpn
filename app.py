@@ -18,7 +18,7 @@ elif dburl.startswith("postgresql://"):
 app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
 app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
-TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"1":{"months":1,"price":50,"title":"1 месяц"},"3":{"months":3,"price":150,"title":"3 месяца"},"12":{"months":12,"price":600,"title":"12 месяцев"}}
+TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"1":{"months":1,"price":50,"title":"1 месяц","discount":0,"save":0},"3":{"months":3,"price":135,"title":"3 месяца","discount":10,"save":15},"12":{"months":12,"price":480,"title":"12 месяцев","discount":20,"save":120}}
 PAYMENTS={"sbp":{"title":"СБП","detail":os.getenv("PAYMENT_SBP_PHONE","Настройте PAYMENT_SBP_PHONE")},"card":{"title":"Банковская карта","detail":os.getenv("PAYMENT_CARD_NUMBER","Настройте PAYMENT_CARD_NUMBER")}}
 
 def notify_admin_telegram(message):
