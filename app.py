@@ -570,16 +570,18 @@ def reject(oid):
  return redirect(url_for("admin_orders"))
 with app.app_context():
  db.create_all()
- # Add new columns to existing PostgreSQL/SQLite databases without deleting user progress.
+ # Add new columns only when the target tables exist; never fail startup on schema inspection.
  with db.engine.begin() as conn:
-  game_columns={column["name"] for column in inspect(conn).get_columns("game_state")}
-  if "contest_points" not in game_columns:
-   conn.execute(text("ALTER TABLE game_state ADD COLUMN contest_points INTEGER NOT NULL DEFAULT 0"))
-  if "redeem_count" not in game_columns:
-   conn.execute(text("ALTER TABLE game_state ADD COLUMN redeem_count INTEGER NOT NULL DEFAULT 0"))
-  # SQLAlchemy names the Order model table "order" by default (singular).
+  inspector=inspect(conn)
+  if inspector.has_table(GameState.__tablename__):
+   game_columns={column["name"] for column in inspector.get_columns(GameState.__tablename__)}
+   if "contest_points" not in game_columns:
+    conn.execute(text(f'ALTER TABLE "{GameState.__tablename__}" ADD COLUMN contest_points INTEGER NOT NULL DEFAULT 0'))
+   if "redeem_count" not in game_columns:
+    conn.execute(text(f'ALTER TABLE "{GameState.__tablename__}" ADD COLUMN redeem_count INTEGER NOT NULL DEFAULT 0'))
   order_table=Order.__tablename__
-  order_columns={column["name"] for column in inspect(conn).get_columns(order_table)}
-  if "requested_days" not in order_columns:
-   conn.execute(text(f'ALTER TABLE "{order_table}" ADD COLUMN requested_days INTEGER'))
+  if inspector.has_table(order_table):
+   order_columns={column["name"] for column in inspector.get_columns(order_table)}
+   if "requested_days" not in order_columns:
+    conn.execute(text(f'ALTER TABLE "{order_table}" ADD COLUMN requested_days INTEGER'))
 if __name__=="__main__": app.run(host="0.0.0.0",port=int(os.getenv("PORT","5001")),debug=False)
