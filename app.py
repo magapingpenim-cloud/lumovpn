@@ -287,7 +287,7 @@ def dashboard(): return render_template("dashboard.html",orders=Order.query.filt
 @login_required
 def checkout():
  k=request.form.get("tariff"); m=request.form.get("method")
- if k not in TARIFFS or k=="trial" or m not in PAYMENTS: flash("Выберите платный тариф и способ оплаты.","error"); return redirect(url_for("dashboard"))
+ if k not in TARIFFS or k in ("trial","game") or m not in PAYMENTS: flash("Выберите платный тариф и способ оплаты.","error"); return redirect(url_for("dashboard"))
  t=TARIFFS[k]; o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=t["price"],payment_method=m); db.session.add(o); db.session.commit()
  notify_admin_telegram(f"🆕 Новый заказ FlankVPN #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email}\nТариф: {t['title']}\nСумма: {o.amount} ₽\nСпособ: {PAYMENTS[m]['title']}\nСтатус: ожидает оплаты")
  return redirect(url_for("payment",oid=o.id))
