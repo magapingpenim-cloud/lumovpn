@@ -123,6 +123,18 @@ class GamePurchase(db.Model):
  created_at=db.Column(db.DateTime,default=datetime.utcnow)
  user=db.relationship("User",backref=db.backref("game_purchases",lazy=True))
 
+
+class SupportMessage(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=True)
+ nickname=db.Column(db.String(80),nullable=False)
+ email=db.Column(db.String(160),nullable=False,default="")
+ message=db.Column(db.Text,nullable=False)
+ status=db.Column(db.String(20),nullable=False,default="new")
+ created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+ user=db.relationship("User",backref=db.backref("support_messages",lazy=True))
+
+
 GAME_UPGRADES={"power":{"title":"Сильнее удар","base":35,"description":"+1 монета за каждый клик"},"income":{"title":"Пассивный доход","base":80,"description":"+1 монета в секунду"}}
 def game_state_for(user):
  state=GameState.query.filter_by(user_id=user.id).first()
@@ -355,6 +367,47 @@ def admin_reject_game_purchase(pid):
   purchase.status="rejected"; db.session.commit()
  return redirect(url_for("admin_orders"))
 
+
+@app.route("/support/send",methods=["POST"])
+def support_send():
+ message=request.form.get("message","").strip()
+ if current_user.is_authenticated:
+  nickname=current_user.nickname
+  email=current_user.email
+  user_id=current_user.id
+ else:
+  nickname=request.form.get("nickname","").strip()[:80]
+  email=request.form.get("email","").strip()[:160]
+  user_id=None
+ if len(message)<3 or len(message)>2000:
+  flash("Сообщение должно содержать от 3 до 2000 символов.","error")
+  return redirect(request.referrer or url_for("index"))
+ if not current_user.is_authenticated and (len(nickname)<2 or "@" not in email):
+  flash("Укажи имя и корректный email, чтобы поддержка могла ответить.","error")
+  return redirect(request.referrer or url_for("index"))
+ item=SupportMessage(user_id=user_id,nickname=nickname,email=email,message=message)
+ db.session.add(item)
+ try:
+  db.session.commit()
+ except Exception:
+  db.session.rollback()
+  app.logger.exception("Could not save support message")
+  flash("Не удалось отправить сообщение. Попробуй ещё раз.","error")
+  return redirect(request.referrer or url_for("index"))
+ notify_admin_telegram(f"✉️ Новое сообщение в поддержку FlankVPN #{item.id}\\nОт: {item.nickname}\\nEmail: {item.email or 'не указан'}\\nСообщение: {item.message[:1200]}")
+ flash("Сообщение отправлено в поддержку. Мы увидим его в панели администратора.","success")
+ return redirect(request.referrer or url_for("index"))
+
+@app.route("/admin/support/<int:mid>/close",methods=["POST"])
+def admin_close_support(mid):
+ if not is_admin(): abort(403)
+ item=db.session.get(SupportMessage,mid)
+ if not item: abort(404)
+ item.status="closed"
+ db.session.commit()
+ flash("Обращение отмечено как обработанное.","success")
+ return redirect(url_for("admin_orders"))
+
 @app.route("/admin/login",methods=["GET","POST"])
 def admin_login():
  if request.method=="POST" and request.form.get("username","").strip().casefold()==os.getenv("ADMIN_USERNAME","admin").strip().casefold() and request.form.get("password","")==os.getenv("ADMIN_PASSWORD","change-this-now"):
@@ -365,7 +418,7 @@ def admin_login():
 @app.route("/admin/orders")
 def admin_orders():
  if not is_admin(): return redirect(url_for("admin_login"))
- orders=Order.query.order_by(Order.created_at.desc()).all(); game_purchases=GamePurchase.query.order_by(GamePurchase.created_at.desc()).all(); return render_template("admin.html",game_purchases=game_purchases,orders=orders,total_orders=len(orders),total_pending=sum(o.amount for o in orders if o.status=="awaiting_review"),awaiting_payment_count=sum(1 for o in orders if o.status=="awaiting_payment"),awaiting_review_count=sum(1 for o in orders if o.status=="awaiting_review"),active_count=sum(1 for o in orders if o.status=="active"),error_count=sum(1 for o in orders if o.status=="error"))
+ orders=Order.query.order_by(Order.created_at.desc()).all(); game_purchases=GamePurchase.query.order_by(GamePurchase.created_at.desc()).all(); support_messages=SupportMessage.query.order_by(SupportMessage.created_at.desc()).all(); return render_template("admin.html",support_messages=support_messages,game_purchases=game_purchases,orders=orders,total_orders=len(orders),total_pending=sum(o.amount for o in orders if o.status=="awaiting_review"),awaiting_payment_count=sum(1 for o in orders if o.status=="awaiting_payment"),awaiting_review_count=sum(1 for o in orders if o.status=="awaiting_review"),active_count=sum(1 for o in orders if o.status=="active"),error_count=sum(1 for o in orders if o.status=="error"))
 def provision(o):
  base=os.getenv("H1_API_BASE","").rstrip("/"); token=os.getenv("H1_API_TOKEN","")
  if not base or not token: raise RuntimeError("Настройте H1_API_BASE и H1_API_TOKEN в переменных окружения.")
