@@ -351,7 +351,7 @@ def game_redeem():
   flash("Укажи количество суток от 1 до 365.","error")
   return redirect(url_for("game"))
  # Progressive pricing: 1st day 10,000 coins, 2nd 20,000, 3rd 30,000, etc.
- cost=COINS_PER_VPN_DAY*days*(days+1)//2
+ cost=COINS_PER_VPN_DAY*days + 2000*(days-1)*days//2
  if state.coins<cost:
   flash(f"Для {days} суток нужно {cost:,} монет, у тебя {state.coins:,}.".replace(",", " "),"error")
   return redirect(url_for("game"))
