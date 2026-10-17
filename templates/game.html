@@ -25,7 +25,7 @@
 <section class="game-stage"><button type="button" id="mascot" class="mascot" aria-label="Нажми, чтобы заработать монеты"><span class="cat-face" aria-hidden="true">🐱</span></button><p class="tap-hint">Нажимай на маскота — он будет реагировать на каждый удар!</p></section>
 <section class="redeem-card" id="vpn-exchange">
   <span class="game-pill">ОБМЕН НА VPN</span><h2 style="margin:10px 0 5px">Обменять монеты на VPN-подписку</h2>
-  <p style="margin:0 0 12px;color:#687891">Выбери количество суток. Каждые следующие сутки дороже: 1-е — 10 000 монет, 2-е — 20 000, 3-и — 30 000 и так далее.</p>
+  <p style="margin:0 0 12px;color:#687891">Выбери количество суток. Первая покупка суток стоит 10 000 монет. Каждые следующие сутки стоят на 2 000 монет дороже: 10 000, 12 000, 14 000 и так далее.</p>
   <div class="redeem-value"><span id="exchange-balance">{{ state.coins }}</span> ◉</div>
   <label for="exchange-days">Количество суток VPN</label>
   <input id="exchange-days" name="days" type="number" min="1" max="365" value="1" step="1" style="display:block;width:100%;box-sizing:border-box;margin:8px 0;padding:13px;border:1px solid #dce7f5;border-radius:12px;font-size:18px">
@@ -47,7 +47,7 @@
  const balance=Number(document.getElementById('exchange-balance').textContent.replace(/\s/g,''))||0;
  function update(){
   let n=Math.max(1,Math.min(365,Math.floor(Number(days.value)||1))); days.value=n; hidden.value=n;
-  const cost=10000*n*(n+1)/2; costEl.textContent=Math.round(cost).toLocaleString('ru-RU');
+  const cost=10000*n + 2000*(n-1)*n/2; costEl.textContent=Math.round(cost).toLocaleString('ru-RU');
   buy.textContent='Купить подписку на '+n+' '+(n===1?'сутки':'суток');
   buy.disabled=balance<cost;
   note.textContent=balance<cost?'Не хватает '+Math.round(cost-balance).toLocaleString('ru-RU')+' монет.':'После покупки будет создана VPN-подписка на '+n+' суток в формате JSON.';
