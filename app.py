@@ -315,7 +315,7 @@ def game_buy_autoclicker():
   flash("У тебя уже есть незавершённая заявка. Продолжи оплату ниже.","error"); return redirect(url_for("game_payment",pid=existing.id))
  purchase=GamePurchase(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,item_key="autoclicker",amount=100,payment_method=method)
  db.session.add(purchase); db.session.commit()
- notify_admin_telegram(f"🕹️ Заявка на автокликер FlankVPN #{purchase.id}\\nНикнейм: {purchase.nickname}\\nEmail: {purchase.email}\\nСумма: 100 ₽\\nСпособ: {PAYMENTS[method]['title']}\\nОжидает оплаты")
+ notify_admin_telegram(f"🕹️ Заявка на автокликер FlankVPN #{purchase.id}\nНикнейм: {purchase.nickname}\nEmail: {purchase.email}\nСумма: 100 ₽\nСпособ: {PAYMENTS[method]['title']}\nОжидает оплаты")
  return redirect(url_for("game_payment",pid=purchase.id))
 
 @app.route("/game/payment/<int:pid>")
@@ -332,7 +332,7 @@ def game_paid(pid):
  if not purchase or purchase.user_id!=current_user.id: abort(404)
  if purchase.status=="awaiting_payment":
   purchase.status="awaiting_review"; db.session.commit()
-  notify_admin_telegram(f"💳 Заявка на автокликер #{purchase.id}: клиент сообщил об оплате\\nНикнейм: {purchase.nickname}\\nСумма: {purchase.amount} ₽\\nСпособ: {PAYMENTS[purchase.payment_method]['title']}\\nПоступление нужно проверить вручную.")
+  notify_admin_telegram(f"💳 Заявка на автокликер #{purchase.id}: клиент сообщил об оплате\nНикнейм: {purchase.nickname}\nСумма: {purchase.amount} ₽\nСпособ: {PAYMENTS[purchase.payment_method]['title']}\nПоступление нужно проверить вручную.")
   flash("Заявка отправлена администратору. Автокликер включится после проверки оплаты.","success")
  return redirect(url_for("game"))
 
