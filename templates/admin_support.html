@@ -4,7 +4,7 @@
 <section class="pagetitle">
   <div class="eyebrow">FLANKVPN ADMIN / SUPPORT</div>
   <h1>Чат с клиентами</h1>
-  <p class="muted">Обращения, отправленные через кнопку «Поддержка» на сайте. Новые сообщения отображаются сверху.</p>
+  <p class="muted">Здесь можно ответить клиенту. Ответ сохранится в его разделе «Мои вопросы», если он отправил обращение из своего аккаунта.</p>
   <div class="actions" style="margin-top:16px"><a class="btn secondary" href="{{ url_for('admin_orders') }}">Заказы и оплаты</a><a class="btn secondary" href="{{ url_for('admin_support') }}">Обновить обращения ↻</a></div>
 </section>
 {% for m in support_messages %}
@@ -13,13 +13,12 @@
   <p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ m.message }}</p>
   {% if m.email %}
   <form method="post" action="{{ url_for('admin_reply_support',mid=m.id) }}" style="margin-top:16px">
-    <label for="reply-{{ m.id }}">Ответ клиенту на {{ m.email }}</label>
-    <textarea id="reply-{{ m.id }}" name="reply" rows="4" maxlength="4000" required placeholder="Напиши ответ клиенту..." style="width:100%;box-sizing:border-box;margin:8px 0 12px;padding:12px;border:1px solid #dce7f5;border-radius:12px;font:inherit"></textarea>
-    <button class="btn primary" type="submit">Отправить ответ на email</button>
+    <label for="reply-{{ m.id }}">Ответ клиенту{% if m.email %} ({{ m.email }}){% endif %}</label>
+    <textarea id="reply-{{ m.id }}" name="reply" rows="4" maxlength="4000" required placeholder="Напиши ответ клиенту..." style="width:100%;box-sizing:border-box;margin:8px 0 12px;padding:12px;border:1px solid #dce7f5;border-radius:12px;font:inherit">{{ m.reply or "" }}</textarea>
+    <button class="btn primary" type="submit">Сохранить ответ клиенту</button>
   </form>
-  {% else %}
-  <p class="muted">У клиента нет email — отправить ответ письмом нельзя.</p>
   {% endif %}
+  {% if m.reply %}<div class="admin-help" style="margin-top:14px"><strong>Последний сохранённый ответ</strong><p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ m.reply }}</p>{% if m.replied_at %}<p class="tiny muted">{{ m.replied_at.strftime("%d.%m.%Y %H:%M") }} UTC</p>{% endif %}</div>{% endif %}
   {% if m.status != 'closed' %}<form method="post" action="{{ url_for('admin_close_support',mid=m.id) }}" style="margin-top:10px"><button class="btn secondary" type="submit">Отметить обработанным без ответа</button></form>{% endif %}
 </article>
 {% else %}
