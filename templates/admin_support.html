@@ -11,13 +11,11 @@
 <article class="order">
   <div class="row"><div><b>Обращение #{{ m.id }} · {{ m.nickname }}</b><p class="tiny muted">{{ m.email or 'Email не указан' }} · {{ m.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p></div><div class="amount"><span class="status status-{{ 'active' if m.status == 'closed' else 'awaiting_review' }}">{{ 'Обработано' if m.status == 'closed' else 'Новое обращение' }}</span></div></div>
   <p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ m.message }}</p>
-  {% if m.email %}
   <form method="post" action="{{ url_for('admin_reply_support',mid=m.id) }}" style="margin-top:16px">
     <label for="reply-{{ m.id }}">Ответ клиенту{% if m.email %} ({{ m.email }}){% endif %}</label>
     <textarea id="reply-{{ m.id }}" name="reply" rows="4" maxlength="4000" required placeholder="Напиши ответ клиенту..." style="width:100%;box-sizing:border-box;margin:8px 0 12px;padding:12px;border:1px solid #dce7f5;border-radius:12px;font:inherit">{{ m.reply or "" }}</textarea>
     <button class="btn primary" type="submit">Сохранить ответ клиенту</button>
   </form>
-  {% endif %}
   {% if m.reply %}<div class="admin-help" style="margin-top:14px"><strong>Последний сохранённый ответ</strong><p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ m.reply }}</p>{% if m.replied_at %}<p class="tiny muted">{{ m.replied_at.strftime("%d.%m.%Y %H:%M") }} UTC</p>{% endif %}</div>{% endif %}
   {% if m.status != 'closed' %}<form method="post" action="{{ url_for('admin_close_support',mid=m.id) }}" style="margin-top:10px"><button class="btn secondary" type="submit">Отметить обработанным без ответа</button></form>{% endif %}
 </article>
