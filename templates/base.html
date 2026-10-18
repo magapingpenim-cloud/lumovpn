@@ -43,6 +43,12 @@
       .support-panel textarea{min-height:110px;resize:vertical}.support-panel .support-actions{display:flex;gap:8px}
       .support-panel button{border:0;border-radius:10px;padding:11px 13px;font-weight:700;cursor:pointer}
       .support-send{background:#1769ff;color:#fff;flex:1}.support-close{background:#edf2f8;color:#233b5b}
+      .site-footer{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+      .developer-details{flex-basis:100%;margin-top:8px;font-size:12px;color:#718096}
+      .developer-details summary{cursor:pointer;list-style:none;display:inline-block;opacity:.8}
+      .developer-details summary::-webkit-details-marker{display:none}
+      .developer-details summary:hover{opacity:1}
+      .developer-details p{margin:8px 0 0}
       @media(max-width:480px){.support-launch{right:14px;bottom:14px}.support-panel{right:14px;bottom:76px}}
     </style>
     <button type="button" class="support-launch" id="support-launch" aria-expanded="false" aria-controls="support-panel">💬 Поддержка</button>
@@ -69,7 +75,14 @@
       })();
     </script>
 
-    <footer><span class="footer-brand">FLANKVPN</span><span>·</span><span>Просто подключиться.</span><span class="footer-year">© 2026</span></footer>
+    <footer class="site-footer">
+      <span class="footer-brand">FLANKVPN</span><span>·</span><span>Просто подключиться.</span><span class="footer-year">© 2026</span>
+      <details class="developer-details">
+        <summary>О разработчике</summary>
+        <p>ИНН: 252000892168</p>
+        <p>Телефон: <span>уточняется</span></p>
+      </details>
+    </footer>
   </div>
 </body>
 </html>
