@@ -7,6 +7,12 @@
   <div class="metric-card"><span>МОИ ЗАКАЗЫ</span><strong>{{orders|length}}</strong><small>Все заказы в одном месте</small></div>
   <div class="metric-card"><span>ПОДКЛЮЧЕНИЕ</span><strong>По ссылке / QR</strong><small>После активации подписки</small></div>
 </div>
+<section class="panel" style="margin:20px 0;padding:20px">
+  <div class="eyebrow">TELEGRAM</div>
+  <h2>FlankVPN в Telegram</h2>
+  <p class="muted">Привяжи Telegram, чтобы проверять заказы и писать в поддержку прямо из бота.</p>
+  <a class="btn secondary" href="{{ url_for('telegram_link_code') }}">Создать код привязки Telegram</a>
+</section>
 <section class="panel checkout-panel">
   <div class="checkout-title"><div><div class="eyebrow">НОВАЯ ПОДПИСКА</div><h2>Выбери срок доступа</h2><p class="muted tiny">На длительных тарифах цена за месяц ниже.</p></div><div class="trial-chip">10 дней пробного доступа*</div></div>
   <form method="post" action="{{url_for('checkout')}}" class="checkout checkout-advanced">
