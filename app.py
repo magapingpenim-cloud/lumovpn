@@ -434,7 +434,9 @@ def telegram_webhook(secret):
     order.status="awaiting_review"
     try:
      db.session.commit()
-     notify_admin_telegram(f"💳 Клиент заявил об оплате заказа #{order.id} через Telegram\nНикнейм: {order.nickname}\nEmail: {order.email}\nСумма: {order.amount} ₽\nСпособ: {PAYMENTS.get(order.payment_method,{}).get('title',order.payment_method)}\nПроверь поступление денег в админ-панели.")
+     tariff_title=TARIFFS.get(order.tariff_key,{}).get("title",order.tariff_key)
+     method_title=PAYMENTS.get(order.payment_method,{}).get("title",order.payment_method)
+     notify_admin_telegram(f"💳 Клиент нажал «Я оплатил» — заказ #{order.id}\nНик для сверки перевода: {order.nickname}\nТариф: {tariff_title}\nСумма: {order.amount} ₽\nСпособ: {method_title}\nTelegram ID: {telegram_id}\nСтатус: проверить поступление денег вручную.")
      send(f"Заявка на проверку оплаты заказа #{order.id} отправлена. Доступ будет подготовлен после подтверждения администратором.")
     except Exception:
      db.session.rollback()
