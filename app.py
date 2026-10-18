@@ -137,6 +137,20 @@ class SupportMessage(db.Model):
  user=db.relationship("User",backref=db.backref("support_messages",lazy=True))
 
 
+class TelegramAccount(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ telegram_id=db.Column(db.String(40),unique=True,nullable=False,index=True)
+ user_id=db.Column(db.Integer,db.ForeignKey("user.id"),unique=True,nullable=False)
+ linked_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+ user=db.relationship("User",backref=db.backref("telegram_account",uselist=False))
+
+class TelegramLinkCode(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False,index=True)
+ code=db.Column(db.String(12),unique=True,nullable=False,index=True)
+ expires_at=db.Column(db.DateTime,nullable=False)
+ used=db.Column(db.Boolean,default=False,nullable=False)
+
 class GameCampaign(db.Model):
  id=db.Column(db.Integer,primary_key=True)
  start_at=db.Column(db.DateTime,nullable=False)
@@ -284,6 +298,108 @@ def logout():
 @app.route("/dashboard")
 @login_required
 def dashboard(): return render_template("dashboard.html",orders=Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all())
+
+@app.route("/telegram/link-code")
+@login_required
+def telegram_link_code():
+ code="".join(secrets.choice(string.ascii_uppercase+string.digits) for _ in range(8))
+ TelegramLinkCode.query.filter_by(user_id=current_user.id,used=False).delete()
+ db.session.add(TelegramLinkCode(user_id=current_user.id,code=code,expires_at=datetime.utcnow()+timedelta(minutes=10)))
+ db.session.commit()
+ bot_name=os.getenv("TELEGRAM_BOT_USERNAME","").strip().lstrip("@")
+ bot_link=("https://t.me/"+bot_name) if bot_name else "Открой своего Telegram-бота FlankVPN"
+ return (f"<h1>Привязка Telegram — FlankVPN</h1><p>Твой одноразовый код: <strong style='font-size:28px'>{code}</strong></p><p>Код действует 10 минут. В Telegram отправь боту команду <code>/link {code}</code>.</p><p>Не пересылай код другим людям.</p><p><a href='{bot_link}'>Открыть Telegram-бота</a></p><p><a href='/dashboard'>Вернуться в кабинет</a></p>",200,{"Content-Type":"text/html; charset=utf-8"})
+
+@app.route("/telegram/webhook/<secret>",methods=["POST"])
+def telegram_webhook(secret):
+ expected=os.getenv("TELEGRAM_WEBHOOK_SECRET","").strip()
+ if not expected or not secrets.compare_digest(secret,expected):
+  abort(404)
+ token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
+ if not token:
+  app.logger.error("Telegram webhook called but TELEGRAM_BOT_TOKEN is missing")
+  return {"ok":False},503
+ update=request.get_json(silent=True) or {}
+ message=update.get("message") or update.get("edited_message") or {}
+ chat=message.get("chat") or {}
+ chat_id=chat.get("id")
+ from_user=message.get("from") or {}
+ telegram_id=str(from_user.get("id",""))
+ text_in=(message.get("text") or "").strip()
+ if not chat_id or not telegram_id or not text_in:
+  return {"ok":True}
+ def send(text_out,keyboard=True):
+  payload={"chat_id":chat_id,"text":text_out,"disable_web_page_preview":True}
+  if keyboard:
+   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"💬 Поддержка"},{"text":"🔗 Привязать аккаунт"}]],"resize_keyboard":True}
+  try:
+   resp=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",json=payload,timeout=8)
+   resp.raise_for_status()
+   if not resp.json().get("ok"): raise RuntimeError("Telegram sendMessage returned ok=false")
+  except Exception:
+   app.logger.exception("Telegram bot could not reply to chat %s",chat_id)
+ cmd=text_in.split(maxsplit=1)[0].lower()
+ arg=text_in.split(maxsplit=1)[1].strip() if len(text_in.split(maxsplit=1))>1 else ""
+ if cmd=="/start" or text_in=="🏠 Главное меню":
+  send("Привет! Это FlankVPN. Здесь можно посмотреть тарифы, открыть сайт, проверить заказы и написать в поддержку.")
+ elif cmd=="/link" and arg:
+  link=TelegramLinkCode.query.filter_by(code=arg.upper(),used=False).first()
+  if not link or link.expires_at<datetime.utcnow():
+   send("Код не найден или истёк. Войди на flankvpn.ru и создай новый код привязки.")
+  else:
+   existing=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+   account_for_user=TelegramAccount.query.filter_by(user_id=link.user_id).first()
+   if account_for_user and account_for_user.telegram_id!=telegram_id:
+    send("К этому аккаунту FlankVPN уже привязан другой Telegram. Обратись в поддержку для смены привязки.")
+   else:
+    if existing and existing.user_id!=link.user_id:
+     send("Этот Telegram уже привязан к другому аккаунту FlankVPN. Сначала отвяжи его через поддержку.")
+    else:
+     if not existing:
+      db.session.add(TelegramAccount(telegram_id=telegram_id,user_id=link.user_id))
+     link.used=True
+     db.session.commit()
+     send("Готово! Telegram привязан к аккаунту FlankVPN. Теперь команда «Мои заказы» покажет твои заказы.")
+ elif text_in in ("🌐 Тарифы","/tariffs"):
+  send("Тарифы FlankVPN:\n• 1 месяц — 49 ₽\n• 3 месяца — 132 ₽\n• 12 месяцев — 470 ₽\n\nОформить подписку: https://flankvpn.ru")
+ elif text_in in ("📦 Мои заказы","/orders"):
+  account=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+  if not account:
+   send("Сначала привяжи аккаунт: войди на https://flankvpn.ru, открой /telegram/link-code и отправь боту показанную команду /link КОД.")
+  else:
+   orders=Order.query.filter_by(user_id=account.user_id).order_by(Order.created_at.desc()).limit(10).all()
+   if not orders: send("Заказов пока нет. Оформить подписку можно на https://flankvpn.ru")
+   else:
+    labels={"awaiting_payment":"ожидает оплаты","awaiting_review":"проверяется оплата","processing":"создаётся доступ","active":"активна","rejected":"отклонён","error":"ошибка выдачи"}
+    lines=["Твои последние заказы:"]
+    for order in orders:
+     title=TARIFFS.get(order.tariff_key,{}).get("title","Заказ")
+     lines.append(f"#{order.id} · {title} · {order.amount} ₽ · {labels.get(order.status,order.status)}")
+    send("\\n".join(lines))
+ elif text_in in ("🔗 Привязать аккаунт","/link"):
+  send("Войди на https://flankvpn.ru, затем открой https://flankvpn.ru/telegram/link-code и отправь боту команду /link КОД.")
+ elif text_in in ("💬 Поддержка","/support"):
+  send("Чтобы написать в поддержку, отправь сообщение командой:\\n/support Твой вопрос")
+ elif cmd=="/support" and len(arg)>=3:
+  account=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+  user=db.session.get(User,account.user_id) if account else None
+  username=(from_user.get("username") or "").strip()
+  nickname=user.nickname if user else ("@"+username if username else str(from_user.get("first_name") or "Telegram-клиент"))
+  email=user.email if user else ""
+  item=SupportMessage(user_id=user.id if user else None,nickname=nickname,email=email,message="[Telegram] "+arg[:1900])
+  db.session.add(item)
+  try:
+   db.session.commit()
+   notify_admin_telegram(f"✉️ Обращение из Telegram #{item.id}\\nОт: {nickname}\\nEmail: {email or 'не привязан'}\\nСообщение: {arg[:1000]}")
+   send("Сообщение отправлено в поддержку FlankVPN. Мы получили обращение.")
+  except Exception:
+   db.session.rollback()
+   app.logger.exception("Could not save Telegram support message")
+   send("Не получилось сохранить обращение. Попробуй ещё раз позже.")
+ else:
+  send("Выбери пункт меню или используй /start.")
+ return {"ok":True}
+
 @app.route("/checkout",methods=["POST"])
 @login_required
 def checkout():
