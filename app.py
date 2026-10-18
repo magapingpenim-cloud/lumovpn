@@ -380,21 +380,36 @@ def telegram_webhook(secret):
   if callback_data=="show_tariffs":
    show_tariffs()
   elif callback_data.startswith("tariff:"):
-   show_payment_methods(callback_data.split(":",1)[1])
+   key=callback_data.split(":",1)[1]
+   if key not in ("1","3","12"):
+    send("Неизвестный тариф. Открой раздел «Тарифы» ещё раз.")
+   else:
+    draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
+    if not draft:
+     draft=TelegramCheckoutDraft(telegram_id=telegram_id)
+     db.session.add(draft)
+    draft.pending_tariff=key; draft.nickname=None; draft.awaiting_nickname=True; draft.updated_at=datetime.utcnow()
+    db.session.commit()
+    send(f"Ты выбрал тариф «{TARIFFS[key][\u0027title\u0027]}».\n\nВведите свой ник, который вы будете использовать при оплате. Важно: при переводе укажи именно этот ник, без изменений.")
   elif callback_data.startswith("buy:"):
    parts=callback_data.split(":")
    if len(parts)!=3 or parts[1] not in ("1","3","12") or parts[2] not in PAYMENTS:
     send("Не удалось определить тариф или способ оплаты. Попробуй ещё раз.")
    else:
-    account=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
-    if not account:
-     bot_name=os.getenv("TELEGRAM_BOT_USERNAME","").strip().lstrip("@")
-     link_code_url="https://flankvpn.ru/telegram/link-code"
-     send("Перед покупкой привяжи аккаунт FlankVPN, чтобы заказ появился в админ-панели и был связан с твоей подпиской.\n\n1. Войди на сайте.\n2. Открой "+link_code_url+"\n3. Отправь боту команду /link КОД"+("\n\nБот: https://t.me/"+bot_name if bot_name else ""))
+    key=parts[1]; method=parts[2]; tariff=TARIFFS[key]
+    draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
+    if not draft or not draft.nickname or draft.pending_tariff!=key or draft.awaiting_nickname:
+     send("Сначала выбери тариф и введи ник, который укажешь при оплате.")
     else:
-     key=parts[1]; method=parts[2]; tariff=TARIFFS[key]
-     order=Order(user_id=account.user_id,nickname=account.user.nickname,email=account.user.email,
-       tariff_key=key,amount=tariff["price"],payment_method=method,status="awaiting_payment")
+     nickname=draft.nickname
+     shadow_email="telegram_"+telegram_id+"@telegram.flankvpn.local"
+     shadow=User.query.filter_by(email=shadow_email).first()
+     if not shadow:
+      internal_nick=("tg_"+telegram_id[-30:])[:40]
+      if User.query.filter_by(nickname=internal_nick).first(): internal_nick=("tg_"+telegram_id[-20:]+"_"+secrets.token_hex(3))[:40]
+      shadow=User(nickname=internal_nick,email=shadow_email,password_hash=generate_password_hash(secrets.token_urlsafe(32)))
+      db.session.add(shadow); db.session.flush()
+     order=Order(user_id=shadow.id,nickname=nickname,email="",telegram_id=telegram_id,tariff_key=key,amount=tariff["price"],payment_method=method,status="awaiting_payment")
      db.session.add(order)
      try:
       db.session.commit()
@@ -410,9 +425,8 @@ def telegram_webhook(secret):
   elif callback_data.startswith("paid:"):
    try: order_id=int(callback_data.split(":",1)[1])
    except (ValueError,IndexError): order_id=0
-   account=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
    order=db.session.get(Order,order_id) if order_id else None
-   if not account or not order or order.user_id!=account.user_id:
+   if not order or order.telegram_id!=telegram_id:
     send("Не удалось найти твой заказ. Открой «Мои заказы» или напиши в поддержку.")
    elif order.status=="awaiting_payment":
     order.status="awaiting_review"
@@ -429,24 +443,30 @@ def telegram_webhook(secret):
    else:
     send(f"Текущий статус заказа #{order.id}: {order.status}. Если нужна помощь, напиши в поддержку.")
   return {"ok":True}
+ draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
+ if draft and draft.awaiting_nickname and text_in and not text_in.startswith("/") and text_in not in ("🌐 Тарифы","📦 Мои заказы","💬 Поддержка","🔗 Привязать аккаунт","🏠 Главное меню"):
+  nickname=text_in.strip()
+  if len(nickname)<2 or len(nickname)>40 or "\n" in nickname:
+   send("Ник должен быть длиной от 2 до 40 символов. Введи ник ещё раз.")
+  else:
+   draft.nickname=nickname; draft.awaiting_nickname=False; draft.updated_at=datetime.utcnow(); db.session.commit()
+   send(f"Ник для оплаты сохранён: {nickname}. Используй именно его в комментарии к переводу. Теперь выбери способ оплаты.")
+   show_payment_methods(draft.pending_tariff)
+  return {"ok":True}
  if cmd=="/start" or text_in=="🏠 Главное меню":
   send("Привет! Это FlankVPN. Здесь можно выбрать тариф, оформить заказ, проверить его статус и написать в поддержку.")
  elif text_in in ("🌐 Тарифы","/tariffs"):
   show_tariffs()
  elif text_in in ("📦 Мои заказы","/orders"):
-  account=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
-  if not account:
-   send("Сначала привяжи аккаунт: войди на https://flankvpn.ru, затем открой https://flankvpn.ru/telegram/link-code и отправь боту команду /link КОД.")
+  orders=Order.query.filter_by(telegram_id=telegram_id).order_by(Order.created_at.desc()).limit(10).all()
+  if not orders: send("Заказов пока нет. Выбери «🌐 Тарифы», чтобы оформить подписку.")
   else:
-   orders=Order.query.filter_by(user_id=account.user_id).order_by(Order.created_at.desc()).limit(10).all()
-   if not orders: send("Заказов пока нет. Выбери «Тарифы», чтобы оформить подписку.")
-   else:
-    labels={"awaiting_payment":"ожидает оплаты","awaiting_review":"проверяется оплата","processing":"создаётся доступ","active":"активна","rejected":"отклонён","error":"ошибка выдачи"}
-    lines=["Твои последние заказы:"]
-    for order in orders:
-     title=TARIFFS.get(order.tariff_key,{}).get("title","Заказ")
-     lines.append(f"#{order.id} · {title} · {order.amount} ₽ · {labels.get(order.status,order.status)}")
-    send("\n".join(lines))
+   labels={"awaiting_payment":"ожидает оплаты","awaiting_review":"проверяется оплата","processing":"создаётся доступ","active":"активна","rejected":"отклонён","error":"ошибка выдачи"}
+   lines=["Твои последние заказы:"]
+   for order in orders:
+    title=TARIFFS.get(order.tariff_key,{}).get("title","Заказ")
+    lines.append(f"#{order.id} · {title} · {order.amount} ₽ · {labels.get(order.status,order.status)}")
+   send("\n".join(lines))
  elif cmd=="/link" and arg:
   link=TelegramLinkCode.query.filter_by(code=arg.upper(),used=False).first()
   if not link or link.expires_at<datetime.utcnow():
