@@ -4,15 +4,14 @@
 <section class="pagetitle">
   <div class="eyebrow">FLANKVPN ADMIN / SUPPORT</div>
   <h1>Чат с клиентами</h1>
-  <p class="muted">Обращения с сайта и из Telegram. Открывай обращение, чтобы ответить клиенту прямо здесь.</p>
+  <p class="muted">Обращения, отправленные через кнопку «Поддержка» на сайте. Новые сообщения отображаются сверху.</p>
   <div class="actions" style="margin-top:16px"><a class="btn secondary" href="{{ url_for('admin_orders') }}">Заказы и оплаты</a><a class="btn secondary" href="{{ url_for('admin_support') }}">Обновить обращения ↻</a></div>
 </section>
 {% for m in support_messages %}
 <article class="order">
-  <div class="row"><div><b>Обращение #{{ m.id }} · {{ m.nickname }}</b><p class="tiny muted">{{ m.email or 'Email не указан' }} · {{ m.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p></div><div class="amount"><span class="status status-{{ 'active' if m.status == 'closed' else 'awaiting_review' }}">{{ 'Закрыто' if m.status == 'closed' else ('Ожидает клиента' if m.status == 'waiting_customer' else ('Ожидает ответа' if m.status == 'waiting_admin' else 'Новое обращение')) }}</span></div></div>
-  <div style="margin:14px 0;padding:14px;border-radius:12px;background:var(--surface, #f6f7f9)"><b>Клиент</b><p style="white-space:pre-wrap;overflow-wrap:anywhere;margin-bottom:0">{{ m.message }}</p></div>
-  {% for r in m.replies %}<div style="margin:10px 0 10px 24px;padding:14px;border-radius:12px;border:1px solid var(--line, #ddd)"><b>{{ "Поддержка" if r.sender == "admin" else "Клиент" }}</b><p class="tiny muted">{{ r.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p><p style="white-space:pre-wrap;overflow-wrap:anywhere;margin-bottom:0">{{ r.message }}</p></div>{% endfor %}
-  {% if m.status != 'closed' %}<form method="post" action="{{ url_for('admin_reply_support',mid=m.id) }}" style="margin-top:16px"><label for="reply-{{ m.id }}">Ответить клиенту</label><textarea id="reply-{{ m.id }}" name="message" rows="4" maxlength="2000" required placeholder="Напиши ответ клиенту..." style="width:100%;margin:8px 0 12px"></textarea><button class="btn primary" type="submit">Отправить ответ</button></form><form method="post" action="{{ url_for('admin_close_support',mid=m.id) }}" style="margin-top:10px"><button class="btn secondary" type="submit">Закрыть обращение</button></form>{% endif %}
+  <div class="row"><div><b>Обращение #{{ m.id }} · {{ m.nickname }}</b><p class="tiny muted">{{ m.email or 'Email не указан' }} · {{ m.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p></div><div class="amount"><span class="status status-{{ 'active' if m.status == 'closed' else 'awaiting_review' }}">{{ 'Обработано' if m.status == 'closed' else 'Новое обращение' }}</span></div></div>
+  <p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ m.message }}</p>
+  {% if m.status != 'closed' %}<form method="post" action="{{ url_for('admin_close_support',mid=m.id) }}"><button class="btn primary" type="submit">Отметить обработанным</button></form>{% endif %}
 </article>
 {% else %}
 <div class="empty"><strong>Обращений пока нет.</strong><p>Когда клиент отправит сообщение через кнопку «Поддержка», оно появится здесь.</p></div>
