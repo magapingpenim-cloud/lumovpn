@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Мои вопросы — FlankVPN{% endblock %}
+{% block content %}
+<section class="pagetitle">
+  <div class="eyebrow">FLANKVPN / ПОДДЕРЖКА</div>
+  <h1>Мои вопросы</h1>
+  <p class="muted">Здесь находятся твои обращения в поддержку и ответы администратора.</p>
+  <div class="actions" style="margin-top:16px"><a class="btn secondary" href="{{ url_for('dashboard') }}">Вернуться в кабинет</a></div>
+</section>
+{% for m in support_messages %}
+<article class="order" style="margin-bottom:16px">
+  <div class="row"><div><b>Обращение #{{ m.id }}</b><p class="tiny muted">{{ m.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p></div><span class="status status-{{ 'active' if m.reply else 'awaiting_review' }}">{{ 'Есть ответ' if m.reply else 'Ожидает ответа' }}</span></div>
+  <h3>Твой вопрос</h3>
+  <p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ m.message }}</p>
+  {% if m.reply %}
+  <div class="admin-help" style="margin-top:14px">
+    <strong>Ответ поддержки{% if m.replied_at %} · {{ m.replied_at.strftime('%d.%m.%Y %H:%M') }} UTC{% endif %}</strong>
+    <p style="white-space:pre-wrap;overflow-wrap:anywhere">{{ m.reply }}</p>
+  </div>
+  {% else %}
+  <p class="muted">Поддержка ещё не ответила. Обнови эту страницу позже.</p>
+  {% endif %}
+</article>
+{% else %}
+<div class="empty"><strong>Ты пока не отправлял вопросы из своего аккаунта.</strong><p>Нажми «Поддержка» внизу страницы, чтобы написать нам. После входа в аккаунт вопросы и ответы будут доступны здесь.</p></div>
+{% endfor %}
+{% endblock %}
