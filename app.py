@@ -132,6 +132,8 @@ class SupportMessage(db.Model):
  nickname=db.Column(db.String(80),nullable=False)
  email=db.Column(db.String(160),nullable=False,default="")
  message=db.Column(db.Text,nullable=False)
+ reply=db.Column(db.Text,nullable=True)
+ replied_at=db.Column(db.DateTime,nullable=True)
  status=db.Column(db.String(20),nullable=False,default="new")
  created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
  user=db.relationship("User",backref=db.backref("support_messages",lazy=True))
@@ -744,6 +746,34 @@ def admin_reply_support(mid):
   flash("Не удалось отправить ответ. Проверь логи Render и настройки Resend; обращение оставлено открытым.","error")
  return redirect(url_for("admin_support"))
 
+@app.route("/support/my")
+@login_required
+def my_support():
+ messages=SupportMessage.query.filter_by(user_id=current_user.id).order_by(SupportMessage.created_at.desc()).all()
+ return render_template("my_support.html",support_messages=messages)
+
+@app.route("/admin/support/<int:mid>/reply",methods=["POST"])
+def admin_reply_support(mid):
+ if not is_admin(): abort(403)
+ item=db.session.get(SupportMessage,mid)
+ if not item: abort(404)
+ reply=request.form.get("reply","").strip()
+ if len(reply)<1 or len(reply)>4000:
+  flash("Ответ должен содержать от 1 до 4000 символов.","error")
+  return redirect(url_for("admin_support"))
+ item.reply=reply
+ item.replied_at=datetime.utcnow()
+ item.status="closed"
+ try:
+  db.session.commit()
+ except Exception:
+  db.session.rollback()
+  app.logger.exception("Could not save support reply for message %s",mid)
+  flash("Не удалось сохранить ответ. Попробуй ещё раз.","error")
+  return redirect(url_for("admin_support"))
+ flash("Ответ сохранён. Он появится в разделе «Мои вопросы» у клиента, если обращение отправлено из его аккаунта.","success")
+ return redirect(url_for("admin_support"))
+
 @app.route("/admin/support/<int:mid>/close",methods=["POST"])
 def admin_close_support(mid):
  if not is_admin(): abort(403)
@@ -855,6 +885,13 @@ with app.app_context():
     conn.execute(text(f'ALTER TABLE "{GameState.__tablename__}" ADD COLUMN contest_points INTEGER NOT NULL DEFAULT 0'))
    if "redeem_count" not in game_columns:
     conn.execute(text(f'ALTER TABLE "{GameState.__tablename__}" ADD COLUMN redeem_count INTEGER NOT NULL DEFAULT 0'))
+  support_table=SupportMessage.__tablename__
+  if inspector.has_table(support_table):
+   support_columns={column["name"] for column in inspector.get_columns(support_table)}
+   if "reply" not in support_columns:
+    conn.execute(text('ALTER TABLE "'+support_table+'" ADD COLUMN reply TEXT'))
+   if "replied_at" not in support_columns:
+    conn.execute(text('ALTER TABLE "'+support_table+'" ADD COLUMN replied_at TIMESTAMP'))
   order_table=Order.__tablename__
   if inspector.has_table(order_table):
    order_columns={column["name"] for column in inspector.get_columns(order_table)}
