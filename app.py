@@ -390,7 +390,9 @@ def telegram_webhook(secret):
      db.session.add(draft)
     draft.pending_tariff=key; draft.nickname=None; draft.awaiting_nickname=True; draft.updated_at=datetime.utcnow()
     db.session.commit()
-    send(f"Ты выбрал тариф «{TARIFFS[key][\u0027title\u0027]}».\n\nВведите свой ник, который вы будете использовать при оплате. Важно: при переводе укажи именно этот ник, без изменений.")
+    tariff_title=TARIFFS[key]["title"]
+    send(f"Ты выбрал тариф «{tariff_title}».\n\nВведите свой ник, который вы будете использовать при оплате. Важно: при переводе укажи именно этот ник, без изменений.")
+
   elif callback_data.startswith("buy:"):
    parts=callback_data.split(":")
    if len(parts)!=3 or parts[1] not in ("1","3","12") or parts[2] not in PAYMENTS:
@@ -415,7 +417,7 @@ def telegram_webhook(secret):
       db.session.commit()
       notify_admin_telegram(f"🆕 Новый заказ из Telegram FlankVPN #{order.id}\nНикнейм: {order.nickname}\nEmail: {order.email}\nTelegram ID: {telegram_id}\nТариф: {tariff['title']}\nСумма: {order.amount} ₽\nСпособ: {PAYMENTS[method]['title']}\nСтатус: ожидает оплаты")
       details=PAYMENTS[method]["detail"]
-      send(f"Заказ #{order.id} создан!\nТариф: {tariff['title']}\nК оплате: {order.amount} ₽\n\nСпособ: {PAYMENTS[method]['title']}\nРеквизиты: {details}\n\nПосле перевода нажми «Я оплатил». Администратор проверит поступление денег.",keyboard=False,
+      send(f"Заказ #{order.id} создан!\nТариф: {tariff['title']}\nК оплате: {order.amount} ₽\nНик для комментария к переводу: {order.nickname}\n\nСпособ: {PAYMENTS[method]['title']}\nРеквизиты: {details}\n\nОбязательно укажи ник «{order.nickname}» в комментарии к переводу. Затем нажми «Я оплатил». Доступ будет выдан после проверки оплаты администратором.",keyboard=False,
        inline=[[{"text":"💳 Я оплатил","callback_data":f"paid:{order.id}"}],
                [{"text":"🌐 Открыть сайт","url":"https://flankvpn.ru"}]])
      except Exception:
@@ -759,12 +761,22 @@ def confirm(oid):
  if o.status not in ("awaiting_review","error"): flash("Нельзя подтвердить заказ в этом статусе.","error"); return redirect(url_for("admin_orders"))
  try:
   o.status="processing"; db.session.commit(); provision(o)
-  email_sent=send_subscription_email(o)
-  notify_admin_telegram(f"✅ Доступ создан для заказа #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email}\nПисьмо клиенту: {'отправлено' if email_sent else 'НЕ отправлено — проверь Resend и логи Render'}")
-  if email_sent:
-   flash("Доступ выдан, ссылка подписки отправлена клиенту на email.","success")
+  email_sent=send_subscription_email(o) if o.email else False
+  telegram_sent=False
+  if o.telegram_id and o.subscription_url:
+   bot_token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
+   if bot_token:
+    try:
+     tg_title=TARIFFS.get(o.tariff_key,{}).get("title",o.tariff_key)
+     tg_resp=requests.post("https://api.telegram.org/bot"+bot_token+"/sendMessage",json={"chat_id":o.telegram_id,"text":f"✅ Оплата заказа #{o.id} подтверждена! Твоя подписка FlankVPN готова.\n\nТариф: {tg_title}\nНик: {o.nickname}\nСсылка для подключения:\n{o.subscription_url}\n\nДобавь ссылку в совместимое VPN-приложение.","disable_web_page_preview":True},timeout=10)
+     tg_resp.raise_for_status(); telegram_sent=bool(tg_resp.json().get("ok"))
+    except Exception:
+     app.logger.exception("Could not send subscription to Telegram for order %s",o.id)
+  notify_admin_telegram(f"✅ Доступ создан для заказа #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email or 'не указан (Telegram)'}\nДоставка: {'Telegram отправлено' if telegram_sent else ('email отправлено' if email_sent else 'не удалось отправить клиенту — проверь логи Render')}")
+  if telegram_sent or email_sent:
+   flash("Доступ выдан, ссылка подписки отправлена клиенту.","success")
   else:
-   flash("VPN-доступ создан, но письмо клиенту не отправлено. Проверь настройки RESEND_API_KEY, RESEND_FROM_EMAIL и логи Render.","error")
+   flash("VPN-доступ создан, но сообщение со ссылкой клиенту не отправлено. Проверь токен Telegram и логи Render.","error")
  except Exception as e:
   db.session.rollback(); o=db.session.get(Order,oid); o.status="error"; o.error_message=str(e)[:400]; db.session.commit(); app.logger.exception("H1 API error")
   notify_admin_telegram(f"❌ Не удалось выдать VPN-доступ для заказа #{o.id}\nНикнейм: {o.nickname}\nПричина: {o.error_message}")
