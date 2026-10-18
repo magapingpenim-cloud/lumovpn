@@ -384,10 +384,28 @@ def game_paid(pid):
  purchase=db.session.get(GamePurchase,pid)
  if not purchase or purchase.user_id!=current_user.id: abort(404)
  if purchase.status=="awaiting_payment":
-  purchase.status="awaiting_review"; db.session.commit()
-  notify_admin_telegram(f"💳 Заявка на автокликер #{purchase.id}: клиент сообщил об оплате\nНикнейм: {purchase.nickname}\nСумма: {purchase.amount} ₽\nСпособ: {PAYMENTS[purchase.payment_method]['title']}\nПоступление нужно проверить вручную.")
-  flash("Заявка отправлена администратору. Автокликер включится после проверки оплаты.","success")
- return redirect(url_for("game"))
+  try:
+   purchase.status="awaiting_review"
+   db.session.commit()
+  except Exception:
+   db.session.rollback()
+   app.logger.exception("Could not mark autoclicker purchase %s as awaiting review",pid)
+   flash("Не удалось отправить заявку. Попробуй ещё раз; если ошибка повторится, сообщи администратору.", "error")
+   return redirect(url_for("game_payment",pid=pid))
+  message=(f"💳 Клиент сообщил об оплате автокликера\nЗаявка #{purchase.id}\n"
+           f"Никнейм: {purchase.nickname}\nEmail: {purchase.email}\n"
+           f"Сумма: {purchase.amount} ₽\nСпособ: {PAYMENTS[purchase.payment_method]['title']}\n"
+           "Проверь поступление денег в панели FlankVPN → Заказы и оплаты → Заявки на автокликер.")
+  notify_admin_telegram(message)
+  app.logger.info("Autoclicker purchase %s submitted for review by user %s",purchase.id,current_user.id)
+  flash("Заявка отправлена на проверку. Она должна появиться в админке в разделе «Заявки на автокликер».", "success")
+ elif purchase.status=="awaiting_review":
+  flash("Эта заявка уже отправлена и ожидает проверки.", "success")
+ elif purchase.status=="active":
+  flash("Автокликер уже активирован.", "success")
+ else:
+  flash("Эта заявка больше не ожидает оплаты. Если это ошибка, обратись к администратору.", "error")
+ return redirect(url_for("game_payment",pid=pid))
 
 @app.route("/admin/game-purchase/<int:pid>/confirm",methods=["POST"])
 def admin_confirm_game_purchase(pid):
