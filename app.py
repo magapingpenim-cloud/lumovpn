@@ -843,6 +843,11 @@ with app.app_context():
     conn.execute(text(f'ALTER TABLE "{GameState.__tablename__}" ADD COLUMN contest_points INTEGER NOT NULL DEFAULT 0'))
    if "redeem_count" not in game_columns:
     conn.execute(text(f'ALTER TABLE "{GameState.__tablename__}" ADD COLUMN redeem_count INTEGER NOT NULL DEFAULT 0'))
+  support_table=SupportMessage.__tablename__
+  if inspector.has_table(support_table):
+   support_columns={column["name"] for column in inspector.get_columns(support_table)}
+   if "telegram_id" not in support_columns:
+    conn.execute(text(f'ALTER TABLE "{support_table}" ADD COLUMN telegram_id VARCHAR(40)'))
   order_table=Order.__tablename__
   if inspector.has_table(order_table):
    order_columns={column["name"] for column in inspector.get_columns(order_table)}
