@@ -134,7 +134,16 @@ class SupportMessage(db.Model):
  message=db.Column(db.Text,nullable=False)
  status=db.Column(db.String(20),nullable=False,default="new")
  created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+ telegram_id=db.Column(db.String(40),nullable=True,index=True)
  user=db.relationship("User",backref=db.backref("support_messages",lazy=True))
+ replies=db.relationship("SupportReply",backref="ticket",lazy=True,cascade="all, delete-orphan",order_by="SupportReply.created_at")
+
+class SupportReply(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ support_message_id=db.Column(db.Integer,db.ForeignKey("support_message.id"),nullable=False,index=True)
+ sender=db.Column(db.String(12),nullable=False,default="admin")
+ message=db.Column(db.Text,nullable=False)
+ created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
 
 
 class TelegramAccount(db.Model):
@@ -502,11 +511,11 @@ def telegram_webhook(secret):
   username=(from_user.get("username") or "").strip()
   nickname=user.nickname if user else ("@"+username if username else str(from_user.get("first_name") or "Telegram-клиент"))
   email=user.email if user else ""
-  item=SupportMessage(user_id=user.id if user else None,nickname=nickname,email=email,message="[Telegram] "+arg[:1900])
+  item=SupportMessage(user_id=user.id if user else None,nickname=nickname,email=email,message=arg[:1900],telegram_id=telegram_id)
   db.session.add(item)
   try:
    db.session.commit()
-   notify_admin_telegram(f"✉️ Обращение из Telegram #{item.id}\nОт: {nickname}\nEmail: {email or 'не привязан'}\nСообщение: {arg[:1000]}")
+   notify_admin_telegram(f"✉️ Обращение из Telegram #{item.id}\nОт: {nickname}\nTelegram ID: {telegram_id}\nEmail: {email or 'не привязан'}\nСообщение: {arg[:1000]}")
    send("Сообщение отправлено в поддержку FlankVPN. Мы получили обращение.")
   except Exception:
    db.session.rollback()
@@ -688,6 +697,40 @@ def support_send():
  notify_admin_telegram(f"✉️ Новое сообщение в поддержку FlankVPN #{item.id}\nОт: {item.nickname}\nEmail: {item.email or 'не указан'}\nСообщение: {item.message[:1200]}")
  flash("Сообщение отправлено в поддержку. Мы увидим его в панели администратора.","success")
  return redirect(request.referrer or url_for("index"))
+
+@app.route("/admin/support/<int:mid>/reply",methods=["POST"])
+def admin_reply_support(mid):
+ if not is_admin(): abort(403)
+ item=db.session.get(SupportMessage,mid)
+ if not item: abort(404)
+ reply_text=request.form.get("message","").strip()
+ if len(reply_text)<1 or len(reply_text)>2000:
+  flash("Ответ должен содержать от 1 до 2000 символов.","error")
+  return redirect(url_for("admin_support"))
+ reply=SupportReply(support_message_id=item.id,sender="admin",message=reply_text)
+ db.session.add(reply)
+ try:
+  if item.telegram_id:
+   token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
+   if not token: raise RuntimeError("TELEGRAM_BOT_TOKEN is not configured")
+   resp=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",json={"chat_id":item.telegram_id,"text":f"💬 Ответ поддержки FlankVPN по обращению #{item.id}:\n\n{reply_text}"},timeout=10)
+   resp.raise_for_status()
+   if not resp.json().get("ok"): raise RuntimeError("Telegram did not confirm delivery")
+  elif item.email:
+   api_key=os.getenv("RESEND_API_KEY","").strip(); sender=os.getenv("RESEND_FROM_EMAIL","").strip()
+   if not api_key or not sender: raise RuntimeError("Email delivery is not configured")
+   resp=requests.post("https://api.resend.com/emails",headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json"},json={"from":sender,"to":[item.email],"subject":f"Ответ поддержки FlankVPN — обращение #{item.id}","text":f"Здравствуйте, {item.nickname}!\n\nОтвет поддержки FlankVPN:\n\n{reply_text}\n\nЕсли нужно продолжить обращение, ответьте на это письмо или отправьте новое сообщение на сайте."},timeout=15)
+   resp.raise_for_status()
+  else:
+   raise RuntimeError("No Telegram ID or email is available for this ticket")
+  item.status="waiting_customer"
+  db.session.commit()
+  flash("Ответ отправлен клиенту.","success")
+ except Exception:
+  db.session.rollback()
+  app.logger.exception("Could not deliver support reply for ticket %s",mid)
+  flash("Не удалось доставить ответ. Проверь настройки Telegram/email; ответ не отмечен отправленным.","error")
+ return redirect(url_for("admin_support"))
 
 @app.route("/admin/support/<int:mid>/close",methods=["POST"])
 def admin_close_support(mid):
