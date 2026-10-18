@@ -17,6 +17,37 @@
  </div>
 </section>
 <section class="game-stage"><button type="button" id="mascot" class="mascot" aria-label="Нажми, чтобы заработать монеты"><span class="cat-face" aria-hidden="true">🐱</span></button><p class="tap-hint">Нажимай на маскота — он будет реагировать на каждый удар!</p></section>
+<section class="game-grid">
+{% for key, upgrade in upgrades.items() %}
+<article class="game-card">
+<span class="game-pill">УЛУЧШЕНИЕ</span>
+<h3>{{ upgrade.title }}</h3>
+<p>{{ upgrade.description }}</p>
+<p>Текущий уровень: <strong>{% if key == 'power' %}{{ state.click_power }}{% else %}{{ state.income_per_second }}{% endif %}</strong></p>
+<p>Цена: <strong>{{ upgrade.price }} ◉</strong></p>
+<form method="post" action="{{ url_for('game_upgrade', kind=key) }}">
+<button class="btn primary" type="submit">Купить улучшение</button>
+</form>
+</article>
+{% endfor %}
+</section>
+<section class="game-card" style="margin:18px 0;overflow-x:auto">
+<h2>Топ-100 игроков</h2>
+<p>Рейтинг участников по очкам ежемесячного конкурса.</p>
+<table style="width:100%;border-collapse:collapse;text-align:left">
+<thead><tr><th style="padding:10px;border-bottom:1px solid #dce7f5">#</th><th style="padding:10px;border-bottom:1px solid #dce7f5">Игрок</th><th style="padding:10px;border-bottom:1px solid #dce7f5">Очки</th></tr></thead>
+<tbody>
+{% for player in leaderboard %}
+<tr{% if player.id == current_user.id %} style="background:#eaf5ff;font-weight:800"{% endif %}>
+<td style="padding:10px;border-bottom:1px solid #edf2f8">{{ loop.index }}</td>
+<td style="padding:10px;border-bottom:1px solid #edf2f8">{{ player.nickname }}{% if player.id == current_user.id %} (ты){% endif %}</td>
+<td style="padding:10px;border-bottom:1px solid #edf2f8">{{ player.game_state.contest_points if player.game_state else 0 }}</td>
+</tr>
+{% else %}
+<tr><td colspan="3" style="padding:12px">Пока нет участников рейтинга.</td></tr>
+{% endfor %}
+</tbody></table>
+</section>
 <section class="game-grid" style="grid-template-columns:minmax(230px,480px);justify-content:center">
 <article class="game-card"><span class="game-pill">100 ₽ · РЕАЛЬНАЯ ОПЛАТА</span><h3>Автокликер</h3><p>{% if state.autoclicker %}Автокликер уже активирован и приносит {{ state.click_power }} монет в секунду.{% else %}Автоматически добавляет монеты каждую секунду. Включается после проверки оплаты администратором.{% endif %}</p>{% if not state.autoclicker %}<form method="post" action="{{ url_for('game_buy_autoclicker') }}"><label for="game-payment-method">Способ оплаты</label><select id="game-payment-method" name="method"><option value="sbp">СБП</option><option value="card">Банковская карта</option></select><button class="btn primary" type="submit">Купить за 100 ₽</button></form>{% else %}<span class="game-pill">Покупка подтверждена</span>{% endif %}</article></section>
 {% if purchases %}<section class="game-card"><h2>Мои заявки на автокликер</h2>{% for p in purchases %}<div class="purchase-row"><span>Заявка #{{ p.id }} · {{ p.payment_method|upper }} · {{ p.amount }} ₽</span><strong>{{ {'awaiting_payment':'Ожидает оплаты','awaiting_review':'На проверке','active':'Активирован','rejected':'Отклонена'}.get(p.status,p.status) }}</strong>{% if p.status == 'awaiting_payment' %}<a href="{{ url_for('game_payment',pid=p.id) }}">Продолжить оплату →</a>{% endif %}</div>{% endfor %}</section>{% endif %}</div>
