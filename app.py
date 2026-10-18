@@ -144,6 +144,14 @@ class TelegramAccount(db.Model):
  linked_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
  user=db.relationship("User",backref=db.backref("telegram_account",uselist=False))
 
+class TelegramCheckoutDraft(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ telegram_id=db.Column(db.String(40),unique=True,nullable=False,index=True)
+ nickname=db.Column(db.String(40),nullable=True)
+ pending_tariff=db.Column(db.String(8),nullable=True)
+ awaiting_nickname=db.Column(db.Boolean,default=False,nullable=False)
+ updated_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+
 class TelegramLinkCode(db.Model):
  id=db.Column(db.Integer,primary_key=True)
  user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False,index=True)
@@ -763,4 +771,6 @@ with app.app_context():
    order_columns={column["name"] for column in inspector.get_columns(order_table)}
    if "requested_days" not in order_columns:
     conn.execute(text(f'ALTER TABLE "{order_table}" ADD COLUMN requested_days INTEGER'))
+   if "telegram_id" not in order_columns:
+    conn.execute(text(f'ALTER TABLE "{order_table}" ADD COLUMN telegram_id VARCHAR(40)'))
 if __name__=="__main__": app.run(host="0.0.0.0",port=int(os.getenv("PORT","5001")),debug=False)
