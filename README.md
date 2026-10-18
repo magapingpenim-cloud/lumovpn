@@ -22,6 +22,24 @@ Flask-проект с подтверждением email через Resend, ре
 - Отправитель в Resend: `FlankVPN <no-reply@flankvpn.ru>` — используй его только если домен по-прежнему подтверждён и принадлежит тебе.
 - Используй постоянную PostgreSQL-базу; SQLite на файловой системе Render может потеряться при redeploy.
 
+## Telegram-бот FlankVPN
+
+Вебхук бота обслуживается тем же Flask-приложением на Render. В Render → Environment добавь:
+- `TELEGRAM_BOT_TOKEN` — токен, который выдал `@BotFather` (он также используется для уведомлений администратора).
+- `TELEGRAM_CHAT_ID` — chat ID администратора для уведомлений.
+- `TELEGRAM_WEBHOOK_SECRET` — длинная случайная строка для защиты вебхука.
+- `TELEGRAM_BOT_USERNAME` — username бота без символа `@`.
+
+После deploy открой `https://flankvpn.ru/telegram/link-code` только после входа в аккаунт — страница создаёт одноразовый код привязки Telegram. В боте отправь `/link КОД`. Код действует 10 минут.
+
+Установи webhook после deploy, подставив свой токен, секрет и фактический публичный адрес сайта:
+```bash
+curl -X POST "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://flankvpn.ru/telegram/webhook/<TELEGRAM_WEBHOOK_SECRET>"}'
+```
+Не публикуй URL вебхука с секретом и токен бота. Бот поддерживает тарифы, просмотр последних заказов после привязки аккаунта и обращения в поддержку через команду `/support текст`. Уведомления администратора отправляются через существующие `TELEGRAM_BOT_TOKEN` и `TELEGRAM_CHAT_ID`.
+
 ## Email-подтверждение
 Код из 6 цифр живёт 10 минут и ограничен пятью попытками. API-ключ Resend намеренно не сохранён в этом репозитории.
 
