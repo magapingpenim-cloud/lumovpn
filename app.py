@@ -375,11 +375,11 @@ def telegram_webhook(secret):
     for order in orders:
      title=TARIFFS.get(order.tariff_key,{}).get("title","Заказ")
      lines.append(f"#{order.id} · {title} · {order.amount} ₽ · {labels.get(order.status,order.status)}")
-    send("\\n".join(lines))
+    send("\n".join(lines))
  elif text_in in ("🔗 Привязать аккаунт","/link"):
   send("Войди на https://flankvpn.ru, затем открой https://flankvpn.ru/telegram/link-code и отправь боту команду /link КОД.")
  elif text_in in ("💬 Поддержка","/support"):
-  send("Чтобы написать в поддержку, отправь сообщение командой:\\n/support Твой вопрос")
+  send("Чтобы написать в поддержку, отправь сообщение командой:\n/support Твой вопрос")
  elif cmd=="/support" and len(arg)>=3:
   account=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
   user=db.session.get(User,account.user_id) if account else None
@@ -390,7 +390,7 @@ def telegram_webhook(secret):
   db.session.add(item)
   try:
    db.session.commit()
-   notify_admin_telegram(f"✉️ Обращение из Telegram #{item.id}\\nОт: {nickname}\\nEmail: {email or 'не привязан'}\\nСообщение: {arg[:1000]}")
+   notify_admin_telegram(f"✉️ Обращение из Telegram #{item.id}\nОт: {nickname}\nEmail: {email or 'не привязан'}\nСообщение: {arg[:1000]}")
    send("Сообщение отправлено в поддержку FlankVPN. Мы получили обращение.")
   except Exception:
    db.session.rollback()
