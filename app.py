@@ -718,49 +718,7 @@ def admin_reply_support(mid):
  if len(reply)<1 or len(reply)>4000:
   flash("Ответ должен содержать от 1 до 4000 символов.","error")
   return redirect(url_for("admin_support"))
- if not item.email or "@" not in item.email:
-  flash("У этого обращения нет корректного email клиента, поэтому отправить ответ письмом нельзя.","error")
-  return redirect(url_for("admin_support"))
- api_key=os.getenv("RESEND_API_KEY","").strip()
- sender=os.getenv("RESEND_FROM_EMAIL","").strip()
- if not api_key or not sender:
-  flash("Не настроена отправка писем: проверь RESEND_API_KEY и RESEND_FROM_EMAIL в Render → Environment.","error")
-  return redirect(url_for("admin_support"))
- safe_nick=escape(item.nickname or "клиент")
- safe_reply=escape(reply).replace("\\n","<br>")
- try:
-  response=requests.post("https://api.resend.com/emails",
-   headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json"},
-   json={"from":sender,"to":[item.email],"subject":"Ответ поддержки FlankVPN — обращение #"+str(item.id),
-    "html":"<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#10203a\"><h2>FlankVPN — ответ поддержки</h2><p>Привет, "+safe_nick+"!</p><div style=\"line-height:1.6\">"+safe_reply+"</div><hr><p style=\"color:#687891;font-size:12px\">Ответ на твоё обращение #"+str(item.id)+".</p></div>",
-    "text":"FlankVPN — ответ поддержки\\n\\nПривет, "+item.nickname+"!\\n\\n"+reply+"\\n\\nОтвет на обращение #"+str(item.id)+"."},
-   timeout=15)
-  response.raise_for_status()
-  data=response.json()
-  if not data.get("id"): raise RuntimeError("Resend did not return an email ID")
-  item.status="closed"
-  db.session.commit()
-  flash("Ответ отправлен на "+item.email+". Обращение отмечено обработанным.","success")
- except Exception:
-  app.logger.exception("Could not send support reply for message %s",mid)
-  flash("Не удалось отправить ответ. Проверь логи Render и настройки Resend; обращение оставлено открытым.","error")
- return redirect(url_for("admin_support"))
-
-@app.route("/support/my")
-@login_required
-def my_support():
- messages=SupportMessage.query.filter_by(user_id=current_user.id).order_by(SupportMessage.created_at.desc()).all()
- return render_template("my_support.html",support_messages=messages)
-
-@app.route("/admin/support/<int:mid>/reply",methods=["POST"])
-def admin_reply_support(mid):
- if not is_admin(): abort(403)
- item=db.session.get(SupportMessage,mid)
- if not item: abort(404)
- reply=request.form.get("reply","").strip()
- if len(reply)<1 or len(reply)>4000:
-  flash("Ответ должен содержать от 1 до 4000 символов.","error")
-  return redirect(url_for("admin_support"))
+ # Save the reply in the database first so it appears in the customer's account.
  item.reply=reply
  item.replied_at=datetime.utcnow()
  item.status="closed"
@@ -771,8 +729,36 @@ def admin_reply_support(mid):
   app.logger.exception("Could not save support reply for message %s",mid)
   flash("Не удалось сохранить ответ. Попробуй ещё раз.","error")
   return redirect(url_for("admin_support"))
- flash("Ответ сохранён. Он появится в разделе «Мои вопросы» у клиента, если обращение отправлено из его аккаунта.","success")
+ # Email is an additional notification; the in-site reply remains saved if email is not configured.
+ if item.email and "@" in item.email:
+  api_key=os.getenv("RESEND_API_KEY","").strip()
+  sender=os.getenv("RESEND_FROM_EMAIL","").strip()
+  if api_key and sender:
+   safe_nick=escape(item.nickname or "клиент")
+   safe_reply=escape(reply).replace("\\n","<br>")
+   try:
+    response=requests.post("https://api.resend.com/emails",
+     headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json"},
+     json={"from":sender,"to":[item.email],"subject":"Ответ поддержки FlankVPN — обращение #"+str(item.id),
+      "html":"<div style=\\"font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#10203a\\"><h2>FlankVPN — ответ поддержки</h2><p>Привет, "+safe_nick+"!</p><div style=\\"line-height:1.6\\">"+safe_reply+"</div><hr><p style=\\"color:#687891;font-size:12px\\">Ответ на твоё обращение #"+str(item.id)+".</p></div>",
+      "text":"FlankVPN — ответ поддержки\\n\\nПривет, "+item.nickname+"!\\n\\n"+reply+"\\n\\nОтвет на обращение #"+str(item.id)+"."},
+     timeout=15)
+    response.raise_for_status()
+   except Exception:
+    app.logger.exception("In-site support reply saved, but email notification failed for message %s",mid)
+    flash("Ответ сохранён в разделе клиента «Мои вопросы», но письмо отправить не удалось. Проверь настройки Resend.","error")
+    return redirect(url_for("admin_support"))
+  else:
+   flash("Ответ сохранён в разделе клиента «Мои вопросы». Email-уведомление не отправлено: Resend не настроен.","success")
+   return redirect(url_for("admin_support"))
+ flash("Ответ сохранён в разделе клиента «Мои вопросы».","success")
  return redirect(url_for("admin_support"))
+
+@app.route("/support/my")
+@login_required
+def my_support():
+ messages=SupportMessage.query.filter_by(user_id=current_user.id).order_by(SupportMessage.created_at.desc()).all()
+ return render_template("my_support.html",support_messages=messages)
 
 @app.route("/admin/support/<int:mid>/close",methods=["POST"])
 def admin_close_support(mid):
