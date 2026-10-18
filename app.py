@@ -419,22 +419,20 @@ def telegram_webhook(secret):
       details=PAYMENTS[method]["detail"]
       recipient=os.getenv("PAYMENT_RECIPIENT","").strip() or "Получатель не настроен — свяжись с поддержкой"
       months=tariff.get("months",0)
-      list_price=49*months if months else 0
-      saving=max(0,list_price-order.amount)
       payment_text=(
-       f"🧾 ЗАКАЗ FLANKVPN #{order.id}\\n\\n"
-       f"Тариф: {tariff['title']}\\n"
-       f"К оплате: {order.amount} ₽\\n"
-       f"Способ оплаты: {PAYMENTS[method]['title']}\\n\\n"
-       f"💳 РЕКВИЗИТЫ ДЛЯ ПЕРЕВОДА\\n{details}\\n"
-       f"Получатель: {recipient}\\n\\n"
-       f"⚠️ ОБЯЗАТЕЛЬНО УКAЖИ НИК В СООБЩЕНИИ К ПЕРЕВОДУ\\n"
-       f"Твой ник: {order.nickname}\\n"
-       f"Укажи именно «{order.nickname}», без изменений. Не указывай вместо него имя или email. Если поле сообщения к переводу доступно, впиши ник туда.\\n\\n"
-       f"📋 ЧТО ДЕЛАТЬ\\n"
-       f"1. Переведи ровно {order.amount} ₽ по указанным реквизитам.\\n"
-       f"2. В сообщении к переводу укажи ник «{order.nickname}».\\n"
-       f"3. Нажми «Я оплатил» только после фактической оплаты.\\n\\n"
+       f"🧾 ЗАКАЗ FLANKVPN #{order.id}\n\n"
+       f"Тариф: {tariff['title']}\n"
+       f"К оплате: {order.amount} ₽\n"
+       f"Способ оплаты: {PAYMENTS[method]['title']}\n\n"
+       f"💳 РЕКВИЗИТЫ ДЛЯ ПЕРЕВОДА\n{details}\n"
+       f"Получатель: {recipient}\n\n"
+       f"⚠️ ОБЯЗАТЕЛЬНО УКAЖИ НИК В СООБЩЕНИИ К ПЕРЕВОДУ\n"
+       f"Твой ник: {order.nickname}\n"
+       f"Укажи именно «{order.nickname}», без изменений. Не указывай вместо него имя или email. Если поле сообщения к переводу доступно, впиши ник туда.\n\n"
+       f"📋 ЧТО ДЕЛАТЬ\n"
+       f"1. Переведи ровно {order.amount} ₽ по указанным реквизитам.\n"
+       f"2. В сообщении к переводу укажи ник «{order.nickname}».\n"
+       f"3. Нажми «Я оплатил» только после фактической оплаты.\n\n"
        f"После нажатия администратор вручную проверит поступление денег. Само нажатие не подтверждает оплату; доступ выдаётся после проверки."
       )
       send(payment_text,keyboard=False,
