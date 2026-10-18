@@ -417,7 +417,27 @@ def telegram_webhook(secret):
       db.session.commit()
       notify_admin_telegram(f"🆕 Новый заказ из Telegram FlankVPN #{order.id}\nНикнейм: {order.nickname}\nEmail: {order.email}\nTelegram ID: {telegram_id}\nТариф: {tariff['title']}\nСумма: {order.amount} ₽\nСпособ: {PAYMENTS[method]['title']}\nСтатус: ожидает оплаты")
       details=PAYMENTS[method]["detail"]
-      send(f"Заказ #{order.id} создан!\nТариф: {tariff['title']}\nК оплате: {order.amount} ₽\nНик для комментария к переводу: {order.nickname}\n\nСпособ: {PAYMENTS[method]['title']}\nРеквизиты: {details}\n\nОбязательно укажи ник «{order.nickname}» в комментарии к переводу. Затем нажми «Я оплатил». Доступ будет выдан после проверки оплаты администратором.",keyboard=False,
+      recipient=os.getenv("PAYMENT_RECIPIENT","").strip() or "Получатель не настроен — свяжись с поддержкой"
+      months=tariff.get("months",0)
+      list_price=49*months if months else 0
+      saving=max(0,list_price-order.amount)
+      payment_text=(
+       f"🧾 ЗАКАЗ FLANKVPN #{order.id}\\n\\n"
+       f"Тариф: {tariff['title']}\\n"
+       f"К оплате: {order.amount} ₽\\n"
+       f"Способ оплаты: {PAYMENTS[method]['title']}\\n\\n"
+       f"💳 РЕКВИЗИТЫ ДЛЯ ПЕРЕВОДА\\n{details}\\n"
+       f"Получатель: {recipient}\\n\\n"
+       f"⚠️ ОБЯЗАТЕЛЬНО УКAЖИ НИК В СООБЩЕНИИ К ПЕРЕВОДУ\\n"
+       f"Твой ник: {order.nickname}\\n"
+       f"Укажи именно «{order.nickname}», без изменений. Не указывай вместо него имя или email. Если поле сообщения к переводу доступно, впиши ник туда.\\n\\n"
+       f"📋 ЧТО ДЕЛАТЬ\\n"
+       f"1. Переведи ровно {order.amount} ₽ по указанным реквизитам.\\n"
+       f"2. В сообщении к переводу укажи ник «{order.nickname}».\\n"
+       f"3. Нажми «Я оплатил» только после фактической оплаты.\\n\\n"
+       f"После нажатия администратор вручную проверит поступление денег. Само нажатие не подтверждает оплату; доступ выдаётся после проверки."
+      )
+      send(payment_text,keyboard=False,
        inline=[[{"text":"💳 Я оплатил","callback_data":f"paid:{order.id}"}],
                [{"text":"🌐 Открыть сайт","url":"https://flankvpn.ru"}]])
      except Exception:
