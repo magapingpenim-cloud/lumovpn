@@ -361,7 +361,7 @@ def telegram_webhook(secret):
   if not tariff or key not in ("1","3","12"):
    send("Неизвестный тариф. Открой раздел «Тарифы» ещё раз.")
    return
-  send(f"Тариф: {tariff['title']}\\nСтоимость: {tariff['price']} ₽\\n\\nВыбери способ оплаты:",keyboard=False,
+  send(f"Тариф: {tariff['title']}\nСтоимость: {tariff['price']} ₽\n\nВыбери способ оплаты:",keyboard=False,
    inline=[[{"text":"Перевод по номеру (СБП)","callback_data":f"buy:{key}:sbp"}],
            [{"text":"Банковская карта","callback_data":f"buy:{key}:card"}],
            [{"text":"⬅️ К тарифам","callback_data":"show_tariffs"}]])
@@ -382,7 +382,7 @@ def telegram_webhook(secret):
     if not account:
      bot_name=os.getenv("TELEGRAM_BOT_USERNAME","").strip().lstrip("@")
      link_code_url="https://flankvpn.ru/telegram/link-code"
-     send("Перед покупкой привяжи аккаунт FlankVPN, чтобы заказ появился в админ-панели и был связан с твоей подпиской.\\n\\n1. Войди на сайте.\\n2. Открой "+link_code_url+"\\n3. Отправь боту команду /link КОД"+("\\n\\nБот: https://t.me/"+bot_name if bot_name else ""))
+     send("Перед покупкой привяжи аккаунт FlankVPN, чтобы заказ появился в админ-панели и был связан с твоей подпиской.\n\n1. Войди на сайте.\n2. Открой "+link_code_url+"\n3. Отправь боту команду /link КОД"+("\n\nБот: https://t.me/"+bot_name if bot_name else ""))
     else:
      key=parts[1]; method=parts[2]; tariff=TARIFFS[key]
      order=Order(user_id=account.user_id,nickname=account.user.nickname,email=account.user.email,
@@ -390,9 +390,9 @@ def telegram_webhook(secret):
      db.session.add(order)
      try:
       db.session.commit()
-      notify_admin_telegram(f"🆕 Новый заказ из Telegram FlankVPN #{order.id}\\nНикнейм: {order.nickname}\\nEmail: {order.email}\\nTelegram ID: {telegram_id}\\nТариф: {tariff['title']}\\nСумма: {order.amount} ₽\\nСпособ: {PAYMENTS[method]['title']}\\nСтатус: ожидает оплаты")
+      notify_admin_telegram(f"🆕 Новый заказ из Telegram FlankVPN #{order.id}\nНикнейм: {order.nickname}\nEmail: {order.email}\nTelegram ID: {telegram_id}\nТариф: {tariff['title']}\nСумма: {order.amount} ₽\nСпособ: {PAYMENTS[method]['title']}\nСтатус: ожидает оплаты")
       details=PAYMENTS[method]["detail"]
-      send(f"Заказ #{order.id} создан!\\nТариф: {tariff['title']}\\nК оплате: {order.amount} ₽\\n\\nСпособ: {PAYMENTS[method]['title']}\\nРеквизиты: {details}\\n\\nПосле перевода нажми «Я оплатил». Администратор проверит поступление денег.",keyboard=False,
+      send(f"Заказ #{order.id} создан!\nТариф: {tariff['title']}\nК оплате: {order.amount} ₽\n\nСпособ: {PAYMENTS[method]['title']}\nРеквизиты: {details}\n\nПосле перевода нажми «Я оплатил». Администратор проверит поступление денег.",keyboard=False,
        inline=[[{"text":"💳 Я оплатил","callback_data":f"paid:{order.id}"}],
                [{"text":"🌐 Открыть сайт","url":"https://flankvpn.ru"}]])
      except Exception:
@@ -410,7 +410,7 @@ def telegram_webhook(secret):
     order.status="awaiting_review"
     try:
      db.session.commit()
-     notify_admin_telegram(f"💳 Клиент заявил об оплате заказа #{order.id} через Telegram\\nНикнейм: {order.nickname}\\nEmail: {order.email}\\nСумма: {order.amount} ₽\\nСпособ: {PAYMENTS.get(order.payment_method,{}).get('title',order.payment_method)}\\nПроверь поступление денег в админ-панели.")
+     notify_admin_telegram(f"💳 Клиент заявил об оплате заказа #{order.id} через Telegram\nНикнейм: {order.nickname}\nEmail: {order.email}\nСумма: {order.amount} ₽\nСпособ: {PAYMENTS.get(order.payment_method,{}).get('title',order.payment_method)}\nПроверь поступление денег в админ-панели.")
      send(f"Заявка на проверку оплаты заказа #{order.id} отправлена. Доступ будет подготовлен после подтверждения администратором.")
     except Exception:
      db.session.rollback()
@@ -438,7 +438,7 @@ def telegram_webhook(secret):
     for order in orders:
      title=TARIFFS.get(order.tariff_key,{}).get("title","Заказ")
      lines.append(f"#{order.id} · {title} · {order.amount} ₽ · {labels.get(order.status,order.status)}")
-    send("\\n".join(lines))
+    send("\n".join(lines))
  elif cmd=="/link" and arg:
   link=TelegramLinkCode.query.filter_by(code=arg.upper(),used=False).first()
   if not link or link.expires_at<datetime.utcnow():
@@ -463,7 +463,7 @@ def telegram_webhook(secret):
  elif text_in in ("🔗 Привязать аккаунт","/link"):
   send("Войди на https://flankvpn.ru, затем открой https://flankvpn.ru/telegram/link-code и отправь боту команду /link КОД.")
  elif text_in in ("💬 Поддержка","/support"):
-  send("Чтобы написать в поддержку, отправь сообщение командой:\\n/support Твой вопрос")
+  send("Чтобы написать в поддержку, отправь сообщение командой:\n/support Твой вопрос")
  elif cmd=="/support" and len(arg)>=3:
   account=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
   user=db.session.get(User,account.user_id) if account else None
@@ -474,7 +474,7 @@ def telegram_webhook(secret):
   db.session.add(item)
   try:
    db.session.commit()
-   notify_admin_telegram(f"✉️ Обращение из Telegram #{item.id}\\nОт: {nickname}\\nEmail: {email or 'не привязан'}\\nСообщение: {arg[:1000]}")
+   notify_admin_telegram(f"✉️ Обращение из Telegram #{item.id}\nОт: {nickname}\nEmail: {email or 'не привязан'}\nСообщение: {arg[:1000]}")
    send("Сообщение отправлено в поддержку FlankVPN. Мы получили обращение.")
   except Exception:
    db.session.rollback()
