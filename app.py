@@ -7,6 +7,8 @@ from flask_login import LoginManager,UserMixin,login_user,logout_user,login_requ
 from werkzeug.security import generate_password_hash,check_password_hash
 from sqlalchemy import func, inspect, text
 from html import escape
+from authlib.integrations.flask_client import OAuth
+import jwt
 # Redeploy trigger: apply current Render environment settings.
 app=Flask(__name__); app.config["SECRET_KEY"]=os.getenv("SECRET_KEY","dev-only-change-me")
 dburl=os.getenv("DATABASE_URL","sqlite:///flankvpn.db")
@@ -17,6 +19,8 @@ elif dburl.startswith("postgresql://"):
  dburl=dburl.replace("postgresql://","postgresql+psycopg2://",1)
 app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False; app.config["SEND_FILE_MAX_AGE_DEFAULT"]=86400
 app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
+oauth = OAuth(app)
+oauth.register(name="google", client_id=os.getenv("GOOGLE_CLIENT_ID"), client_secret=os.getenv("GOOGLE_CLIENT_SECRET"), server_metadata_url="https://accounts.google.com/.well-known/openid-configuration", client_kwargs={"scope":"openid email profile"})
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
 TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"1":{"months":1,"price":129,"title":"1 месяц","discount":0,"save":0},"3":{"months":3,"price":348,"title":"3 месяца","discount":10,"save":39},"12":{"months":12,"price":1238,"title":"12 месяцев","discount":20,"save":310}}
 PAYMENTS={"sbp":{"title":"СБП","detail":os.getenv("PAYMENT_SBP_PHONE","Настройте PAYMENT_SBP_PHONE")},"card":{"title":"Банковская карта","detail":os.getenv("PAYMENT_CARD_NUMBER","Настройте PAYMENT_CARD_NUMBER")}}
@@ -84,7 +88,7 @@ def send_subscription_email(order):
   app.logger.exception("Failed to email subscription for order %s to %s.",order.id,order.email)
   return False
 class User(UserMixin,db.Model):
- id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False)
+ id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False); google_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); apple_sub=db.Column(db.String(255),unique=True,nullable=True,index=True)
  def set_password(self,p): self.password_hash=generate_password_hash(p)
  def check_password(self,p): return check_password_hash(self.password_hash,p)
 class Order(db.Model):
@@ -294,6 +298,135 @@ def verify_email():
    return redirect(url_for("dashboard"))
   db.session.commit(); flash("Неверный код. Проверь письмо и попробуй ещё раз.","error")
  return render_template("verify.html",email=email)
+def apple_client_secret():
+ team=os.getenv("APPLE_TEAM_ID","").strip()
+ key_id=os.getenv("APPLE_KEY_ID","").strip()
+ client_id=os.getenv("APPLE_CLIENT_ID","").strip()
+ private_key=os.getenv("APPLE_PRIVATE_KEY","").replace("\\n","\\n").strip()
+ if not all((team,key_id,client_id,private_key)):
+  raise RuntimeError("Apple Sign-In is not configured.")
+ now=int(datetime.utcnow().timestamp())
+ return jwt.encode({"iss":team,"iat":now,"exp":now+3000,"aud":"https://appleid.apple.com","sub":client_id},private_key,algorithm="ES256",headers={"kid":key_id})
+
+def register_apple_client():
+ client_id=os.getenv("APPLE_CLIENT_ID","").strip()
+ oauth.register(name="apple",client_id=client_id,client_secret=apple_client_secret(),
+  server_metadata_url="https://appleid.apple.com/.well-known/openid-configuration",
+  client_kwargs={"scope":"openid email"})
+ return oauth.create_client("apple")
+
+def create_social_account(email, provider_sub, provider):
+ email=(email or "").strip().lower()
+ if not email or "@" not in email:
+  raise ValueError("Провайдер не передал подтверждённый email. Попробуй обычную регистрацию.")
+ existing=User.query.filter(func.lower(User.email)==email).first()
+ if existing:
+  if provider=="google":
+   if existing.google_sub and existing.google_sub!=provider_sub:
+    raise ValueError("Этот Google-аккаунт уже привязан к другому пользователю.")
+   existing.google_sub=provider_sub
+  else:
+   if existing.apple_sub and existing.apple_sub!=provider_sub:
+    raise ValueError("Этот Apple-аккаунт уже привязан к другому пользователю.")
+   existing.apple_sub=provider_sub
+  db.session.commit()
+  return existing,False
+ base="".join(ch for ch in email.split("@")[0].lower() if ch.isalnum() or ch in "_-")[:28].strip("_-") or "user"
+ nickname=base
+ while User.query.filter(func.lower(User.nickname)==nickname.lower()).first():
+  nickname=(base[:24]+"_"+secrets.token_hex(2))
+ user=User(nickname=nickname,email=email,password_hash=generate_password_hash(secrets.token_urlsafe(32)),
+  google_sub=provider_sub if provider=="google" else None,apple_sub=provider_sub if provider=="apple" else None)
+ db.session.add(user)
+ try:
+  db.session.flush()
+  trial=Order(user_id=user.id,nickname=user.nickname,email=user.email,tariff_key="trial",amount=0,payment_method="trial",status="processing")
+  db.session.add(trial)
+  db.session.commit()
+ except Exception:
+  db.session.rollback()
+  raise
+ try:
+  provision(trial)
+  send_subscription_email(trial)
+ except Exception as exc:
+  db.session.rollback()
+  trial=db.session.get(Order,trial.id)
+  if trial:
+   trial.status="error"; trial.error_message=str(exc)[:400]; db.session.commit()
+  app.logger.exception("Could not provision trial for social login")
+ return user,True
+
+def finish_social_login(provider, claims):
+ subject=str(claims.get("sub") or "").strip()
+ email=str(claims.get("email") or "").strip().lower()
+ verified=claims.get("email_verified",False)
+ if isinstance(verified,str): verified=verified.lower()=="true"
+ if not subject or not email or not verified:
+  flash("Не удалось подтвердить аккаунт у провайдера. Попробуй обычный вход или регистрацию.","error")
+  return redirect(url_for("login"))
+ column=User.google_sub if provider=="google" else User.apple_sub
+ user=User.query.filter(column==subject).first()
+ if user is None:
+  try:
+   user,created=create_social_account(email,subject,provider)
+  except ValueError as exc:
+   flash(str(exc),"error")
+   return redirect(url_for("login"))
+  except Exception:
+   db.session.rollback()
+   app.logger.exception("Social account creation failed for %s",provider)
+   flash("Не удалось создать аккаунт. Попробуй позже.","error")
+   return redirect(url_for("login"))
+ login_user(user)
+ flash("Аккаунт создан. Проверь личный кабинет и статус пробного доступа." if created else "Вход выполнен.","success")
+ return redirect(url_for("dashboard"))
+
+@app.route("/auth/google")
+def google_login():
+ if not os.getenv("GOOGLE_CLIENT_ID") or not os.getenv("GOOGLE_CLIENT_SECRET"):
+  flash("Вход через Google пока не настроен администратором.","error")
+  return redirect(url_for("login"))
+ client=oauth.create_client("google")
+ return client.authorize_redirect(url_for("google_callback",_external=True))
+
+@app.route("/auth/google/callback")
+def google_callback():
+ try:
+  client=oauth.create_client("google")
+  token=client.authorize_access_token()
+  claims=client.parse_id_token(token)
+  return finish_social_login("google",claims)
+ except Exception:
+  app.logger.exception("Google OAuth callback failed")
+  flash("Не удалось войти через Google. Попробуй ещё раз.","error")
+  return redirect(url_for("login"))
+
+@app.route("/auth/apple")
+def apple_login():
+ if not all(os.getenv(key) for key in ("APPLE_CLIENT_ID","APPLE_TEAM_ID","APPLE_KEY_ID","APPLE_PRIVATE_KEY")):
+  flash("Вход через Apple пока не настроен администратором.","error")
+  return redirect(url_for("login"))
+ try:
+  client=register_apple_client()
+  return client.authorize_redirect(url_for("apple_callback",_external=True),response_mode="form_post")
+ except Exception:
+  app.logger.exception("Apple OAuth initialization failed")
+  flash("Не удалось запустить вход через Apple. Проверь настройки сервиса.","error")
+  return redirect(url_for("login"))
+
+@app.route("/auth/apple/callback",methods=["GET","POST"])
+def apple_callback():
+ try:
+  client=register_apple_client()
+  token=client.authorize_access_token()
+  claims=client.parse_id_token(token)
+  return finish_social_login("apple",claims)
+ except Exception:
+  app.logger.exception("Apple OAuth callback failed")
+  flash("Не удалось войти через Apple. Проверь настройки сервиса и попробуй ещё раз.","error")
+  return redirect(url_for("login"))
+
 @app.route("/login",methods=["GET","POST"])
 def login():
  if request.method=="POST":
@@ -864,6 +997,13 @@ with app.app_context():
     conn.execute(text('ALTER TABLE "'+support_table+'" ADD COLUMN reply TEXT'))
    if "replied_at" not in support_columns:
     conn.execute(text('ALTER TABLE "'+support_table+'" ADD COLUMN replied_at TIMESTAMP'))
+  user_table=User.__tablename__
+  if inspector.has_table(user_table):
+   user_columns={column["name"] for column in inspector.get_columns(user_table)}
+   if "google_sub" not in user_columns:
+    conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN google_sub VARCHAR(255)'))
+   if "apple_sub" not in user_columns:
+    conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN apple_sub VARCHAR(255)'))
   order_table=Order.__tablename__
   if inspector.has_table(order_table):
    order_columns={column["name"] for column in inspector.get_columns(order_table)}
