@@ -17,18 +17,26 @@
         <div><span>В пересчёте на месяц</span><strong>≈ {{(order.amount / tariff.months)|round(0)|int}} ₽</strong></div>
       </div>
     {% endif %}
+    {% if order.payment_method == 'sbp' %}
+    <div class="paybox payment-details">
+      <p class="tiny muted">Оплата через СБП</p>
+      <p>Нажми кнопку ниже, чтобы перейти на защищённую страницу оплаты Т-Банка. После перевода вернись сюда и нажми «Я оплатил(а)».</p>
+      <a class="btn primary full" href="https://www.tbank-online.com/rm/r_vAnkhgISyw.ZkhuMWpXtK/UbHFv58761" target="_blank" rel="noopener noreferrer">Перейти к оплате через СБП ↗</a>
+    </div>
+    {% else %}
     <div class="paybox payment-details">
       <p class="tiny muted">Реквизиты для перевода</p>
       <div class="copy-value-row"><h3>{{payment.detail}}</h3><button type="button" class="copy-small" data-copy-value="{{payment.detail}}">Копировать</button></div>
       <p class="tiny muted">Получатель: {{config.get('PAYMENT_RECIPIENT') or 'настройте PAYMENT_RECIPIENT'}}</p>
     </div>
+    {% endif %}
     <div class="notice payment-warning">
       <div class="warning-heading">⚠ ОБЯЗАТЕЛЬНО УКAЖИ НИКНЕЙМ В СООБЩЕНИИ К ПЕРЕВОДУ</div>
       <p>В сообщении к переводу укажи <strong>точно тот никнейм, который использовался при регистрации</strong>:</p>
       <div class="nickname-copy"><strong>{{order.nickname}}</strong><button type="button" class="copy-small" data-copy-value="{{order.nickname}}">Копировать ник</button></div>
       <p><strong>Если никнейм не указан или написан неправильно, платёж может не удастся сопоставить с заказом, и доступ не будет выдан до проверки.</strong> Не указывай вместо него имя, email или ник другого человека.</p>
     </div>
-    <div class="payment-steps"><span>01</span><p>Переведи ровно <strong>{{order.amount}} ₽</strong> по реквизитам выше.</p><span>02</span><p>Добавь никнейм <strong>{{order.nickname}}</strong> в сообщение к переводу, если поле доступно.</p><span>03</span><p>Нажми кнопку ниже только после фактической оплаты.</p></div>
+    <div class="payment-steps"><span>01</span><p>{% if order.payment_method == 'sbp' %}Перейди на страницу Т-Банка и оплати заказ.{% else %}Переведи ровно <strong>{{order.amount}} ₽</strong> по реквизитам выше.{% endif %}</p><span>02</span><p>Если поле сообщения доступно, добавь никнейм <strong>{{order.nickname}}</strong>.</p><span>03</span><p>Вернись на эту страницу и нажми кнопку ниже только после фактической оплаты.</p></div>
     <form method="post" action="{{url_for('paid',oid=order.id)}}"><button class="btn primary full">Я оплатил(а) — отправить на проверку ↗</button></form>
     <p class="tiny muted">Администратор вручную проверит поступление средств. Нажатие кнопки само по себе не подтверждает оплату.</p>
     <p class="tiny"><a href="{{url_for('dashboard')}}">← Вернуться в личный кабинет</a></p>
