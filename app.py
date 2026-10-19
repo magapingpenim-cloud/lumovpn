@@ -19,6 +19,9 @@ elif dburl.startswith("postgresql://"):
  dburl=dburl.replace("postgresql://","postgresql+psycopg2://",1)
 app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False; app.config["SEND_FILE_MAX_AGE_DEFAULT"]=86400
 app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
+# Apple uses a cross-site form_post callback; production must allow the secure session cookie.
+app.config["SESSION_COOKIE_SAMESITE"] = "None"
+app.config["SESSION_COOKIE_SECURE"] = os.getenv("RENDER", "").lower() == "true"
 oauth = OAuth(app)
 oauth.register(name="google", client_id=os.getenv("GOOGLE_CLIENT_ID"), client_secret=os.getenv("GOOGLE_CLIENT_SECRET"), server_metadata_url="https://accounts.google.com/.well-known/openid-configuration", client_kwargs={"scope":"openid email profile"})
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
@@ -302,7 +305,7 @@ def apple_client_secret():
  team=os.getenv("APPLE_TEAM_ID","").strip()
  key_id=os.getenv("APPLE_KEY_ID","").strip()
  client_id=os.getenv("APPLE_CLIENT_ID","").strip()
- private_key=os.getenv("APPLE_PRIVATE_KEY","").replace("\\n","\\n").strip()
+ private_key=os.getenv("APPLE_PRIVATE_KEY","").replace(chr(92)+"n",chr(10)).strip()
  if not all((team,key_id,client_id,private_key)):
   raise RuntimeError("Apple Sign-In is not configured.")
  now=int(datetime.utcnow().timestamp())
@@ -310,7 +313,7 @@ def apple_client_secret():
 
 def register_apple_client():
  client_id=os.getenv("APPLE_CLIENT_ID","").strip()
- oauth.register(name="apple",client_id=client_id,client_secret=apple_client_secret(),
+ oauth.register(name="apple",overwrite=True,client_id=client_id,client_secret=apple_client_secret(),
   server_metadata_url="https://appleid.apple.com/.well-known/openid-configuration",
   client_kwargs={"scope":"openid email"})
  return oauth.create_client("apple")
@@ -367,6 +370,7 @@ def finish_social_login(provider, claims):
   return redirect(url_for("login"))
  column=User.google_sub if provider=="google" else User.apple_sub
  user=User.query.filter(column==subject).first()
+ created=False
  if user is None:
   try:
    user,created=create_social_account(email,subject,provider)
