@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#09172b">
+  <meta name="theme-color" content="#09172b" id="theme-color-meta">
+  <script>try{const t=localStorage.getItem('flankvpn-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
   <meta name="description" content="FlankVPN — простой личный кабинет, удобная подписка и быстрое подключение.">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
   <title>{% block title %}FlankVPN — свобода подключений{% endblock %}</title>
@@ -26,6 +27,7 @@
           <a href="{{ url_for('login') }}">Войти</a>
           <a class="navcta" href="{{ url_for('register') }}">Регистрация <span aria-hidden="true">↗</span></a>
         {% endif %}
+        <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Переключить тему" title="Переключить тему">☀️ Светлая</button>
       </nav>
     </header>
     <main class="container">
@@ -64,6 +66,21 @@
         <div class="support-actions"><button class="support-send" type="submit">Отправить</button><button class="support-close" type="button" id="support-close">Закрыть</button></div>
       </form>
     </section>
+    <script>
+      (function(){
+        const button=document.getElementById('theme-toggle');
+        const meta=document.getElementById('theme-color-meta');
+        function applyTheme(theme){
+          document.documentElement.dataset.theme=theme;
+          const light=theme==='light';
+          if(button){button.textContent=light?'🌙 Тёмная':'☀️ Светлая';button.setAttribute('aria-label',light?'Включить тёмную тему':'Включить светлую тему');}
+          if(meta)meta.setAttribute('content',light?'#f4f8fb':'#071516');
+          try{localStorage.setItem('flankvpn-theme',theme);}catch(e){}
+        }
+        applyTheme(document.documentElement.dataset.theme==='light'?'light':'dark');
+        if(button)button.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
+      })();
+    </script>
     <script>
       (function(){
         const launch=document.getElementById('support-launch');
