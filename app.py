@@ -365,13 +365,16 @@ def finish_social_login(provider, claims):
  email=str(claims.get("email") or "").strip().lower()
  verified=claims.get("email_verified",False)
  if isinstance(verified,str): verified=verified.lower()=="true"
- if not subject or not email or not verified:
-  flash("Не удалось подтвердить аккаунт у провайдера. Попробуй обычный вход или регистрацию.","error")
+ if not subject:
+  flash("Провайдер не подтвердил аккаунт. Попробуй ещё раз.","error")
   return redirect(url_for("login"))
  column=User.google_sub if provider=="google" else User.apple_sub
  user=User.query.filter(column==subject).first()
  created=False
  if user is None:
+  if not email or not verified:
+   flash("Не удалось подтвердить email. Попробуй обычную регистрацию.","error")
+   return redirect(url_for("login"))
   try:
    user,created=create_social_account(email,subject,provider)
   except ValueError as exc:
