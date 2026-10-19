@@ -514,3 +514,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .brand img { filter: drop-shadow(0 0 7px rgba(53, 208, 186, .28)); }
 .brand small { color: #35d0ba; }
 .footer-brand { color: #35d0ba; }
+
+
+/* Social sign-in buttons */
+.social-divider{display:flex;align-items:center;gap:12px;margin:20px 0 14px;color:var(--muted);font-size:12px}
+.social-divider::before,.social-divider::after{content:"";height:1px;flex:1;background:var(--line)}
+.social-login{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.social-btn{display:flex;align-items:center;justify-content:center;gap:10px;min-height:46px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font-size:13px;font-weight:700;box-shadow:0 2px 0 rgba(20,40,70,.04);transition:border-color .18s ease,transform .18s ease}
+.social-btn:hover{transform:translateY(-1px);border-color:var(--cyan)}
+.social-mark{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;font-size:18px;font-weight:800}
+.google-mark{font-family:Arial,sans-serif;color:#4285f4}
+.apple-mark{font-size:18px;color:var(--ink)}
+@media(max-width:390px){.social-login{grid-template-columns:1fr}}
