@@ -560,6 +560,15 @@ def paid(oid):
   notify_admin_telegram(f"💳 Клиент заявил об оплате заказа #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email}\nСумма: {o.amount} ₽\nВажно: это заявка клиента; поступление денег нужно проверить вручную.")
   flash("Заявка отправлена. Администратор проверит поступление денег.","success")
  return redirect(url_for("dashboard"))
+@app.route("/payment-sbp-qr.png")
+def payment_sbp_qr():
+ payment_url="https://www.tbank-online.com/rm/r_vAnkhgISyw.ZkhuMWpXtK/UbHFv58761"
+ image=qrcode.make(payment_url)
+ output=io.BytesIO()
+ image.save(output,format="PNG")
+ output.seek(0)
+ return send_file(output,mimetype="image/png",max_age=3600)
+
 @app.route("/subscription-qr/<int:oid>.png")
 @login_required
 def qr(oid):
