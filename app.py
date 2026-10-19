@@ -417,7 +417,7 @@ def telegram_webhook(secret):
      db.session.add(order)
      try:
       db.session.commit()
-      notify_admin_telegram(f"🆕 Новый заказ из Telegram FlankVPN #{order.id}\nНикнейм: {order.nickname}\nEmail: {order.email}\nTelegram ID: {telegram_id}\nТариф: {tariff['title']}\nСумма: {order.amount} ₽\nСпособ: {PAYMENTS[method]['title']}\nСтатус: ожидает оплаты")
+      # Telegram-уведомление о заказе отключено.
       details=PAYMENTS[method]["detail"]
       recipient=os.getenv("PAYMENT_RECIPIENT","").strip() or "Получатель не настроен — свяжись с поддержкой"
       months=tariff.get("months",0)
@@ -456,7 +456,7 @@ def telegram_webhook(secret):
      db.session.commit()
      tariff_title=TARIFFS.get(order.tariff_key,{}).get("title",order.tariff_key)
      method_title=PAYMENTS.get(order.payment_method,{}).get("title",order.payment_method)
-     notify_admin_telegram(f"💳 Клиент нажал «Я оплатил» — заказ #{order.id}\nНик для сверки перевода: {order.nickname}\nТариф: {tariff_title}\nСумма: {order.amount} ₽\nСпособ: {method_title}\nTelegram ID: {telegram_id}\nСтатус: проверить поступление денег вручную.")
+     # Telegram-уведомление о заказе отключено.
      send(f"Заявка на проверку оплаты заказа #{order.id} отправлена. Доступ будет подготовлен после подтверждения администратором.")
     except Exception:
      db.session.rollback()
@@ -542,7 +542,7 @@ def checkout():
  k=request.form.get("tariff"); m=request.form.get("method")
  if k not in TARIFFS or k in ("trial","game") or m not in PAYMENTS: flash("Выберите платный тариф и способ оплаты.","error"); return redirect(url_for("dashboard"))
  t=TARIFFS[k]; o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=t["price"],payment_method=m); db.session.add(o); db.session.commit()
- notify_admin_telegram(f"🆕 Новый заказ FlankVPN #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email}\nТариф: {t['title']}\nСумма: {o.amount} ₽\nСпособ: {PAYMENTS[m]['title']}\nСтатус: ожидает оплаты")
+ # Telegram-уведомление о заказе отключено.
  return redirect(url_for("payment",oid=o.id))
 @app.route("/payment/<int:oid>")
 @login_required
@@ -557,7 +557,7 @@ def paid(oid):
  if not o or o.user_id!=current_user.id: abort(404)
  if o.status=="awaiting_payment":
   o.status="awaiting_review"; db.session.commit()
-  notify_admin_telegram(f"💳 Клиент заявил об оплате заказа #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email}\nСумма: {o.amount} ₽\nВажно: это заявка клиента; поступление денег нужно проверить вручную.")
+  # Telegram-уведомление о заказе отключено.
   flash("Заявка отправлена. Администратор проверит поступление денег.","success")
  return redirect(url_for("dashboard"))
 @app.route("/payment-sbp-qr.png")
@@ -629,7 +629,7 @@ def game_buy_autoclicker():
   flash("У тебя уже есть незавершённая заявка. Продолжи оплату ниже.","error"); return redirect(url_for("game_payment",pid=existing.id))
  purchase=GamePurchase(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,item_key="autoclicker",amount=100,payment_method=method)
  db.session.add(purchase); db.session.commit()
- notify_admin_telegram(f"🕹️ Заявка на автокликер FlankVPN #{purchase.id}\nНикнейм: {purchase.nickname}\nEmail: {purchase.email}\nСумма: 100 ₽\nСпособ: {PAYMENTS[method]['title']}\nОжидает оплаты")
+ # Telegram-уведомление о заказе отключено.
  return redirect(url_for("game_payment",pid=purchase.id))
 
 @app.route("/game/payment/<int:pid>")
@@ -657,7 +657,7 @@ def game_paid(pid):
            f"Никнейм: {purchase.nickname}\nEmail: {purchase.email}\n"
            f"Сумма: {purchase.amount} ₽\nСпособ: {PAYMENTS[purchase.payment_method]['title']}\n"
            "Проверь поступление денег в панели FlankVPN → Заказы и оплаты → Заявки на автокликер.")
-  notify_admin_telegram(message)
+  # Telegram-уведомление о заказе отключено.
   app.logger.info("Autoclicker purchase %s submitted for review by user %s",purchase.id,current_user.id)
   flash("Заявка отправлена на проверку. Она должна появиться в админке в разделе «Заявки на автокликер».", "success")
  elif purchase.status=="awaiting_review":
@@ -675,7 +675,7 @@ def admin_confirm_game_purchase(pid):
  if not purchase: abort(404)
  if purchase.status=="awaiting_review":
   state=game_state_for(purchase.user); state.autoclicker=True; purchase.status="active"; db.session.commit()
-  notify_admin_telegram(f"✅ Автокликер активирован для {purchase.nickname}, заявка #{purchase.id}.")
+  # Telegram-уведомление о заказе отключено.
  flash("Автокликер активирован." if purchase.status=="active" else "Сначала клиент должен сообщить об оплате.","success" if purchase.status=="active" else "error")
  return redirect(url_for("admin_orders"))
 
@@ -781,7 +781,7 @@ def admin_award_game_contest():
  campaign.winner_user_id=winner.id
  campaign.prize_order_id=prize.id
  db.session.commit()
- notify_admin_telegram(f"🏆 Победитель месячной акции FlankVPN: {winner.nickname}\nОчки: {state.contest_points}\nНаграда: годовая подписка (заказ #{prize.id}). Подтверди заказ в админке, чтобы выдать доступ.")
+ # Telegram-уведомление о заказе отключено.
  flash(f"Победитель: {winner.nickname} ({state.contest_points} очков). Заказ на годовую подписку создан; подтверди его в списке заказов для выдачи доступа.","success")
  return redirect(url_for("admin_orders"))
 
@@ -831,14 +831,14 @@ def confirm(oid):
      tg_resp.raise_for_status(); telegram_sent=bool(tg_resp.json().get("ok"))
     except Exception:
      app.logger.exception("Could not send subscription to Telegram for order %s",o.id)
-  notify_admin_telegram(f"✅ Доступ создан для заказа #{o.id}\nНикнейм: {o.nickname}\nEmail: {o.email or 'не указан (Telegram)'}\nДоставка: {'Telegram отправлено' if telegram_sent else ('email отправлено' if email_sent else 'не удалось отправить клиенту — проверь логи Render')}")
+  # Telegram-уведомление о заказе отключено.
   if telegram_sent or email_sent:
    flash("Доступ выдан, ссылка подписки отправлена клиенту.","success")
   else:
    flash("VPN-доступ создан, но сообщение со ссылкой клиенту не отправлено. Проверь токен Telegram и логи Render.","error")
  except Exception as e:
   db.session.rollback(); o=db.session.get(Order,oid); o.status="error"; o.error_message=str(e)[:400]; db.session.commit(); app.logger.exception("H1 API error")
-  notify_admin_telegram(f"❌ Не удалось выдать VPN-доступ для заказа #{o.id}\nНикнейм: {o.nickname}\nПричина: {o.error_message}")
+  # Telegram-уведомление о заказе отключено.
  return redirect(url_for("admin_orders"))
 @app.route("/admin/reject/<int:oid>",methods=["POST"])
 def reject(oid):
