@@ -15,7 +15,7 @@ if dburl.startswith("postgres://"):
  dburl=dburl.replace("postgres://","postgresql+psycopg2://",1)
 elif dburl.startswith("postgresql://"):
  dburl=dburl.replace("postgresql://","postgresql+psycopg2://",1)
-app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
+app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False; app.config["SEND_FILE_MAX_AGE_DEFAULT"]=86400
 app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
 TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"1":{"months":1,"price":129,"title":"1 месяц","discount":0,"save":0},"3":{"months":3,"price":348,"title":"3 месяца","discount":10,"save":39},"12":{"months":12,"price":1238,"title":"12 месяцев","discount":20,"save":310}}
