@@ -20,7 +20,11 @@
     {% if order.payment_method == 'sbp' %}
     <div class="paybox payment-details">
       <p class="tiny muted">Оплата через СБП</p>
-      <p>Нажми кнопку ниже, чтобы перейти на защищённую страницу оплаты Т-Банка. После перевода вернись сюда и нажми «Я оплатил(а)».</p>
+      <p>Открой страницу Т-Банка по ссылке или отсканируй QR-код. На странице банка следуй инструкциям для перевода.</p>
+      <div style="text-align:center;padding:16px;background:#f5f7fb;border-radius:16px;margin:14px 0">
+        <img src="{{ url_for('payment_sbp_qr') }}" alt="QR-код для перехода на страницу оплаты Т-Банка" width="220" height="220" style="max-width:100%;height:auto;background:#fff;padding:10px;border-radius:12px">
+        <p class="tiny muted">QR-код открывает ту же страницу Т-Банка</p>
+      </div>
       <a class="btn primary full" href="https://www.tbank-online.com/rm/r_vAnkhgISyw.ZkhuMWpXtK/UbHFv58761" target="_blank" rel="noopener noreferrer">Перейти к оплате через СБП ↗</a>
     </div>
     {% else %}
