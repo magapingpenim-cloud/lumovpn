@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="FlankVPN">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#122b50"/><stop offset="1" stop-color="#071323"/></linearGradient>
-    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#87e6ff"/><stop offset=".45" stop-color="#30a9ff"/><stop offset="1" stop-color="#4462ff"/></linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#123b38"/><stop offset="1" stop-color="#071b1a"/></linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a5fff0"/><stop offset=".45" stop-color="#35d0ba"/><stop offset="1" stop-color="#168f82"/></linearGradient>
     <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#020916" flood-opacity=".55"/></filter>
   </defs>
-  <rect x="5" y="5" width="118" height="118" rx="32" fill="url(#bg)" stroke="#7fcfff" stroke-opacity=".22"/>
+  <rect x="5" y="5" width="118" height="118" rx="32" fill="url(#bg)" stroke="#35d0ba" stroke-opacity=".55"/>
   <path d="M27 27Q27 20 35 20H93Q101 20 101 28V34H45V51H84V67H45V94H27Z" fill="#020a19" opacity=".5" transform="translate(0 4)"/>
   <path d="M27 23H101V39H45V51H84V67H45V96H27Z" fill="url(#blue)" filter="url(#shadow)"/>
   <path d="M31 26H96" stroke="url(#edge)" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="M88 77L101 88L86 103L79 95Z" fill="#56cfff"/>
+  <path d="M88 77L101 88L86 103L79 95Z" fill="#8af0df"/>
   <circle cx="93" cy="29" r="4" fill="#d8f8ff"/>
 </svg>
