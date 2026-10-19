@@ -27,7 +27,7 @@
           <a href="{{ url_for('login') }}">Войти</a>
           <a class="navcta" href="{{ url_for('register') }}">Регистрация <span aria-hidden="true">↗</span></a>
         {% endif %}
-        <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Переключить тему" title="Переключить тему">☀️ Светлая</button>
+        <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Переключить тему" title="Переключить тему"><span class="theme-icon" aria-hidden="true">☀</span><span class="theme-label">Светлая</span></button>
       </nav>
     </header>
     <main class="container">
@@ -73,7 +73,7 @@
         function applyTheme(theme){
           document.documentElement.dataset.theme=theme;
           const light=theme==='light';
-          if(button){button.textContent=light?'🌙 Тёмная':'☀️ Светлая';button.setAttribute('aria-label',light?'Включить тёмную тему':'Включить светлую тему');}
+          if(button){const icon=button.querySelector('.theme-icon');const label=button.querySelector('.theme-label');if(icon)icon.textContent=light?'☾':'☀';if(label)label.textContent=light?'Тёмная':'Светлая';button.setAttribute('aria-label',light?'Включить тёмную тему':'Включить светлую тему');}
           if(meta)meta.setAttribute('content',light?'#f4f8fb':'#071516');
           try{localStorage.setItem('flankvpn-theme',theme);}catch(e){}
         }
