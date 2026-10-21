@@ -1,90 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Личный кабинет — FlankVPN{% endblock %}
 {% block content %}
-<section class="dashboard-welcome"><div><div class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</div><h1>Привет, {{current_user.nickname }}!</h1><p>Твои подписки, платежи и настройки — в одном месте.</p></div><div class="welcome-mark"><img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt=""><span>FLANKVPN</span></div></section>
-<div class="account-quickline"><span class="account-dot"></span><span>Аккаунт активен</span><span class="account-email">{{current_user.email}}</span></div>
-<section class="panel checkout-panel checkout-panel-clean">
-  <div class="checkout-title"><div><div class="eyebrow">НОВАЯ ПОДПИСКА</div><h2>Выбери срок доступа</h2><p class="muted tiny">На длительных тарифах цена за месяц ниже.</p></div><div class="trial-chip">10 дней пробного доступа*</div></div>
-  <form method="post" action="{{url_for('checkout')}}" class="checkout checkout-advanced">
-    <label>Тариф<select name="tariff" id="tariff-select">{% for k,t in tariffs.items() if k != 'trial' %}<option value="{{k}}" data-price="{{t.price}}" data-months="{{t.months}}" data-discount="{{t.discount}}" data-save="{{t.save}}">{{t.title}} — {{t.price}} ₽{% if t.discount %} (−{{t.discount}}%){% endif %}</option>{% endfor %}</select></label>
-    <label>Способ оплаты<select name="method" required><option value="sbp">СБП</option><option value="card">Банковская карта</option></select></label>
-    <button class="btn primary">Перейти к оплате ↗</button>
-  </form>
-  <div class="checkout-summary" id="checkout-summary" aria-live="polite">Стоимость за месяц: 129 ₽</div>
-  <p class="tiny muted">*Пробный доступ выдаётся после регистрации и подтверждения email, если сервер доступен и настроен.</p>
-</section>
-<details class="orders-drawer" {% if orders|selectattr('status','equalto','awaiting_payment')|list or orders|selectattr('status','equalto','awaiting_review')|list or orders|selectattr('status','equalto','error')|list %}open{% endif %}>
-  <summary><span><span class="eyebrow">ИСТОРИЯ И ПЛАТЕЖИ</span><strong>Мои заказы</strong><small>{{orders|length}} заказ(ов) · открыть историю</small></span><span class="drawer-chevron">⌄</span></summary>
-  <div class="orders-drawer-content">
-  <div class="section-title-row orders-heading"><div><div class="eyebrow">ИСТОРИЯ ПЛАТЕЖЕЙ</div><h2>Мои заказы</h2><p class="muted tiny">Статус и детали всех оформленных подписок.</p></div><span class="order-count">{{orders|length}} заказ(ов)</span></div>
-  {% for o in orders %}
-  <article class="order order-advanced">
-    <div class="row"><div><b>Заказ #{{o.id}} · {{o.nickname}}</b><p class="tiny muted">{{tariffs[o.tariff_key].title}} · {{o.created_at.strftime('%d.%m.%Y %H:%M')}} UTC</p></div><b class="order-amount">{{o.amount}} ₽</b></div>
-    <span class="status status-{{o.status}}">{{{'awaiting_payment':'Ожидает оплаты','awaiting_review':'Проверяем оплату','processing':'Создаём доступ','active':'Активна','rejected':'Отклонена','error':'Ошибка выдачи'}.get(o.status,o.status)}}</span>
-    {% if o.status=='active' and o.subscription_url %}
-    <div class="sub sub-advanced"><img src="{{url_for('qr',oid=o.id)}}" alt="QR-код ссылки подписки"><div><b>Подписка готова</b><p class="tiny muted">Открой ссылку в совместимом VPN-клиенте или отсканируй QR-код.</p><div class="subscription-actions"><a class="btn secondary" href="{{o.subscription_url}}" target="_blank" rel="noopener">Открыть подписку ↗</a><button type="button" class="btn secondary copy-subscription" data-copy-subscription="{{o.subscription_url}}">Копировать ссылку</button></div></div></div>
-    {% elif o.status=='awaiting_payment' %}
-    <p class="tiny muted">Заверши перевод, открыв страницу оплаты.</p><a class="btn secondary" href="{{url_for('payment',oid=o.id)}}">Продолжить оплату ↗</a>
-    {% elif o.status=='error' %}
-    <p class="error">Не удалось автоматически выдать доступ. Администратор может проверить заказ и повторить выдачу.</p>
-    {% endif %}
-  </article>
-  {% else %}
-  <div class="empty empty-advanced"><div class="empty-icon">⌁</div><h3>Здесь появится твоя подписка</h3><p>Выбери срок выше, чтобы создать первый заказ.</p></div>
-  {% endfor %}
-  
-  <section class="panel dashboard-shortcut">
-    <div class="eyebrow">ПОДДЕРЖКА</div>
-    <h2>Мои вопросы и ответы</h2>
-    <p class="muted">Проверяй ответы поддержки на свои обращения.</p>
-    <a class="btn secondary" href="{{ url_for('my_support') }}">Открыть мои вопросы ↗</a>
-  
-  </div>
-</details>
-</section>
-<section class="panel" style="margin:20px 0;padding:20px">
-  <div class="eyebrow">TELEGRAM</div>
-  <h2>FlankVPN в Telegram</h2>
-  <p class="muted">Привяжи Telegram, чтобы проверять заказы и писать в поддержку прямо из бота.</p>
-  <a class="btn secondary" href="{{ url_for('telegram_link_code') }}">Создать код привязки Telegram</a>
-</section>
-<script>
-(function () {
-  const select = document.getElementById("tariff-select");
-  const summary = document.getElementById("checkout-summary");
-  function updateSummary() {
-    const option = select && select.options[select.selectedIndex];
-    if (!option) return;
-    const price = Number(option.dataset.price || 0);
-    const months = Number(option.dataset.months || 1);
-    const discount = Number(option.dataset.discount || 0);
-    const save = Number(option.dataset.save || 0);
-    const monthly = Math.round(price / months);
-    summary.textContent = "Итого: " + price + " ₽ · примерно " + monthly + " ₽/мес" +
-      (discount ? " · скидка " + discount + "% · экономия " + save + " ₽" : "");
-  }
-  if (select) { select.addEventListener("change", updateSummary); updateSummary(); }
-  function fallbackCopy(text) {
-    const field = document.createElement("textarea"); field.value = text; field.setAttribute("readonly", "");
-    field.style.position = "fixed"; field.style.left = "-9999px"; document.body.appendChild(field);
-    field.focus(); field.select(); let copied = false;
-    try { copied = document.execCommand("copy"); } catch (_) {}
-    field.remove(); if (!copied) throw new Error("Clipboard copy was blocked");
-  }
-  document.querySelectorAll("[data-copy-subscription]").forEach(function (button) {
-    button.addEventListener("click", async function () {
-      const text = button.getAttribute("data-copy-subscription") || "";
-      if (!text) return;
-      const original = button.dataset.originalLabel || button.textContent.trim();
-      button.dataset.originalLabel = original;
-      try {
-        if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
-        else fallbackCopy(text);
-        button.textContent = "Скопировано ✓"; button.classList.add("copied");
-        window.setTimeout(function () { button.textContent = original; button.classList.remove("copied"); }, 2200);
-      } catch (_) { window.prompt("Скопируй ссылку подписки:", text); }
-    });
-  });
-})();
-</script>
+<section class="dashboard-welcome"><div><div class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</div><h1>Привет, {{ current_user.nickname }}!</h1><p>Подписка и управление — без лишних шагов.</p></div><div class="welcome-mark"><img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt=""><span>FLANKVPN</span></div></section>
+<div class="account-quickline"><span class="account-dot"></span><span>Аккаунт активен</span><span class="account-email">{{ current_user.email }}</span></div>
+<section class="panel checkout-panel checkout-panel-clean" id="buy"><div class="checkout-title"><div><div class="eyebrow">ПОДПИСКА</div><h2>Выбери тариф</h2><p class="muted tiny">После оплаты доступ появится автоматически.</p></div></div>
+<form method="post" action="{{ url_for('checkout') }}" class="checkout checkout-advanced"><label>Срок подписки<select name="tariff" id="tariff-select">{% for k,t in tariffs.items() if k != 'trial' %}<option value="{{ k }}" data-price="{{ t.price }}" data-months="{{ t.months }}" data-discount="{{ t.discount }}" data-save="{{ t.save }}">{{ t.title }} — {{ t.price }} ₽{% if t.discount %} (−{{ t.discount }}%){% endif %}</option>{% endfor %}</select></label><label>Оплата<select name="method" required><option value="sbp">СБП</option><option value="card">Банковская карта</option></select></label><button class="btn primary">Купить подписку ↗</button></form><div class="checkout-summary" id="checkout-summary" aria-live="polite">Итого: 129 ₽</div></section>
+{% set ready_orders = orders|selectattr('status','equalto','active')|selectattr('subscription_url')|list %}
+{% if ready_orders %}<section class="ready-subscriptions" aria-label="Активные подписки"><div class="section-title-row"><div><div class="eyebrow">ГОТОВО К ПОДКЛЮЧЕНИЮ</div><h2>Твоя подписка</h2></div></div>
+{% for o in ready_orders %}<article class="ready-card"><div class="ready-card-head"><div><span class="status status-active">Подписка активна</span><h3>{{ tariffs[o.tariff_key].title }}</h3><p class="muted tiny">Заказ #{{ o.id }}</p></div><strong class="order-amount">{{ o.amount }} ₽</strong></div><div class="ready-card-body"><a class="ready-qr-link" href="{{ url_for('qr',oid=o.id) }}" target="_blank" rel="noopener"><img class="ready-qr" src="{{ url_for('qr',oid=o.id) }}" alt="QR-код подписки"><span>Открыть QR-код</span></a><div class="ready-actions"><a class="btn primary full" href="{{ o.subscription_url }}" target="_blank" rel="noopener">Открыть ссылку ↗</a><button type="button" class="btn secondary full copy-subscription" data-copy-subscription="{{ o.subscription_url }}">Копировать ссылку</button></div></div></article>{% endfor %}</section>{% endif %}
+<details class="orders-drawer" {% if orders|selectattr('status','equalto','awaiting_payment')|list or orders|selectattr('status','equalto','awaiting_review')|list or orders|selectattr('status','equalto','processing')|list or orders|selectattr('status','equalto','error')|list %}open{% endif %}><summary><span><span class="eyebrow">ИСТОРИЯ</span><strong>Мои заказы и платежи</strong><small>История и статусы заказов · {{ orders|length }}</small></span><span class="drawer-chevron">⌄</span></summary><div class="orders-drawer-content">
+{% for o in orders if o.status!='active' or not o.subscription_url %}<article class="order order-advanced" id="order-{{ o.id }}"><div class="row"><div><b>Заказ #{{ o.id }}</b><p class="tiny muted">{{ tariffs[o.tariff_key].title }} · {{ o.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p></div><b class="order-amount">{{ o.amount }} ₽</b></div><span class="status status-{{ o.status }}">{{ {'awaiting_payment':'Ожидает оплаты','awaiting_review':'Проверяем оплату','processing':'Подтверждаем оплату','active':'Активна','rejected':'Отклонена','error':'Нужна помощь поддержки'}.get(o.status,o.status) }}</span>{% if o.status=='awaiting_payment' %}<a class="btn secondary" href="{{ url_for('payment',oid=o.id) }}">Продолжить оплату ↗</a>{% elif o.status=='error' %}<p class="muted">Напиши в поддержку — поможем активировать доступ.</p>{% endif %}</article>{% else %}<p class="muted">Нет заказов, требующих внимания.</p>{% endfor %}</div></details>
+<section class="dashboard-help"><div><div class="eyebrow">НУЖНА ПОМОЩЬ?</div><h2>Поддержка</h2><p class="muted">Если что-то не получилось, мы поможем.</p></div><a class="btn secondary" href="{{ url_for('my_support') }}">Мои вопросы ↗</a></section>
+<script>(function(){const s=document.getElementById("tariff-select"),sum=document.getElementById("checkout-summary");function update(){const o=s&&s.options[s.selectedIndex];if(!o)return;const p=Number(o.dataset.price||0),m=Number(o.dataset.months||1),d=Number(o.dataset.discount||0),save=Number(o.dataset.save||0);sum.textContent="Итого: "+p+" ₽ · примерно "+Math.round(p/m)+" ₽/мес"+(d?" · скидка "+d+"% · экономия "+save+" ₽":"");}if(s){s.addEventListener("change",update);update();}document.querySelectorAll("[data-copy-subscription]").forEach(b=>b.addEventListener("click",async()=>{const v=b.dataset.copySubscription||"";try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(v);else{const x=document.createElement("textarea");x.value=v;x.style.position="fixed";x.style.opacity="0";document.body.appendChild(x);x.select();if(!document.execCommand("copy"))throw Error();x.remove();}b.textContent="Скопировано ✓";}catch(e){window.prompt("Скопируй ссылку подписки:",v);}}));})();</script>
 {% endblock %}
