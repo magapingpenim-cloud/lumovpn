@@ -315,7 +315,7 @@ def register_apple_client():
  client_id=os.getenv("APPLE_CLIENT_ID","").strip()
  oauth.register(name="apple",overwrite=True,client_id=client_id,client_secret=apple_client_secret(),
   server_metadata_url="https://appleid.apple.com/.well-known/openid-configuration",
-  client_kwargs={"scope":"openid email"})
+  client_kwargs={"scope":"openid email","token_endpoint_auth_method":"client_secret_post"})
  return oauth.create_client("apple")
 
 def create_social_account(email, provider_sub, provider):
