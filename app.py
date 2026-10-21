@@ -5,12 +5,15 @@ from flask import Flask,render_template,request,redirect,url_for,flash,abort,sen
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager,UserMixin,login_user,logout_user,login_required,current_user
 from werkzeug.security import generate_password_hash,check_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix
 from sqlalchemy import func, inspect, text
 from html import escape
 from authlib.integrations.flask_client import OAuth
 import jwt
 # Redeploy trigger: apply current Render environment settings.
 app=Flask(__name__); app.config["SECRET_KEY"]=os.getenv("SECRET_KEY","dev-only-change-me")
+# Trust Render’s reverse-proxy headers so OAuth callbacks use the public HTTPS URL.
+app.wsgi_app=ProxyFix(app.wsgi_app,x_for=1,x_proto=1,x_host=1)
 dburl=os.getenv("DATABASE_URL","sqlite:///flankvpn.db")
 # Render PostgreSQL URLs use psycopg2, which is installed via psycopg2-binary.
 if dburl.startswith("postgres://"):
