@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Регистрация' if mode == 'register' else 'Вход' }} — FlankVPN{% endblock %}
+{% block title %}{{ 'Регистрация' if mode == 'register' else 'Вход' }} — MERID{% endblock %}
 {% block content %}
 <section class="auth auth-modern">
   <div class="auth-card card">
-    <div class="auth-brand-mark" aria-hidden="true">F</div>
-    <div class="eyebrow">FLANKVPN ACCOUNT</div>
+    <div class="auth-brand-mark" aria-hidden="true">M</div>
+    <div class="eyebrow">MERID ACCOUNT</div>
     <h1>{{ 'Создать аккаунт' if mode == 'register' else 'С возвращением' }}</h1>
     <p class="muted auth-lead">{{ 'Выбери удобный способ регистрации и получи доступ к личному кабинету.' if mode == 'register' else 'Войди удобным способом, чтобы открыть личный кабинет.' }}</p>
     <div class="social-login social-login-modern">
