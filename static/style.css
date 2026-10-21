@@ -526,3 +526,34 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .google-mark{font-family:Arial,sans-serif;color:#4285f4}
 .apple-mark{font-size:18px;color:var(--ink)}
 @media(max-width:390px){.social-login{grid-template-columns:1fr}}
+
+
+/* Refined authentication experience */
+.auth-modern { width:min(100% - 32px,470px); margin:clamp(26px,6vh,72px) auto 64px; }
+.auth-modern .auth-card { position:relative; overflow:hidden; padding:clamp(24px,5vw,40px); border-radius:26px; border:1px solid rgba(114,228,210,.23); background:linear-gradient(160deg,rgba(20,48,48,.98),rgba(9,27,28,.98)); box-shadow:0 24px 70px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05); }
+.auth-modern .auth-card::before { content:""; position:absolute; width:230px; height:230px; right:-110px; top:-145px; border-radius:50%; background:rgba(88,226,205,.12); filter:blur(5px); pointer-events:none; }
+.auth-brand-mark { display:grid; place-items:center; width:48px; height:48px; margin-bottom:22px; border:1px solid rgba(145,244,224,.35); border-radius:16px; color:#062321; background:linear-gradient(145deg,#b4fff1,#4bcdb9); box-shadow:0 8px 24px rgba(68,220,198,.16); font-size:25px; font-weight:950; letter-spacing:-2px; }
+.auth-modern .eyebrow { font-size:10px; letter-spacing:2.5px; }
+.auth-modern h1 { margin:10px 0 8px; font-size:clamp(27px,5vw,35px); letter-spacing:-1.2px; line-height:1.12; }
+.auth-lead { max-width:340px; margin:0 0 25px; font-size:13px; line-height:1.7; }
+.social-login-modern { display:grid; grid-template-columns:1fr; gap:10px; margin:0; }
+.social-login-modern .social-btn { min-height:52px; justify-content:flex-start; padding:12px 16px; border-radius:14px; background:rgba(255,255,255,.035); border-color:rgba(155,208,201,.22); color:#effffc; text-decoration:none; transition:transform .2s ease,border-color .2s ease,background .2s ease; }
+.social-login-modern .social-btn:hover { transform:translateY(-2px); border-color:rgba(114,228,210,.7); background:rgba(114,228,210,.08); }
+.social-login-modern .social-btn span:last-child { flex:1; text-align:center; padding-right:28px; }
+.google-logo,.apple-logo { display:grid; place-items:center; flex:0 0 28px; width:28px; height:28px; border-radius:9px; background:#fff; color:#4285f4; font-family:Arial,sans-serif; font-size:19px; font-weight:800; }
+.apple-logo { background:#fff; color:#111; font-size:19px; }
+.auth-modern .social-divider { margin:23px 0 20px; font-size:11px; }
+.auth-form { gap:14px; }
+.auth-form label { gap:8px; font-size:12px; font-weight:750; }
+.auth-form input { width:100%; min-height:48px; border-radius:13px; padding:12px 14px; font-size:14px; }
+.auth-form .btn { min-height:50px; margin-top:4px; border-radius:13px; }
+.auth-hint { margin:-2px 0 0; color:var(--muted); font-size:11px; line-height:1.6; }
+.auth-switch { margin:24px 0 0; text-align:center; font-size:12px; }
+.auth-switch a { color:#82ead9; font-weight:800; text-decoration:none; }
+.auth-footnote { margin:17px 0 0; color:var(--muted); font-size:10px; line-height:1.6; text-align:center; }
+:root[data-theme="light"] .auth-modern .auth-card { background:linear-gradient(160deg,#fff,#f2fbf9); border-color:#cce8e2; box-shadow:0 24px 60px rgba(22,80,71,.1),inset 0 1px 0 #fff; }
+:root[data-theme="light"] .social-login-modern .social-btn { color:#152b3e; background:#fff; border-color:#dcebe7; }
+:root[data-theme="light"] .social-login-modern .social-btn:hover { background:#f0fbf8; border-color:#80cfc2; }
+:root[data-theme="light"] .auth-switch a { color:#168f83; }
+@media(max-width:480px) { .auth-modern { width:calc(100% - 24px); margin-top:20px; }.auth-modern .auth-card { padding:25px 20px; border-radius:22px; } }
+@media(prefers-reduced-motion:reduce) { .social-login-modern .social-btn { transition:none; } }
