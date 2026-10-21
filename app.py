@@ -98,7 +98,7 @@ class User(UserMixin,db.Model):
  def set_password(self,p): self.password_hash=generate_password_hash(p)
  def check_password(self,p): return check_password_hash(self.password_hash,p)
 class Order(db.Model):
- id=db.Column(db.Integer,primary_key=True); user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False); nickname=db.Column(db.String(40),nullable=False); email=db.Column(db.String(160),nullable=False); tariff_key=db.Column(db.String(8),nullable=False); amount=db.Column(db.Integer,nullable=False); payment_method=db.Column(db.String(12),nullable=False); status=db.Column(db.String(24),default="awaiting_payment"); created_at=db.Column(db.DateTime,default=datetime.utcnow); subscription_url=db.Column(db.Text); error_message=db.Column(db.Text); requested_days=db.Column(db.Integer); telegram_id=db.Column(db.String(40),nullable=True,index=True)
+ id=db.Column(db.Integer,primary_key=True); user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False); nickname=db.Column(db.String(40),nullable=False); email=db.Column(db.String(160),nullable=False); tariff_key=db.Column(db.String(8),nullable=False); amount=db.Column(db.Integer,nullable=False); payment_method=db.Column(db.String(12),nullable=False); status=db.Column(db.String(24),default="awaiting_payment"); created_at=db.Column(db.DateTime,default=datetime.utcnow); subscription_url=db.Column(db.Text); error_message=db.Column(db.Text); requested_days=db.Column(db.Integer); telegram_id=db.Column(db.String(40),nullable=True,index=True); yookassa_payment_id=db.Column(db.String(100),nullable=True,index=True)
  user=db.relationship("User",backref=db.backref("orders",lazy=True))
 class EmailVerification(db.Model):
  id=db.Column(db.Integer,primary_key=True)
@@ -692,14 +692,30 @@ def checkout():
 def payment(oid):
  o=db.session.get(Order,oid)
  if not o or o.user_id!=current_user.id: abort(404)
- # Fixed YooKassa payment links for each subscription term.
- payment_links={
-  "1":"https://yookassa.ru/my/i/athb2YLkGGlv/l",
-  "3":"https://yookassa.ru/my/i/athc3gmXEmxU/l",
-  "12":"https://yookassa.ru/my/i/athdEf4QI6Vp/l",
- }
- if o.tariff_key in payment_links:
-  return redirect(payment_links[o.tariff_key],code=302)
+ shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip()
+ secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
+ if not shop_id or not secret_key:
+  flash("Онлайн-оплата временно не настроена. Попробуй позже.","error")
+  return redirect(url_for("dashboard"))
+ if o.status!="awaiting_payment":
+  flash("Этот заказ уже обрабатывается или завершён.","info")
+  return redirect(url_for("dashboard"))
+ if not o.yookassa_payment_id:
+  try:
+   response=requests.post("https://api.yookassa.ru/v3/payments",auth=(shop_id,secret_key),headers={"Idempotence-Key":f"flankvpn-order-{o.id}","Content-Type":"application/json"},json={"amount":{"value":f"{o.amount}.00","currency":"RUB"},"capture":True,"confirmation":{"type":"redirect","return_url":url_for("dashboard",_external=True)},"description":f"FlankVPN order #{o.id}","metadata":{"order_id":str(o.id),"user_id":str(o.user_id),"tariff_key":o.tariff_key}},timeout=20)
+   response.raise_for_status()
+   data=response.json()
+   payment_id=data.get("id")
+   confirmation_url=(data.get("confirmation") or {}).get("confirmation_url")
+   if not payment_id or not confirmation_url: raise RuntimeError("ЮKassa не вернула ID платежа или ссылку оплаты.")
+   o.yookassa_payment_id=payment_id
+   db.session.commit()
+   return redirect(confirmation_url,code=302)
+  except Exception:
+   db.session.rollback()
+   app.logger.exception("Could not create YooKassa payment for order %s",o.id)
+   flash("Не удалось создать платёж. Проверь настройки ЮKassa и попробуй ещё раз.","error")
+   return redirect(url_for("dashboard"))
  return render_template("payment.html",order=o,payment=PAYMENTS[o.payment_method],tariff=TARIFFS[o.tariff_key])
 @app.route("/payment/<int:oid>/paid",methods=["POST"])
 @login_required
@@ -711,6 +727,51 @@ def paid(oid):
   # Telegram-уведомление о заказе отключено.
   flash("Заявка отправлена. Администратор проверит поступление денег.","success")
  return redirect(url_for("dashboard"))
+@app.route("/yookassa/webhook",methods=["POST"])
+def yookassa_webhook():
+ payload=request.get_json(silent=True) or {}
+ if payload.get("event")!="payment.succeeded": return {"ok":True,"ignored":True},200
+ obj=payload.get("object") or {}
+ payment_id=str(obj.get("id") or "").strip()
+ if not payment_id: return {"error":"missing payment id"},400
+ shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip()
+ secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
+ if not shop_id or not secret_key: return {"error":"payment verification unavailable"},503
+ try:
+  response=requests.get("https://api.yookassa.ru/v3/payments/"+urllib.parse.quote(payment_id,safe=""),auth=(shop_id,secret_key),timeout=15)
+  response.raise_for_status()
+  paid=response.json()
+ except Exception:
+  app.logger.exception("Could not verify YooKassa payment %s",payment_id)
+  return {"error":"could not verify payment"},503
+ if paid.get("status")!="succeeded" or paid.get("paid") is not True: return {"ok":True,"ignored":True},200
+ meta=paid.get("metadata") or {}
+ try: order_id=int(meta.get("order_id",""))
+ except (TypeError,ValueError): return {"error":"missing order metadata"},400
+ o=db.session.get(Order,order_id)
+ if not o: return {"error":"order not found"},404
+ if o.yookassa_payment_id!=payment_id: return {"error":"payment/order mismatch"},409
+ amount=paid.get("amount") or {}
+ try: amount_value=round(float(amount.get("value")),2)
+ except (TypeError,ValueError): return {"error":"invalid amount"},400
+ if amount.get("currency")!="RUB" or amount_value!=float(o.amount): return {"error":"amount mismatch"},409
+ if o.status=="active": return {"ok":True,"already_processed":True},200
+ if o.status not in ("awaiting_payment","awaiting_review","error"): return {"ok":True,"ignored":True},200
+ try:
+  o.status="processing"
+  db.session.commit()
+  provision(o)
+  if o.email: send_subscription_email(o)
+  if o.telegram_id and o.subscription_url and os.getenv("TELEGRAM_BOT_TOKEN","").strip():
+   try: requests.post("https://api.telegram.org/bot"+os.getenv("TELEGRAM_BOT_TOKEN").strip()+"/sendMessage",json={"chat_id":o.telegram_id,"text":"Оплата FlankVPN подтверждена. Твоя подписка готова:\n"+o.subscription_url,"disable_web_page_preview":True},timeout=10).raise_for_status()
+   except Exception: app.logger.exception("Could not send subscription to Telegram for order %s",o.id)
+  return {"ok":True},200
+ except Exception:
+  db.session.rollback()
+  o=db.session.get(Order,order_id)
+  if o: o.status="error"; o.error_message="Оплата подтверждена, но выдача подписки не удалась; проверь админку." ; db.session.commit()
+  app.logger.exception("Paid order %s could not be provisioned",order_id)
+  return {"error":"subscription provisioning failed"},500
 @app.route("/payment-sbp-qr.png")
 def payment_sbp_qr():
  payment_url="https://www.tbank-online.com/rm/r_vAnkhgISyw.ZkhuMWpXtK/UbHFv58761"
@@ -1042,4 +1103,6 @@ with app.app_context():
     conn.execute(text(f'ALTER TABLE "{order_table}" ADD COLUMN requested_days INTEGER'))
    if "telegram_id" not in order_columns:
     conn.execute(text(f'ALTER TABLE "{order_table}" ADD COLUMN telegram_id VARCHAR(40)'))
+   if "yookassa_payment_id" not in order_columns:
+    conn.execute(text('ALTER TABLE "'+order_table+'" ADD COLUMN yookassa_payment_id VARCHAR(100)'))
 if __name__=="__main__": app.run(host="0.0.0.0",port=int(os.getenv("PORT","5001")),debug=False)
