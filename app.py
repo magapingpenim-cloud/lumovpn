@@ -728,6 +728,11 @@ def qr(oid):
  im=qrcode.make(o.subscription_url); out=io.BytesIO(); im.save(out,format="PNG"); out.seek(0); return send_file(out,mimetype="image/png")
 
 
+@app.before_request
+def disable_clicker_routes():
+ if request.path == "/game" or request.path.startswith("/game/"):
+  abort(404)
+
 @app.route("/game")
 @login_required
 def game():
