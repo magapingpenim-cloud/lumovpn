@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}{% if order.status=='active' and order.subscription_url %}Подписка готова{% else %}Проверка оплаты{% endif %} — FlankVPN{% endblock %}
+{% block title %}{% if order.status=='active' and order.subscription_url %}Подписка готова{% else %}Проверка оплаты{% endif %} — MERID{% endblock %}
 {% block content %}
 <section class="payment-return-page">
   {% if order.status=='active' and order.subscription_url %}
   <div class="payment-return-card payment-return-ready">
     <div class="success-mark" aria-hidden="true">✓</div>
-    <div class="eyebrow">FLANKVPN · ОПЛАТА ПОДТВЕРЖДЕНА</div>
+    <div class="eyebrow">MERID · ОПЛАТА ПОДТВЕРЖДЕНА</div>
     <h1>Всё готово!</h1>
     <p class="muted">Отсканируй QR-код или скопируй ссылку в своё VPN-приложение.</p>
     <div class="return-qr-wrap">
@@ -20,7 +20,7 @@
   </div>
   {% elif order.status=='error' %}
   <div class="payment-return-card">
-    <div class="eyebrow">FLANKVPN · НУЖНА ПОМОЩЬ</div>
+    <div class="eyebrow">MERID · НУЖНА ПОМОЩЬ</div>
     <h1>Оплата получена</h1>
     <p class="muted">Платёж подтверждён, но автоматическая выдача доступа не завершилась. Напиши в поддержку — поможем.</p>
     <a class="btn primary full" href="{{ url_for('my_support') }}">Связаться с поддержкой</a>
@@ -28,7 +28,7 @@
   {% else %}
   <div class="payment-return-card">
     <div class="pending-orbit" aria-hidden="true"><span></span></div>
-    <div class="eyebrow">FLANKVPN · ЗАКАЗ #{{ order.id }}</div>
+    <div class="eyebrow">MERID · ЗАКАЗ #{{ order.id }}</div>
     <h1>Подтверждаем оплату</h1>
     <p class="muted">Как только платёж подтвердится, здесь появятся QR-код и ссылка подписки.</p>
     <div class="payment-pending"><span class="pending-spinner"></span><span>Проверяем статус платежа…</span></div>
