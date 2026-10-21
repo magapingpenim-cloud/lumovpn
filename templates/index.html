@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}FlankVPN — подключение без лишних сложностей{% endblock %}
+{% block title %}MERID — подключение без лишних сложностей{% endblock %}
 {% block content %}
 <section class="hero hero-advanced">
   <div class="hero-copy">
-    <div class="eyebrow"><span class="live-dot"></span> FLANKVPN · ТВОЁ ПОДКЛЮЧЕНИЕ</div>
+    <div class="eyebrow"><span class="live-dot"></span> MERID · ТВОЁ ПОДКЛЮЧЕНИЕ</div>
     <h1>Интернет —<br><span>по твоим правилам.</span></h1>
     <p>Понятная подписка, личный кабинет и быстрый старт через совместимый VPN-клиент. Без запутанных инструкций и лишних экранов.</p>
     <div class="actions"><a class="btn primary" href="{{url_for('register')}}">Начать бесплатно ↗</a><a class="btn glass" href="#tariffs">Сравнить тарифы</a></div>
@@ -11,7 +11,7 @@
   </div>
   <div class="hero-orbit" aria-hidden="true">
     <div class="orbit-ring orbit-ring-one"></div><div class="orbit-ring orbit-ring-two"></div>
-    <div class="orbit-core"><img src="{{url_for('static', filename='flankvpn-logo.svg')}}" alt=""><span>FLANKVPN</span><small>CONNECTED BY DESIGN</small></div>
+    <div class="orbit-core"><img src="{{url_for('static', filename='flankvpn-logo.svg')}}" alt=""><span>MERID</span><small>CONNECTED BY DESIGN</small></div>
     <div class="orbit-chip chip-top">● Просто</div><div class="orbit-chip chip-bottom">VPN-подключение</div>
   </div>
 </section>
@@ -62,5 +62,5 @@
   <details class="faq-item"><summary>Как подключиться к VPN?</summary><p>После активации подписки открой личный кабинет и используй ссылку подписки или QR-код в совместимом VPN-клиенте. Следуй инструкции для своего устройства.</p></details>
   <details class="faq-item"><summary>Почему выгоднее тариф на 12 месяцев?</summary><p>Стоимость годового тарифа ниже, чем оплата 12 месяцев по отдельности. Экономия отображается на карточке до оформления заказа.</p></details>
 </section>
-<section class="callout callout-advanced"><div><div class="eyebrow">ГОТОВ НАЧАТЬ?</div><h2>Начни с пробного доступа</h2><p>Зарегистрируйся и посмотри, как устроен FlankVPN.</p></div><a class="btn primary" href="{{url_for('register')}}">Создать аккаунт ↗</a></section>
+<section class="callout callout-advanced"><div><div class="eyebrow">ГОТОВ НАЧАТЬ?</div><h2>Начни с пробного доступа</h2><p>Зарегистрируйся и посмотри, как устроен MERID.</p></div><a class="btn primary" href="{{url_for('register')}}">Создать аккаунт ↗</a></section>
 {% endblock %}
