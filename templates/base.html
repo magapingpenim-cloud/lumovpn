@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#09172b" id="theme-color-meta">
   <script>try{const t=localStorage.getItem('flankvpn-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
-  <meta name="description" content="FlankVPN — простой личный кабинет, удобная подписка и быстрое подключение.">
+  <meta name="description" content="MERID — простой личный кабинет, удобная подписка и быстрое подключение.">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
-  <title>{% block title %}FlankVPN — свобода подключений{% endblock %}</title>
+  <title>{% block title %}MERID — свобода подключений{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261025') }}">
 </head>
 <body>
   <div class="site-shell">
     <header class="nav">
-      <a class="brand" href="{{ url_for('index') }}" aria-label="FlankVPN — главная">
+      <a class="brand" href="{{ url_for('index') }}" aria-label="MERID — главная">
         <img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt="">
-        <span>Flank<small>VPN</small></span>
+        <span>MERID</span>
       </a>
       <nav>
         {% if current_user.is_authenticated %}
@@ -54,7 +54,7 @@
     </style>
     <button type="button" class="support-launch" id="support-launch" aria-expanded="false" aria-controls="support-panel">💬 Поддержка</button>
     <section class="support-panel" id="support-panel" aria-label="Чат поддержки">
-      <h3>Поддержка FlankVPN</h3>
+      <h3>Поддержка MERID</h3>
       <p>Напиши нам — обращение появится в панели администратора.</p>
       <form method="post" action="{{ url_for('support_send') }}">
         {% if not current_user.is_authenticated %}
@@ -92,7 +92,7 @@
     </script>
 
     <footer class="site-footer">
-      <span class="footer-brand">FLANKVPN</span><span>·</span><span>Просто подключиться.</span><span class="footer-year">© 2026</span>
+      <span class="footer-brand">MERID</span><span>·</span><span>Просто подключиться.</span><span class="footer-year">© 2026</span>
     </footer>
   </div>
 </body>
