@@ -748,15 +748,23 @@ def game_tap():
 @login_required
 def game_upgrade(kind):
  if kind not in GAME_UPGRADES: abort(404)
+ wants_json=request.headers.get("X-Requested-With")=="fetch" or "application/json" in request.headers.get("Accept","")
  state=game_state_for(current_user)
  price=GAME_UPGRADES[kind]["base"]*(2**(state.click_power-1) if kind=="power" else 2**state.income_per_second)
  if state.coins<price:
-  flash("Не хватает игровых монет для улучшения.","error")
+  message="Не хватает игровых монет для улучшения."
+  if wants_json:
+   return {"ok":False,"message":message,"coins":state.coins,"click_power":state.click_power,"income":state.income_per_second + (state.click_power if state.autoclicker else 0),"contest_points":state.contest_points,"upgrades":{k:GAME_UPGRADES[k]["base"]*(2**(state.click_power-1) if k=="power" else 2**state.income_per_second) for k in GAME_UPGRADES}},400
+  flash(message,"error")
  else:
   state.coins-=price
   if kind=="power": state.click_power+=1
   else: state.income_per_second+=1
-  db.session.commit(); flash("Улучшение куплено!","success")
+  db.session.commit()
+  message="Улучшение куплено!"
+  if wants_json:
+   return {"ok":True,"message":message,"kind":kind,"coins":state.coins,"click_power":state.click_power,"income":state.income_per_second + (state.click_power if state.autoclicker else 0),"contest_points":state.contest_points,"upgrades":{k:GAME_UPGRADES[k]["base"]*(2**(state.click_power-1) if k=="power" else 2**state.income_per_second) for k in GAME_UPGRADES}}
+  flash(message,"success")
  return redirect(url_for("game"))
 
 @app.route("/game/buy/autoclicker",methods=["POST"])
