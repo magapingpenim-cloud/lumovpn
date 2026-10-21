@@ -694,7 +694,7 @@ def payment(oid):
  if not o or o.user_id!=current_user.id: abort(404)
  # The one-month tariff uses the merchant's fixed YooKassa payment link for 129 RUB.
  if o.tariff_key=="1":
-  return redirect("https://yookassa.ru/my/i/athbeHUMYrRJ/l",code=302)
+  return redirect("https://yookassa.ru/my/i/athb2YLkGGlv/l",code=302)
  return render_template("payment.html",order=o,payment=PAYMENTS[o.payment_method],tariff=TARIFFS[o.tariff_key])
 @app.route("/payment/<int:oid>/paid",methods=["POST"])
 @login_required
