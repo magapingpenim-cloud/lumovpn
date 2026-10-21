@@ -618,3 +618,38 @@ img,svg,video { max-width:100%; }
  .upgrade-success { animation:none; }
  .game-card,.mascot { transition:none; }
 }
+
+
+/* Clean dashboard refresh — October 2026 */
+.dashboard-welcome{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:22px 0 28px;padding:clamp(22px,4vw,38px);border:1px solid var(--border,#dce6f3);border-radius:26px;background:linear-gradient(120deg,rgba(18,91,184,.10),rgba(75,211,198,.08));}
+.dashboard-welcome h1{margin:8px 0;font-size:clamp(28px,4vw,42px);letter-spacing:-.04em;line-height:1.1}
+.dashboard-welcome p{margin:0;color:var(--muted,#68778c);font-size:15px}
+.welcome-mark{display:flex;align-items:center;gap:10px;flex-shrink:0;font-weight:900;letter-spacing:.08em;color:var(--text,#10203a)}
+.welcome-mark img{width:48px;height:48px;object-fit:contain}
+.dashboard-metrics-clean{gap:14px;margin-bottom:24px}
+.dashboard-metrics-clean .metric-card{padding:20px;border-radius:18px;min-width:0}
+.dashboard-metrics-clean .metric-card span{font-size:10px;letter-spacing:.12em}
+.dashboard-metrics-clean .metric-card strong{font-size:22px;letter-spacing:-.03em}
+.checkout-panel-clean{padding:clamp(20px,3vw,30px);border-radius:24px}
+.checkout-panel-clean .checkout-title{align-items:flex-start}
+.checkout-panel-clean .checkout-advanced{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:end;gap:14px}
+.checkout-panel-clean .checkout-advanced label{display:flex;flex-direction:column;gap:8px;min-width:0}
+.checkout-panel-clean .checkout-advanced select{width:100%;min-height:48px;border-radius:12px}
+.checkout-panel-clean .checkout-advanced .btn{min-height:48px;white-space:nowrap}
+.checkout-summary{margin-top:16px;padding:13px 15px;border-radius:13px;background:rgba(39,120,225,.08);font-weight:750}
+.orders-heading{margin-top:34px;margin-bottom:16px;align-items:end}
+.orders-heading h2{margin:5px 0}
+.order-advanced{border-radius:18px;padding:20px;margin:12px 0}
+.dashboard-shortcut{margin:14px 0!important;padding:22px!important;border-radius:18px!important}
+@media(max-width:700px){
+ .dashboard-welcome{align-items:flex-start;padding:22px;border-radius:20px}
+ .welcome-mark{display:none}
+ .dashboard-metrics-clean{grid-template-columns:1fr;gap:10px}
+ .dashboard-metrics-clean .metric-card{display:grid;grid-template-columns:1fr;gap:6px}
+ .checkout-panel-clean .checkout-advanced{grid-template-columns:1fr}
+ .checkout-panel-clean .checkout-title{display:block}
+ .checkout-panel-clean .trial-chip{display:inline-flex;margin-top:12px}
+ .checkout-panel-clean .checkout-advanced .btn{width:100%}
+ .orders-heading{align-items:flex-start;gap:12px}
+ .order-advanced{padding:16px}
+}
