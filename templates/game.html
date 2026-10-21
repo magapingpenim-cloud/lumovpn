@@ -23,10 +23,10 @@
 <span class="game-pill">УЛУЧШЕНИЕ</span>
 <h3>{{ upgrade.title }}</h3>
 <p>{{ upgrade.description }}</p>
-<p>Текущий уровень: <strong>{% if key == 'power' %}{{ state.click_power }}{% else %}{{ state.income_per_second }}{% endif %}</strong></p>
-<p>Цена: <strong>{{ upgrade.price }} ◉</strong></p>
-<form method="post" action="{{ url_for('game_upgrade', kind=key) }}">
-<button class="btn primary" type="submit">Купить улучшение</button>
+<p>Текущий уровень: <strong id="level-{{ key }}">{% if key == 'power' %}{{ state.click_power }}{% else %}{{ state.income_per_second }}{% endif %}</strong></p>
+<p>Цена: <strong id="price-{{ key }}">{{ upgrade.price }} ◉</strong></p>
+<form class="upgrade-form" method="post" action="{{ url_for('game_upgrade', kind=key) }}" data-kind="{{ key }}">
+<button class="btn primary upgrade-button" type="submit">Улучшить <span aria-hidden="true">↗</span></button>
 </form>
 </article>
 {% endfor %}
@@ -58,6 +58,19 @@
  const power=document.getElementById('click-power');
  const stage=document.querySelector('.game-stage');
  if(!button||!balance||!power||!stage)return;
+ const income=document.getElementById('income-rate');
+ const notice=document.createElement('p');
+ notice.id='clicker-status-message';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');notice.className='clicker-status-message';
+ const hero=document.querySelector('.game-hero');if(hero)hero.appendChild(notice);
+ function updateGame(data){
+  if(typeof data.coins==='number')balance.textContent=data.coins.toLocaleString('ru-RU');
+  if(typeof data.click_power==='number')power.textContent='+'+data.click_power+' ◉';
+  if(income&&typeof data.income==='number')income.textContent='+'+data.income+' ◉';
+  const points=document.getElementById('contest-points');if(points&&typeof data.contest_points==='number')points.textContent=data.contest_points.toLocaleString('ru-RU');
+  if(data.upgrades)Object.keys(data.upgrades).forEach(kind=>{const price=document.getElementById('price-'+kind);if(price)price.textContent=data.upgrades[kind].toLocaleString('ru-RU')+' ◉';});
+  if(data.kind==='power'){const level=document.getElementById('level-power');if(level)level.textContent=data.click_power;}
+  if(data.kind==='income'){const level=document.getElementById('level-income');if(level)level.textContent=Number(level.textContent)+1;}
+ }
  let busy=false;
  button.addEventListener('click',async function(){
   if(busy)return;
@@ -74,12 +87,9 @@
    if(!response.ok)throw new Error('Сервер ответил ошибкой '+response.status);
    const data=await response.json();
    if(typeof data.coins!=='number')throw new Error('Некорректный ответ сервера');
-   balance.textContent=data.coins;
-   power.textContent='+'+data.click_power+' ◉';
-   const income=document.getElementById('income-rate');
-   if(income)income.textContent='+'+data.income+' ◉';
-   const points=document.getElementById('contest-points');
-   if(points)points.textContent=data.contest_points;
+   updateGame(data);
+   notice.textContent='';
+   notice.classList.remove('is-error');
   }catch(error){
    let notice=document.getElementById('clicker-error');
    if(!notice){notice=document.createElement('p');notice.id='clicker-error';notice.setAttribute('role','alert');notice.style.color='#b42318';stage.appendChild(notice);}
@@ -87,6 +97,28 @@
   }finally{busy=false;}
  });
 })();
+document.querySelectorAll('.upgrade-form').forEach(form=>{
+ form.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const button=form.querySelector('button[type="submit"]');
+  if(!button||button.disabled)return;
+  const original=button.innerHTML;
+  button.disabled=true;button.classList.add('is-loading');button.textContent='Покупаем…';
+  const kind=form.dataset.kind;
+  try{
+   const response=await fetch(form.action,{method:'POST',credentials:'same-origin',headers:{'X-Requested-With':'fetch','Accept':'application/json'}});
+   const data=await response.json();
+   if(data.coins!==undefined)updateGame(data);
+   if(!response.ok||!data.ok){notice.textContent=data.message||'Не удалось купить улучшение.';notice.classList.add('is-error');}
+   else{
+    notice.textContent=data.message||'Улучшение куплено!';
+    notice.classList.remove('is-error');
+    const card=form.closest('.game-card');if(card){card.classList.remove('upgrade-success');void card.offsetWidth;card.classList.add('upgrade-success');}
+   }
+  }catch(error){notice.textContent='Не удалось связаться с сервером. Попробуй ещё раз.';notice.classList.add('is-error');}
+  finally{button.disabled=false;button.classList.remove('is-loading');button.innerHTML=original;}
+ });
+});
 </script>
 <script>
 (function(){
