@@ -702,7 +702,7 @@ def payment(oid):
   return redirect(url_for("dashboard"))
  if not o.yookassa_payment_id:
   try:
-   response=requests.post("https://api.yookassa.ru/v3/payments",auth=(shop_id,secret_key),headers={"Idempotence-Key":f"flankvpn-order-{o.id}","Content-Type":"application/json"},json={"amount":{"value":f"{o.amount}.00","currency":"RUB"},"capture":True,"confirmation":{"type":"redirect","return_url":url_for("dashboard",_external=True)},"description":f"FlankVPN order #{o.id}","metadata":{"order_id":str(o.id),"user_id":str(o.user_id),"tariff_key":o.tariff_key}},timeout=20)
+   response=requests.post("https://api.yookassa.ru/v3/payments",auth=(shop_id,secret_key),headers={"Idempotence-Key":f"flankvpn-order-{o.id}","Content-Type":"application/json"},json={"amount":{"value":f"{o.amount}.00","currency":"RUB"},"capture":True,"confirmation":{"type":"redirect","return_url":url_for("payment_return",oid=o.id,_external=True)},"description":f"FlankVPN order #{o.id}","metadata":{"order_id":str(o.id),"user_id":str(o.user_id),"tariff_key":o.tariff_key}},timeout=20)
    response.raise_for_status()
    data=response.json()
    payment_id=data.get("id")
@@ -717,6 +717,33 @@ def payment(oid):
    flash("Не удалось создать платёж. Проверь настройки ЮKassa и попробуй ещё раз.","error")
    return redirect(url_for("dashboard"))
  return render_template("payment.html",order=o,payment=PAYMENTS[o.payment_method],tariff=TARIFFS[o.tariff_key])
+@app.route("/payment/return/<int:oid>")
+@login_required
+def payment_return(oid):
+ o=db.session.get(Order,oid)
+ if not o or o.user_id!=current_user.id: abort(404)
+ if o.yookassa_payment_id and o.status!="active":
+  shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip()
+  secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
+  if shop_id and secret_key:
+   try:
+    response=requests.get("https://api.yookassa.ru/v3/payments/"+urllib.parse.quote(o.yookassa_payment_id,safe=""),auth=(shop_id,secret_key),timeout=12)
+    response.raise_for_status()
+    paid_data=response.json()
+    amount=paid_data.get("amount") or {}
+    metadata=paid_data.get("metadata") or {}
+    valid=(paid_data.get("status")=="succeeded" and paid_data.get("paid") is True and amount.get("currency")=="RUB" and round(float(amount.get("value",0)),2)==float(o.amount) and str(metadata.get("order_id",""))==str(o.id))
+    if valid and o.status in ("awaiting_payment","awaiting_review","error"):
+     o.status="processing"; db.session.commit()
+     try:
+      provision(o)
+      if o.email: send_subscription_email(o)
+     except Exception:
+      db.session.rollback(); o=db.session.get(Order,oid)
+      if o: o.status="error"; o.error_message="Оплата подтверждена, но выдача подписки не удалась."; db.session.commit()
+      app.logger.exception("Return-page provisioning failed for order %s",oid)
+   except Exception: app.logger.exception("Could not verify payment on return for order %s",oid)
+ return render_template("payment_return.html",order=o)
 @app.route("/payment/<int:oid>/paid",methods=["POST"])
 @login_required
 def paid(oid):
