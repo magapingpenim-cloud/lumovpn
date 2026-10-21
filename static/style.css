@@ -653,3 +653,40 @@ img,svg,video { max-width:100%; }
  .orders-heading{align-items:flex-start;gap:12px}
  .order-advanced{padding:16px}
 }
+
+
+/* Mobile-first account navigation and compact payment history */
+.account-quickline{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:-10px 0 18px;padding:10px 14px;color:var(--muted);font-size:13px}
+.account-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#35b99a;box-shadow:0 0 0 4px rgba(53,185,154,.12)}
+.account-email{overflow-wrap:anywhere}
+.orders-drawer{margin:20px 0 24px;border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
+.orders-drawer>summary{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 19px;cursor:pointer;list-style:none}
+.orders-drawer>summary::-webkit-details-marker{display:none}
+.orders-drawer>summary>span:first-child{display:grid;gap:2px}
+.orders-drawer>summary strong{font-size:18px;letter-spacing:-.02em}
+.orders-drawer>summary small{color:var(--muted);font-size:12px}
+.drawer-chevron{font-size:24px;color:var(--muted);transition:transform .2s}
+.orders-drawer[open] .drawer-chevron{transform:rotate(180deg)}
+.orders-drawer-content{padding:0 14px 12px;border-top:1px solid var(--line)}
+.orders-drawer-content .orders-heading{margin-top:14px}
+.orders-drawer-content .order-advanced{box-shadow:none;background:var(--surface);border:1px solid var(--line)}
+.site-footer .footer-inn,.developer-details{display:none!important}
+@media(max-width:600px){
+ .nav{padding:12px 16px;gap:10px}
+ .brand{font-size:21px;gap:7px}
+ .brand img{width:35px;height:35px}
+ .nav nav{gap:10px;font-size:12px;flex-wrap:wrap;justify-content:flex-end}
+ .nav nav>a,.nav nav>form{white-space:nowrap}
+ .navcta{padding:9px 10px}
+ .theme-toggle{padding:7px!important}
+ .container{padding-left:14px!important;padding-right:14px!important}
+ .dashboard-welcome{margin:12px 0 18px;padding:20px}
+ .dashboard-welcome p{font-size:14px}
+ .checkout-panel-clean{padding:18px;margin-bottom:16px}
+ .orders-drawer>summary{padding:15px}
+ .orders-drawer-content{padding:0 9px 10px}
+ .order-advanced{margin:10px 0;padding:14px}
+ .subscription-actions{display:grid;grid-template-columns:1fr}
+ .subscription-actions .btn{width:100%;justify-content:center}
+ .support-launch{bottom:14px;right:14px}
+}
