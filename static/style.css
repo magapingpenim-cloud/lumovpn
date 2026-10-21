@@ -557,3 +557,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 :root[data-theme="light"] .auth-switch a { color:#168f83; }
 @media(max-width:480px) { .auth-modern { width:calc(100% - 24px); margin-top:20px; }.auth-modern .auth-card { padding:25px 20px; border-radius:22px; } }
 @media(prefers-reduced-motion:reduce) { .social-login-modern .social-btn { transition:none; } }
+
+
+/* FlankVPN global polish 2026 */
+:root { scroll-behavior:smooth; }
+::selection { color:#052321; background:#8df3e2; }
+body { text-rendering:optimizeLegibility; -webkit-font-smoothing:antialiased; }
+a,button,input,select,textarea { -webkit-tap-highlight-color:transparent; }
+a { text-underline-offset:4px; }
+button,.btn,.navcta,.plan,.feature-card,.faq-item,.social-btn { transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background-color .18s ease; }
+.container { min-width:0; }
+img,svg,video { max-width:100%; }
+.card,.panel,.plan,.feature-card,.order,.auth-card { backdrop-filter:blur(8px); }
+:focus-visible { outline:3px solid rgba(114,228,210,.72); outline-offset:3px; }
+@media (hover:hover) and (pointer:fine) {
+  .card:hover,.panel:hover,.feature-card:hover { border-color:rgba(114,228,210,.42); }
+}
+@media(max-width:600px) {
+  .container { padding-left:14px; padding-right:14px; }
+  .site-footer { justify-content:center; text-align:center; }
+  .hero { border-radius:22px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  :root { scroll-behavior:auto; }
+  *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; }
+}
