@@ -712,3 +712,8 @@ img,svg,video { max-width:100%; }
 .success-mark{width:48px;height:48px;margin:0 auto 16px;display:grid;place-items:center;border-radius:50%;background:#d8f8eb;color:#087f60;font-size:27px;font-weight:900}
 .return-back{text-align:center;color:var(--muted);font-size:13px}
 @media(max-width:600px){.ready-card-body{grid-template-columns:1fr}.ready-qr{width:160px;height:160px}.dashboard-help{align-items:flex-start;flex-direction:column}.dashboard-help .btn{width:100%}.payment-return-page{margin-top:8px}.return-qr-link img{width:200px;height:200px}}
+
+.payment-pending{display:flex;align-items:center;justify-content:center;gap:10px;margin:18px 0 8px;color:var(--muted);font-size:13px}
+.pending-spinner{width:17px;height:17px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:flank-spin .8s linear infinite;flex:0 0 17px}
+@keyframes flank-spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){.payment-return-card{padding:22px 17px}.payment-return-card .btn{min-height:48px}.payment-return-card .return-qr-link img{width:190px;height:190px}}
