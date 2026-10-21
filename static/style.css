@@ -532,7 +532,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .auth-modern { width:min(100% - 32px,470px); margin:clamp(26px,6vh,72px) auto 64px; }
 .auth-modern .auth-card { position:relative; overflow:hidden; padding:clamp(24px,5vw,40px); border-radius:26px; border:1px solid rgba(114,228,210,.23); background:linear-gradient(160deg,rgba(20,48,48,.98),rgba(9,27,28,.98)); box-shadow:0 24px 70px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05); }
 .auth-modern .auth-card::before { content:""; position:absolute; width:230px; height:230px; right:-110px; top:-145px; border-radius:50%; background:rgba(88,226,205,.12); filter:blur(5px); pointer-events:none; }
-.auth-brand-mark { display:grid; place-items:center; width:48px; height:48px; margin-bottom:22px; border:1px solid rgba(145,244,224,.35); border-radius:16px; color:#062321; background:linear-gradient(145deg,#b4fff1,#4bcdb9); box-shadow:0 8px 24px rgba(68,220,198,.16); font-size:25px; font-weight:950; letter-spacing:-2px; }
+.auth-brand-mark { display:grid; place-items:center; width:48px; height:48px; margin-bottom:22px; border:1px solid rgba(118,165,255,.4); border-radius:16px; color:#eef5ff; background:linear-gradient(145deg,#263b5c,#101827); box-shadow:0 8px 24px rgba(56,119,255,.2); font-size:25px; font-weight:950; letter-spacing:-2px; }
 .auth-modern .eyebrow { font-size:10px; letter-spacing:2.5px; }
 .auth-modern h1 { margin:10px 0 8px; font-size:clamp(27px,5vw,35px); letter-spacing:-1.2px; line-height:1.12; }
 .auth-lead { max-width:340px; margin:0 0 25px; font-size:13px; line-height:1.7; }
