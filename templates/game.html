@@ -71,6 +71,7 @@
   if(data.kind==='power'){const level=document.getElementById('level-power');if(level)level.textContent=data.click_power;}
   if(data.kind==='income'){const level=document.getElementById('level-income');if(level)level.textContent=Number(level.textContent)+1;}
  }
+ window.__flankClickerUpdate=updateGame;window.__flankClickerNotice=notice;
  let busy=false;
  button.addEventListener('click',async function(){
   if(busy)return;
@@ -108,14 +109,14 @@ document.querySelectorAll('.upgrade-form').forEach(form=>{
   try{
    const response=await fetch(form.action,{method:'POST',credentials:'same-origin',headers:{'X-Requested-With':'fetch','Accept':'application/json'}});
    const data=await response.json();
-   if(data.coins!==undefined)updateGame(data);
-   if(!response.ok||!data.ok){notice.textContent=data.message||'Не удалось купить улучшение.';notice.classList.add('is-error');}
+   if(data.coins!==undefined&&window.__flankClickerUpdate)window.__flankClickerUpdate(data);
+   const notice=window.__flankClickerNotice;
+   if(!response.ok||!data.ok){if(notice){notice.textContent=data.message||'Не удалось купить улучшение.';notice.classList.add('is-error');}}
    else{
-    notice.textContent=data.message||'Улучшение куплено!';
-    notice.classList.remove('is-error');
+    if(notice){notice.textContent=data.message||'Улучшение куплено!';notice.classList.remove('is-error');}
     const card=form.closest('.game-card');if(card){card.classList.remove('upgrade-success');void card.offsetWidth;card.classList.add('upgrade-success');}
    }
-  }catch(error){notice.textContent='Не удалось связаться с сервером. Попробуй ещё раз.';notice.classList.add('is-error');}
+  }catch(error){const notice=window.__flankClickerNotice;if(notice){notice.textContent='Не удалось связаться с сервером. Попробуй ещё раз.';notice.classList.add('is-error');}}
   finally{button.disabled=false;button.classList.remove('is-loading');button.innerHTML=original;}
  });
 });
