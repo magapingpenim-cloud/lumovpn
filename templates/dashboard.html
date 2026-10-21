@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Личный кабинет — MERID{% endblock %}
+{% block title %}Личный кабинет — FlankVPN{% endblock %}
 {% block content %}
-<section class="dashboard-welcome"><div><div class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</div><h1>Привет, {{ current_user.nickname }}!</h1><p>Подписка и управление — без лишних шагов.</p></div><div class="welcome-mark"><img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt=""><span>MERID</span></div></section>
+<section class="dashboard-welcome"><div><div class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</div><h1>Привет, {{ current_user.nickname }}!</h1><p>Подписка и управление — без лишних шагов.</p></div><div class="welcome-mark"><img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt=""><span>Flank<small>VPN</small></span></div></section>
 <div class="account-quickline"><span class="account-dot"></span><span>Аккаунт активен</span><span class="account-email">{{ current_user.email }}</span></div>
 <section class="panel checkout-panel checkout-panel-clean" id="buy"><div class="checkout-title"><div><div class="eyebrow">ПОДПИСКА</div><h2>Выбери тариф</h2><p class="muted tiny">После оплаты доступ появится автоматически.</p></div></div>
 <form method="post" action="{{ url_for('checkout') }}" class="checkout checkout-advanced"><label>Срок подписки<select name="tariff" id="tariff-select">{% for k,t in tariffs.items() if k != 'trial' %}<option value="{{ k }}" data-price="{{ t.price }}" data-months="{{ t.months }}" data-discount="{{ t.discount }}" data-save="{{ t.save }}">{{ t.title }} — {{ t.price }} ₽{% if t.discount %} (−{{ t.discount }}%){% endif %}</option>{% endfor %}</select></label><label>Оплата<select name="method" required><option value="sbp">СБП</option><option value="card">Банковская карта</option></select></label><button class="btn primary">Купить подписку ↗</button></form><div class="checkout-summary" id="checkout-summary" aria-live="polite">Итого: 129 ₽</div></section>
