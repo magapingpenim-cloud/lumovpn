@@ -1,39 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="FlankVPN">
-  <defs>
-    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#071b42"/>
-      <stop offset=".5" stop-color="#03102c"/>
-      <stop offset="1" stop-color="#02091b"/>
-    </linearGradient>
-    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#168cff"/>
-      <stop offset=".42" stop-color="#0755d8"/>
-      <stop offset="1" stop-color="#071b54"/>
-    </linearGradient>
-    <linearGradient id="letter" x1=".15" y1="0" x2=".85" y2="1">
-      <stop offset="0" stop-color="#d9ffff"/>
-      <stop offset=".22" stop-color="#85f8ff"/>
-      <stop offset=".52" stop-color="#22d8ff"/>
-      <stop offset=".78" stop-color="#0795f4"/>
-      <stop offset="1" stop-color="#1162df"/>
-    </linearGradient>
-    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity=".28"/>
-      <stop offset=".45" stop-color="#9eefff" stop-opacity=".06"/>
-      <stop offset="1" stop-color="#001033" stop-opacity=".18"/>
-    </linearGradient>
-    <filter id="glow" x="-35%" y="-35%" width="170%" height="170%">
-      <feGaussianBlur stdDeviation="2.4" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-  </defs>
-  <rect x="5" y="5" width="118" height="118" rx="29" fill="#010817" stroke="#061b48" stroke-width="2"/>
-  <rect x="8" y="8" width="112" height="112" rx="27" fill="url(#tile)" stroke="url(#rim)" stroke-width="2.5"/>
-  <rect x="11" y="11" width="106" height="106" rx="24" fill="url(#shine)"/>
-  <path d="M30 91V43C30 34 36 29 45 29H84C93 29 98 34 98 43V48C98 56 93 60 84 60H54V70H73C82 70 87 74 87 82C87 90 82 94 73 94H54V91C54 99 49 103 41 103C33 103 30 99 30 91Z" fill="#03113a" opacity=".85" transform="translate(0 2)"/>
-  <path d="M31 91V43C31 35 36 30 44 30H84C92 30 97 35 97 43C97 51 92 55 84 55H52V70H73C82 70 87 74 87 82C87 90 82 94 73 94H52V91C52 99 48 102 41 102C34 102 31 98 31 91Z" fill="url(#letter)" stroke="#77eaff" stroke-opacity=".55" stroke-width="1.2" filter="url(#glow)"/>
-  <path d="M42 36H82" stroke="#ffffff" stroke-opacity=".62" stroke-width="2.2" stroke-linecap="round"/>
-  <path d="M84 80L98 94L84 108L70 94Z" fill="#03113a" opacity=".7" transform="translate(1 2)"/>
-  <path d="M84 78L98 92L84 106L70 92Z" fill="url(#letter)" stroke="#83edff" stroke-opacity=".65" stroke-width="1.2" filter="url(#glow)"/>
-  <path d="M80 88L85 93" stroke="#e6ffff" stroke-opacity=".7" stroke-width="1.5" stroke-linecap="round"/>
-</svg>
+<defs>
+<linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#111b30"/><stop offset=".55" stop-color="#071020"/><stop offset="1" stop-color="#020813"/></linearGradient>
+<linearGradient id="arch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#b8d8f4"/></linearGradient>
+<linearGradient id="wave" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a8f6ff"/><stop offset=".55" stop-color="#47d8f6"/><stop offset="1" stop-color="#2b8eea"/></linearGradient>
+<filter id="soft" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur stdDeviation="1.2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="5" y="5" width="118" height="118" rx="29" fill="url(#tile)" stroke="#25344e" stroke-width="2"/>
+<rect x="9" y="9" width="110" height="110" rx="25" fill="none" stroke="#a8d7ff" stroke-opacity=".09"/>
+<g filter="url(#soft)">
+<path d="M29 91V43C29 34 35 28 44 28H84C93 28 99 34 99 43V91" fill="none" stroke="#07101f" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M29 91V43C29 34 35 28 44 28H84C93 28 99 34 99 43V91" fill="none" stroke="url(#arch)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M36 70C45 81 55 86 64 86C74 86 84 81 92 70" fill="none" stroke="#06111f" stroke-width="11" stroke-linecap="round"/>
+<path d="M36 70C45 81 55 86 64 86C74 86 84 81 92 70" fill="none" stroke="url(#wave)" stroke-width="6.5" stroke-linecap="round"/>
+</g></svg>
