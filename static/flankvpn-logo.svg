@@ -1,1 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="FlankVPN"><defs><linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#103b39"/><stop offset="1" stop-color="#061817"/></linearGradient><linearGradient id="tiffany" x1="0" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#b6fff4"/><stop offset=".28" stop-color="#72f4df"/><stop offset=".62" stop-color="#35d8c3"/><stop offset="1" stop-color="#0d9f96"/></linearGradient><filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="5" y="5" width="118" height="118" rx="29" fill="url(#tile)" stroke="#62e7d7" stroke-opacity=".48" stroke-width="2"/><rect x="8" y="8" width="112" height="112" rx="26" fill="none" stroke="#c1fff5" stroke-opacity=".08"/><g filter="url(#glow)"><path d="M28 25H92V39H43V56H80V70H43V101H28Z" fill="url(#tiffany)" stroke="#a8fff2" stroke-width="1.2" stroke-linejoin="round"/><path d="M44 33H83" stroke="#e6fffb" stroke-width="3" stroke-linecap="round" opacity=".9"/><path d="M91 79L105 93L91 107L77 93Z" fill="url(#tiffany)" stroke="#a8fff2" stroke-width="1.2" stroke-linejoin="round"/><path d="M89 87L97 95" stroke="#d8fff9" stroke-width="2" stroke-linecap="round" opacity=".85"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="FlankVPN">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111b30"/>
+      <stop offset=".55" stop-color="#071020"/>
+      <stop offset="1" stop-color="#020813"/>
+    </linearGradient>
+    <linearGradient id="arch" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#b8d8f4"/>
+    </linearGradient>
+    <linearGradient id="wave" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a8f6ff"/>
+      <stop offset=".55" stop-color="#47d8f6"/>
+      <stop offset="1" stop-color="#2b8eea"/>
+    </linearGradient>
+    <filter id="soft" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="5" y="5" width="118" height="118" rx="29" fill="url(#tile)" stroke="#25344e" stroke-width="2"/>
+  <rect x="9" y="9" width="110" height="110" rx="25" fill="none" stroke="#a8d7ff" stroke-opacity=".09"/>
+  <g filter="url(#soft)">
+    <path d="M29 91V43C29 34 35 28 44 28H84C93 28 99 34 99 43V91" fill="none" stroke="#07101f" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M29 91V43C29 34 35 28 44 28H84C93 28 99 34 99 43V91" fill="none" stroke="url(#arch)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M36 70C45 81 55 86 64 86C74 86 84 81 92 70" fill="none" stroke="#06111f" stroke-width="11" stroke-linecap="round"/>
+    <path d="M36 70C45 81 55 86 64 86C74 86 84 81 92 70" fill="none" stroke="url(#wave)" stroke-width="6.5" stroke-linecap="round"/>
+  </g>
+</svg>
