@@ -57,14 +57,14 @@ def send_subscription_email(order):
   return False
  safe_nick=escape(order.nickname or "")
  safe_url=escape(sub_url,quote=True)
- subject="Твой бесплатный пробный период FlankVPN готов" if order.tariff_key=="trial" else "Твоя подписка FlankVPN готова"
+ subject="Твой бесплатный пробный период FlankVPN готов" if order.tariff_key=="trial" else "Спасибо за оплату — FlankVPN"
  trial_note="<p><strong>Пробный период:</strong> 10 дней бесплатно с момента подключения.</p>" if order.tariff_key=="trial" else ""
  html_body=f"""
  <div style="margin:0;background:#f2f6fc;padding:28px 12px;font-family:Arial,Helvetica,sans-serif;color:#10203a">
   <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #dce7f5;border-radius:20px;overflow:hidden">
    <div style="padding:26px 28px;background:#081529;color:#fff">
     <div style="font-size:12px;letter-spacing:3px;color:#8fe1ff;font-weight:bold">FLANKVPN</div>
-    <h1 style="font-size:25px;margin:12px 0 6px">Твоя подписка готова!</h1>
+    <h1 style="font-size:25px;margin:12px 0 6px">Спасибо за оплату!</h1>\n    <p style="margin:0;color:#d4e3f7">Спасибо, что выбрал FlankVPN. Твой платёж подтверждён, а подписка готова к подключению.</p>
     <p style="margin:0;color:#d4e3f7">Заказ #{order.id}</p>
    </div>
    <div style="padding:28px">
@@ -81,7 +81,7 @@ def send_subscription_email(order):
   </div>
  </div>
  """
- text_body=(f"FlankVPN: бесплатный пробный период на 10 дней. Заказ #{order.id}. " if order.tariff_key=="trial" else f"FlankVPN: подписка готова. Заказ #{order.id}. ") + f"Никнейм: {order.nickname}. Ссылка подписки: {sub_url}"
+ text_body=(f"FlankVPN: бесплатный пробный период на 10 дней. Заказ #{order.id}. " if order.tariff_key=="trial" else f"Спасибо за оплату FlankVPN! Заказ #{order.id}. Твой платёж подтверждён, подписка готова. ") + f"Ссылка подписки: {sub_url}"
  try:
   response=requests.post("https://api.resend.com/emails",
    headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json",
@@ -791,7 +791,7 @@ def yookassa_webhook():
   if o.telegram_id and o.subscription_url and os.getenv("TELEGRAM_BOT_TOKEN","").strip():
    bot_token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
    try:
-    tg_text=f"✅ Оплата FlankVPN подтверждена!\nТариф: {TARIFFS.get(o.tariff_key,{}).get('title',o.tariff_key)}\n\nСсылка для подключения:\n{o.subscription_url}\n\nОтсканируй QR-код или скопируй ссылку в совместимый VPN-клиент."
+    tg_text=f"💚 Спасибо за оплату FlankVPN! Твой платёж подтверждён.\nТариф: {TARIFFS.get(o.tariff_key,{}).get('title',o.tariff_key)}\n\nСсылка для подключения:\n{o.subscription_url}\n\nОтсканируй QR-код или скопируй ссылку в совместимый VPN-клиент."
     qr_image=qrcode.make(o.subscription_url)
     qr_buffer=io.BytesIO()
     qr_image.save(qr_buffer,format="PNG")
@@ -806,7 +806,7 @@ def yookassa_webhook():
     app.logger.exception("Could not send subscription QR to Telegram for order %s",o.id)
     try:
      fallback=requests.post("https://api.telegram.org/bot"+bot_token+"/sendMessage",
-      json={"chat_id":o.telegram_id,"text":f"✅ Оплата FlankVPN подтверждена.\nСсылка для подключения:\n{o.subscription_url}\n\nQR-код отправить не удалось; используй ссылку выше.","disable_web_page_preview":True},timeout=10)
+      json={"chat_id":o.telegram_id,"text":f"💚 Спасибо за оплату FlankVPN! Оплата подтверждена.\nСсылка для подключения:\n{o.subscription_url}\n\nQR-код отправить не удалось; используй ссылку выше.","disable_web_page_preview":True},timeout=10)
      fallback.raise_for_status()
     except Exception:
      app.logger.exception("Could not send subscription link fallback to Telegram for order %s",o.id)
