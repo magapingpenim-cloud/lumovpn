@@ -8,20 +8,30 @@
   <meta name="description" content="FlankVPN — простой личный кабинет, удобная подписка и быстрое подключение.">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
   <title>{% block title %}FlankVPN — свобода подключений{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261025') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261026') }}">
 </head>
 <body>
   <div class="site-shell">
     <header class="nav">
+      {% if current_user.is_authenticated %}
+      <details class="site-menu">
+        <summary aria-label="Открыть меню"><span></span><span></span><span></span></summary>
+        <div class="site-menu-panel">
+          <a href="{{ url_for('index') }}">Главная и тарифы</a>
+          <a href="{{ url_for('dashboard') }}">Мои заказы и подписки</a>
+          <a href="{{ url_for('settings') }}">Настройки аккаунта</a>
+          <a href="{{ url_for('my_support') }}">Поддержка</a>
+          <form method="post" action="{{ url_for('logout') }}"><button type="submit">Выйти</button></form>
+        </div>
+      </details>
+      {% endif %}
       <a class="brand" href="{{ url_for('index') }}" aria-label="FlankVPN — главная">
         <img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt="">
         <span>Flank<small>VPN</small></span>
       </a>
       <nav>
         {% if current_user.is_authenticated %}
-          <a href="{{ url_for('dashboard') }}">Кабинет</a>
-          <a href="{{ url_for('my_support') }}">Мои вопросы</a>
-          <form class="inline" method="post" action="{{ url_for('logout') }}"><button class="navbutton" type="submit">Выйти</button></form>
+          <a href="{{ url_for('dashboard') }}">Мои заказы</a>
         {% else %}
           <a href="{{ url_for('login') }}">Войти</a>
           <a class="navcta" href="{{ url_for('register') }}">Регистрация <span aria-hidden="true">↗</span></a>
