@@ -448,6 +448,21 @@ def login():
 @login_required
 def logout():
  logout_user(); session.pop("flankadmin",None); return redirect(url_for("index"))
+@app.route("/settings",methods=["GET","POST"])
+@login_required
+def settings():
+ if request.method=="POST":
+  nickname=(request.form.get("nickname") or "").strip().lower(); email=(request.form.get("email") or "").strip().lower()
+  current_password=request.form.get("current_password") or ""; new_password=request.form.get("new_password") or ""
+  if not current_user.check_password(current_password): flash("Текущий пароль указан неверно.","error")
+  elif not (3<=len(nickname)<=40) or "@" not in email or len(email)>160: flash("Проверь никнейм и email.","error")
+  elif User.query.filter((func.lower(User.nickname)==nickname)&(User.id!=current_user.id)).first() or User.query.filter((func.lower(User.email)==email)&(User.id!=current_user.id)).first(): flash("Этот никнейм или email уже занят.","error")
+  elif new_password and len(new_password)<8: flash("Новый пароль должен содержать не менее 8 символов.","error")
+  else:
+   current_user.nickname=nickname; current_user.email=email
+   if new_password: current_user.set_password(new_password)
+   db.session.commit(); flash("Настройки аккаунта сохранены.","success"); return redirect(url_for("settings"))
+ return render_template("settings.html")
 @app.route("/dashboard")
 @login_required
 def dashboard(): return render_template("dashboard.html",orders=Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all())
@@ -700,41 +715,27 @@ def checkout():
 def payment(oid):
  o=db.session.get(Order,oid)
  if not o or o.user_id!=current_user.id: abort(404)
- if o.status=="active" and o.subscription_url:
-  return redirect(url_for("payment_return",oid=oid))
+ if o.status=="active" and o.subscription_url: return redirect(url_for("payment_return",oid=oid))
  if o.status!="awaiting_payment":
-  flash("Этот заказ уже обрабатывается. Обнови личный кабинет через несколько секунд.","info")
+  flash("Платёж требует проверки. Если деньги уже списались, не создавай новый заказ.","error" if o.status=="error" else "info")
   return redirect(url_for("dashboard"))
- shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip()
- secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
- if not shop_id or not secret_key:
-  flash("Онлайн-оплата ЮKassa временно не настроена. Попробуй позже.","error")
-  return redirect(url_for("dashboard"))
+ shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip(); secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
+ if not shop_id or not secret_key: flash("Онлайн-оплата ЮKassa временно не настроена.","error"); return redirect(url_for("dashboard"))
  try:
   if o.yookassa_payment_id:
-   response=requests.get("https://api.yookassa.ru/v3/payments/"+urllib.parse.quote(o.yookassa_payment_id,safe=""),auth=(shop_id,secret_key),timeout=15)
-   response.raise_for_status()
-   data=response.json()
-   if data.get("status")=="succeeded" and data.get("paid") is True:
-    return redirect(url_for("payment_return",oid=oid))
+   response=requests.get("https://api.yookassa.ru/v3/payments/"+urllib.parse.quote(o.yookassa_payment_id,safe=""),auth=(shop_id,secret_key),timeout=15); response.raise_for_status(); data=response.json()
+   if data.get("status")=="succeeded" and data.get("paid") is True: return redirect(url_for("payment_return",oid=oid))
    confirmation_url=(data.get("confirmation") or {}).get("confirmation_url")
-   if not confirmation_url:
-    raise RuntimeError("ЮKassa не вернула ссылку оплаты.")
+   if not confirmation_url: raise RuntimeError("ЮKassa не вернула ссылку оплаты.")
   else:
-   response=requests.post("https://api.yookassa.ru/v3/payments",auth=(shop_id,secret_key),headers={"Idempotence-Key":f"flankvpn-order-{o.id}","Content-Type":"application/json"},json={"amount":{"value":f"{o.amount}.00","currency":"RUB"},"capture":True,"confirmation":{"type":"redirect","return_url":url_for("payment_return",oid=o.id,_external=True)},"description":f"FlankVPN order #{o.id}","metadata":{"order_id":str(o.id),"user_id":str(o.user_id),"tariff_key":o.tariff_key}},timeout=20)
-   response.raise_for_status()
-   data=response.json()
-   payment_id=data.get("id")
-   confirmation_url=(data.get("confirmation") or {}).get("confirmation_url")
+   response=requests.post("https://api.yookassa.ru/v3/payments",auth=(shop_id,secret_key),headers={"Idempotence-Key":f"flankvpn-order-{o.id}","Content-Type":"application/json"},json={"amount":{"value":f"{o.amount}.00","currency":"RUB"},"capture":True,"confirmation":{"type":"redirect","return_url":url_for("payment_return",oid=oid,_external=True)},"description":f"FlankVPN order #{o.id}","metadata":{"order_id":str(o.id),"user_id":str(o.user_id),"tariff_key":o.tariff_key}},timeout=20); response.raise_for_status(); data=response.json()
+   payment_id=data.get("id"); confirmation_url=(data.get("confirmation") or {}).get("confirmation_url")
    if not payment_id or not confirmation_url: raise RuntimeError("ЮKassa не вернула ID платежа или ссылку оплаты.")
-   o.yookassa_payment_id=payment_id
-   db.session.commit()
-  return redirect(confirmation_url,code=302)
+   o.yookassa_payment_id=payment_id; db.session.commit()
+  return render_template("payment.html",order=o,tariff=TARIFFS[o.tariff_key],payment={"title":"ЮKassa"},confirmation_url=confirmation_url)
  except Exception:
-  db.session.rollback()
-  app.logger.exception("Could not create or resume YooKassa payment for order %s",o.id)
-  flash("Не удалось открыть оплату. Попробуй ещё раз; если деньги уже списались, не создавай новый заказ.","error")
-  return redirect(url_for("dashboard"))
+  db.session.rollback(); app.logger.exception("Could not create or resume YooKassa payment for order %s",o.id)
+  flash("Не удалось подготовить оплату. Если деньги уже списались, не создавай новый заказ.","error"); return redirect(url_for("dashboard"))
 @app.route("/payment/return/<int:oid>")
 @login_required
 def payment_return(oid):
