@@ -1,74 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Оплата — FlankVPN{% endblock %}
+{% block title %}Подписка {{ tariff.title }} — FlankVPN{% endblock %}
 {% block content %}
-<div class="auth payment-auth">
-  <div class="card payment-card">
-    <div class="eyebrow">FLANKVPN / ЗАКАЗ #{{order.id}}</div>
-    <h1>Заверши оформление</h1>
-    <p class="muted payment-intro">Переведи точную сумму и отправь заказ на проверку. Доступ активируется после подтверждения поступления денег.</p>
-    <div class="payment-total"><div><span>К оплате</span><strong>{{order.amount}} ₽</strong></div><span class="payment-method-pill">{{payment.title}}</span></div>
-    {% if tariff.months %}
-      {% set list_price = 49 * tariff.months %}
-      {% set saving = list_price - order.amount %}
-      <div class="payment-breakdown">
-        <div><span>Тариф</span><strong>{{tariff.months}} {{'месяц' if tariff.months == 1 else ('месяца' if tariff.months in [2,3,4] else 'месяцев')}}</strong></div>
-        <div><span>Стоимость при оплате помесячно</span><strong>{{list_price}} ₽</strong></div>
-        {% if saving > 0 %}<div class="payment-savings"><span>Твоя экономия</span><strong>−{{saving}} ₽ ({{((saving / list_price) * 100)|round(0)|int}}%)</strong></div>{% endif %}
-        <div><span>В пересчёте на месяц</span><strong>≈ {{(order.amount / tariff.months)|round(0)|int}} ₽</strong></div>
-      </div>
-    {% endif %}
-    {% if order.payment_method == 'sbp' %}
-    <div class="paybox payment-details">
-      <p class="tiny muted">Оплата через СБП</p>
-      <p>Открой страницу Т-Банка по ссылке или отсканируй QR-код. На странице банка следуй инструкциям для перевода.</p>
-      <div style="text-align:center;padding:16px;background:#f5f7fb;border-radius:16px;margin:14px 0">
-        <img src="{{ url_for('payment_sbp_qr') }}" alt="QR-код для перехода на страницу оплаты Т-Банка" width="220" height="220" style="max-width:100%;height:auto;background:#fff;padding:10px;border-radius:12px">
-        <p class="tiny muted">QR-код открывает ту же страницу Т-Банка</p>
-      </div>
-      <a class="btn primary full" href="https://www.tbank-online.com/rm/r_vAnkhgISyw.ZkhuMWpXtK/UbHFv58761" target="_blank" rel="noopener noreferrer">Перейти к оплате через СБП ↗</a>
-    </div>
-    {% else %}
-    <div class="paybox payment-details">
-      <p class="tiny muted">Реквизиты для перевода</p>
-      <div class="copy-value-row"><h3>{{payment.detail}}</h3><button type="button" class="copy-small" data-copy-value="{{payment.detail}}">Копировать</button></div>
-      <p class="tiny muted">Получатель: {{config.get('PAYMENT_RECIPIENT') or 'настройте PAYMENT_RECIPIENT'}}</p>
-    </div>
-    {% endif %}
-    <div class="notice payment-warning">
-      <div class="warning-heading">⚠ ОБЯЗАТЕЛЬНО УКAЖИ НИКНЕЙМ В СООБЩЕНИИ К ПЕРЕВОДУ</div>
-      <p>В сообщении к переводу укажи <strong>точно тот никнейм, который использовался при регистрации</strong>:</p>
-      <div class="nickname-copy"><strong>{{order.nickname}}</strong><button type="button" class="copy-small" data-copy-value="{{order.nickname}}">Копировать ник</button></div>
-      <p><strong>Если никнейм не указан или написан неправильно, платёж может не удастся сопоставить с заказом, и доступ не будет выдан до проверки.</strong> Не указывай вместо него имя, email или ник другого человека.</p>
-    </div>
-    <div class="payment-steps"><span>01</span><p>{% if order.payment_method == 'sbp' %}Перейди на страницу Т-Банка и оплати заказ.{% else %}Переведи ровно <strong>{{order.amount}} ₽</strong> по реквизитам выше.{% endif %}</p><span>02</span><p>Если поле сообщения доступно, добавь никнейм <strong>{{order.nickname}}</strong>.</p><span>03</span><p>Вернись на эту страницу и нажми кнопку ниже только после фактической оплаты.</p></div>
-    <form method="post" action="{{url_for('paid',oid=order.id)}}"><button class="btn primary full">Я оплатил(а) — отправить на проверку ↗</button></form>
-    <p class="tiny muted">Администратор вручную проверит поступление средств. Нажатие кнопки само по себе не подтверждает оплату.</p>
-    <p class="tiny"><a href="{{url_for('dashboard')}}">← Вернуться в личный кабинет</a></p>
+<section class="payment-flow">
+  <div class="payment-flow-card">
+    <a class="back-link" href="{{ url_for('index') }}">← Назад к тарифам</a>
+    <div class="eyebrow">FLANKVPN · ОФОРМЛЕНИЕ ПОДПИСКИ</div>
+    <h1>Твоя подписка</h1>
+    <div class="selected-plan"><span class="selected-plan-label">Выбранный срок</span><strong>{{ tariff.title }}</strong><span class="selected-plan-price">{{ order.amount }} ₽</span></div>
+    <div class="payment-provider-note"><span class="eyebrow">ЗАЩИЩЁННАЯ ОПЛАТА</span><strong>ЮKassa</strong><p class="muted">Нажми кнопку ниже, чтобы перейти на защищённую страницу оплаты. Не отправляй данные карты в чат.</p></div>
+    <a class="btn primary full pay-yookassa" href="{{ confirmation_url }}">Оплатить через ЮKassa ↗</a>
+    <p class="tiny muted payment-safety-note">После оплаты ты автоматически вернёшься на FlankVPN. Когда платёж подтвердится, на странице появятся QR-код, кнопка копирования ссылки и кнопка открытия подписки.</p>
+    <p class="tiny muted">Заказ #{{ order.id }} · Если деньги уже списались, не создавай второй заказ.</p>
   </div>
-</div>
-<script>
-(function () {
-  document.querySelectorAll("[data-copy-value]").forEach(function (button) {
-    button.addEventListener("click", async function () {
-      const value = button.getAttribute("data-copy-value") || "";
-      if (!value) return;
-      const original = button.dataset.originalLabel || button.textContent.trim();
-      button.dataset.originalLabel = original;
-      try {
-        if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(value);
-        else {
-          const field = document.createElement("textarea");
-          field.value = value; field.setAttribute("readonly", "");
-          field.style.position = "fixed"; field.style.left = "-9999px";
-          document.body.appendChild(field); field.select();
-          const copied = document.execCommand("copy"); field.remove();
-          if (!copied) throw new Error("Copy blocked");
-        }
-        button.textContent = "Скопировано ✓";
-        window.setTimeout(function () { button.textContent = original; }, 1800);
-      } catch (_) { window.prompt("Скопируй текст:", value); }
-    });
-  });
-})();
-</script>
+</section>
 {% endblock %}
