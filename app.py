@@ -94,7 +94,7 @@ def send_subscription_email(order):
   app.logger.exception("Failed to email subscription for order %s to %s.",order.id,order.email)
   return False
 class User(UserMixin,db.Model):
- id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False); google_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); apple_sub=db.Column(db.String(255),unique=True,nullable=True,index=True)
+ id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False); google_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); apple_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); h1_client_name=db.Column(db.String(100),unique=True,nullable=True,index=True)
  def set_password(self,p): self.password_hash=generate_password_hash(p)
  def check_password(self,p): return check_password_hash(self.password_hash,p)
 class Order(db.Model):
@@ -1073,13 +1073,25 @@ def admin_support():
 def provision(o):
  base=os.getenv("H1_API_BASE","").rstrip("/"); token=os.getenv("H1_API_TOKEN","")
  if not base or not token: raise RuntimeError("Настройте H1_API_BASE и H1_API_TOKEN в переменных окружения.")
- name="flank_"+str(o.id)+"_"+''.join(secrets.choice(string.ascii_lowercase+string.digits) for _ in range(5)); h={"Authorization":"Bearer "+token,"Content-Type":"application/json"}
- tariff=TARIFFS[o.tariff_key]; days=o.requested_days or tariff.get("days",tariff["months"]*30)
- r=requests.post(base+"/create",headers=h,json={"name":name,"days":days,"traffic_limit_gb":0,"device_limit":0},timeout=25); r.raise_for_status(); d=r.json()
- if d.get("ok") is False: raise RuntimeError(str(d))
+ h={"Authorization":"Bearer "+token,"Content-Type":"application/json"}
+ tariff=TARIFFS[o.tariff_key]; days=int(o.requested_days or tariff.get("days",tariff["months"]*30))
+ user=db.session.get(User,o.user_id)
+ if not user: raise RuntimeError("Не найден аккаунт клиента для заказа.")
+ # Один постоянный H1-клиент на аккаунт: повторная покупка добавляет дни к нему.
+ name=(user.h1_client_name or "").strip()
+ if name:
+  r=requests.patch(base+"/edit",headers=h,json={"name":name,"days":days},timeout=25)
+  r.raise_for_status(); d=r.json()
+  if d.get("ok") is False: raise RuntimeError(str(d))
+ else:
+  name="flank_u"+str(user.id)
+  r=requests.post(base+"/create",headers=h,json={"name":name,"days":days,"traffic_limit_gb":0,"device_limit":0},timeout=25)
+  r.raise_for_status(); d=r.json()
+  if d.get("ok") is False: raise RuntimeError(str(d))
  r=requests.get(base+"/info",headers=h,params={"name":name},timeout=25); r.raise_for_status(); c=r.json().get("client",r.json()); sub=c.get("sub_url") or c.get("subscription_url")
  if not sub and c.get("uuid") and os.getenv("H1_SUBSCRIPTION_BASE"): sub=urllib.parse.urljoin(os.getenv("H1_SUBSCRIPTION_BASE").rstrip("/")+"/",c["uuid"])
- if not sub: raise RuntimeError("H1 не вернула sub_url для нового клиента.")
+ if not sub: raise RuntimeError("H1 не вернула sub_url для клиента.")
+ user.h1_client_name=name
  o.subscription_url=sub+("&" if "?" in sub else "?")+"format=json"; o.status="active"; o.error_message=None; db.session.commit()
 @app.route("/admin/confirm/<int:oid>",methods=["POST"])
 def confirm(oid):
@@ -1140,6 +1152,9 @@ with app.app_context():
     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN google_sub VARCHAR(255)'))
    if "apple_sub" not in user_columns:
     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN apple_sub VARCHAR(255)'))
+    if "h1_client_name" not in user_columns:
+     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN h1_client_name VARCHAR(100)'))
+    conn.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_h1_client_name ON "'+user_table+'" (h1_client_name)'))
   order_table=Order.__tablename__
   if inspector.has_table(order_table):
    order_columns={column["name"] for column in inspector.get_columns(order_table)}
