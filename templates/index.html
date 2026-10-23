@@ -41,11 +41,11 @@
       <p class="price-month">≈ {{(t.price / (t.months or 1))|round(0)|int}} ₽ в месяц</p>
       {% if t.discount %}<div class="saving-line"><span>Экономия относительно помесячной оплаты</span><strong>−{{t.save}} ₽</strong></div>{% else %}<div class="saving-line saving-neutral"><span>Оплата за один месяц</span><strong>Гибко</strong></div>{% endif %}
       <ul><li>Личный кабинет</li><li>Ссылка подписки и QR-код</li><li>Инструкция по подключению</li></ul>
-      <a class="btn {% if k=='12' or k=='3' %}primary{% else %}secondary{% endif %}" href="{{url_for('register')}}">Выбрать тариф ↗</a>
+      {% if current_user.is_authenticated %}<form method="post" action="{{ url_for('checkout') }}"><input type="hidden" name="tariff" value="{{ k }}"><button class="btn {% if k=='12' or k=='3' %}primary{% else %}secondary{% endif %}" type="submit">Выбрать тариф ↗</button></form>{% else %}<a class="btn {% if k=='12' or k=='3' %}primary{% else %}secondary{% endif %}" href="{{url_for('register')}}">Выбрать тариф ↗</a>{% endif %}
     </article>
     {% endfor %}
   </div>
-  <p class="muted tiny pricing-note">10 дней пробного доступа доступны после регистрации. Платный доступ активируется после проверки оплаты администратором. *VPN не гарантирует абсолютную анонимность или безопасность на любом устройстве.</p>
+  <p class="muted tiny pricing-note">10 дней пробного доступа доступны после регистрации. Платный доступ активируется автоматически после подтверждения оплаты ЮKassa. *VPN не гарантирует абсолютную анонимность или безопасность на любом устройстве.</p>
 </section>
 <section class="steps-section">
   <div class="section-heading"><div class="eyebrow">КАК ЭТО РАБОТАЕТ</div><h2>Три шага до подключения</h2></div>
@@ -58,8 +58,8 @@
 <section class="faq-section">
   <div class="section-heading"><div class="eyebrow">FAQ</div><h2>Частые вопросы</h2></div>
   <details class="faq-item"><summary>Как получить пробный доступ?</summary><p>Зарегистрируйся и подтверди email. Пробный доступ рассчитан на 10 дней; его выдача зависит от доступности и настройки VPN-сервера.</p></details>
-  <details class="faq-item"><summary>Как оплатить подписку?</summary><p>Выбери тариф и способ оплаты на сайте. После перевода сообщи об оплате — администратор проверит поступление средств и подтвердит заказ.</p></details>
-  <details class="faq-item"><summary>Как подключиться к VPN?</summary><p>После активации подписки открой личный кабинет и используй ссылку подписки или QR-код в совместимом VPN-клиенте. Следуй инструкции для своего устройства.</p></details>
+  <details class="faq-item"><summary>Как оплатить подписку?</summary><p>Выбери тариф, оплати через ЮKassa и вернись на сайт: QR-код и ссылка появятся автоматически после подтверждения платежа.</p></details>
+  <details class="faq-item"><summary>Как подключиться к VPN?</summary><p>После подтверждения оплаты сайт покажет QR-код и ссылку подписки. Их можно открыть или скопировать. Следуй инструкции для своего устройства.</p></details>
   <details class="faq-item"><summary>Почему выгоднее тариф на 12 месяцев?</summary><p>Стоимость годового тарифа ниже, чем оплата 12 месяцев по отдельности. Экономия отображается на карточке до оформления заказа.</p></details>
 </section>
 <section class="callout callout-advanced"><div><div class="eyebrow">ГОТОВ НАЧАТЬ?</div><h2>Начни с пробного доступа</h2><p>Зарегистрируйся и посмотри, как устроен FlankVPN.</p></div><a class="btn primary" href="{{url_for('register')}}">Создать аккаунт ↗</a></section>
