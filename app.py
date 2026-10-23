@@ -552,7 +552,7 @@ def telegram_webhook(secret):
       send("Онлайн-оплата временно не настроена. Напиши в поддержку или попробуй позже.")
      else:
       try:
-              shadow_email="telegram_"+telegram_id+"@telegram.flankvpn.local"
+       shadow_email="telegram_"+telegram_id+"@telegram.flankvpn.local"
        shadow=User.query.filter_by(email=shadow_email).first()
        if not shadow:
         internal_nick=("tg_"+telegram_id[-30:])[:40]
