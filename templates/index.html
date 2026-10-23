@@ -6,7 +6,7 @@
     <div class="eyebrow"><span class="live-dot"></span> FLANKVPN · ТВОЁ ПОДКЛЮЧЕНИЕ</div>
     <h1>Интернет —<br><span>по твоим правилам.</span></h1>
     <p>Понятная подписка, личный кабинет и быстрый старт через совместимый VPN-клиент. Без запутанных инструкций и лишних экранов.</p>
-    <div class="actions"><a class="btn primary" href="{{url_for('register')}}">Начать бесплатно ↗</a><a class="btn glass" href="#tariffs">Сравнить тарифы</a></div>
+    <div class="actions"><a class="btn primary" href="{{ url_for('register') if not current_user.is_authenticated else '#tariffs' }}">Начать бесплатно ↗</a><a class="btn glass" href="#tariffs">Сравнить тарифы</a></div>
     <div class="checks"><span>✓ 10 дней пробного доступа</span><span>✓ QR и ссылка подписки</span><span>✓ Управление в кабинете</span></div>
   </div>
   <div class="hero-orbit" aria-hidden="true">
