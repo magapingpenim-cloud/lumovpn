@@ -520,7 +520,7 @@ def telegram_webhook(secret):
  cmd=text_in.split(maxsplit=1)[0].lower() if text_in else ""
  arg=text_in.split(maxsplit=1)[1].strip() if len(text_in.split(maxsplit=1))>1 else ""
  if callback_data:
-  answer_callback()
+  answer_callback("Готовлю ссылку оплаты…") if callback_data.startswith("buy:") else answer_callback()
   if callback_data=="show_tariffs":
    show_tariffs()
   elif callback_data.startswith("tariff:"):
@@ -581,10 +581,22 @@ def telegram_webhook(secret):
        db.session.commit()
        send(f"🧾 Заказ FlankVPN #{order.id}\n\nТариф: {tariff['title']}\nК оплате: {order.amount} ₽\nСпособ оплаты: ЮKassa\n\nЗаверши оплату на защищённой странице ЮKassa. Не отправляй данные карты в чат. После подтверждения платежа подписка автоматически придёт сюда отдельным сообщением.",
         keyboard=False,inline=[[{"text":"💳 Перейти к оплате","url":confirmation_url}]])
-      except Exception:
+      except Exception as exc:
        db.session.rollback()
        app.logger.exception("Could not create YooKassa payment for Telegram order")
-       send("Не удалось создать платёж. Попробуй позже. Если деньги уже списались, не создавай повторный платёж — напиши в поддержку.")
+       detail=""
+       if isinstance(exc,requests.HTTPError) and exc.response is not None:
+        try:
+         error_data=exc.response.json()
+         reason=str(error_data.get("description") or error_data.get("type") or error_data.get("code") or "ошибка API")
+        except Exception:
+         reason="ошибка API"
+        detail=f" ЮKassa ответила HTTP {exc.response.status_code}: {reason[:220]}"
+       elif isinstance(exc,requests.RequestException):
+        detail=" Не удалось связаться с ЮKassa. Проверь соединение сервера и доступность API."
+       elif isinstance(exc,RuntimeError):
+        detail=" ЮKassa не вернула корректную ссылку оплаты."
+       send("Не удалось создать платёж."+detail+" Попробуй позже. Если деньги уже списались, не создавай повторный платёж — напиши в поддержку.")
   elif callback_data.startswith("paid:"):
    try: order_id=int(callback_data.split(":",1)[1])
    except (ValueError,IndexError): order_id=0
