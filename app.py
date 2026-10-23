@@ -514,9 +514,8 @@ def telegram_webhook(secret):
   if not tariff or key not in ("1","3","12"):
    send("Неизвестный тариф. Открой раздел «Тарифы» ещё раз.")
    return
-  send(f"Тариф: {tariff['title']}\nСтоимость: {tariff['price']} ₽\n\nВыбери способ оплаты:",keyboard=False,
-   inline=[[{"text":"Перевод по номеру (СБП)","callback_data":f"buy:{key}:sbp"}],
-           [{"text":"Банковская карта","callback_data":f"buy:{key}:card"}],
+  send(f"Тариф: {tariff['title']}\nСтоимость: {tariff['price']} ₽\n\nОплата проходит через ЮKassa. Нажми кнопку, чтобы перейти на защищённую страницу оплаты:",keyboard=False,
+   inline=[[{"text":"💳 Оплатить через ЮKassa","callback_data":f"buy:{key}:yookassa"}],
            [{"text":"⬅️ К тарифам","callback_data":"show_tariffs"}]])
  cmd=text_in.split(maxsplit=1)[0].lower() if text_in else ""
  arg=text_in.split(maxsplit=1)[1].strip() if len(text_in.split(maxsplit=1))>1 else ""
@@ -540,53 +539,52 @@ def telegram_webhook(secret):
 
   elif callback_data.startswith("buy:"):
    parts=callback_data.split(":")
-   if len(parts)!=3 or parts[1] not in ("1","3","12") or parts[2] not in PAYMENTS:
-    send("Не удалось определить тариф или способ оплаты. Попробуй ещё раз.")
+   if len(parts)!=3 or parts[1] not in ("1","3","12") or parts[2]!="yookassa":
+    send("Не удалось определить тариф или способ оплаты. Выбери тариф ещё раз.")
    else:
-    key=parts[1]; method=parts[2]; tariff=TARIFFS[key]
+    key=parts[1]; tariff=TARIFFS[key]
     draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
     if not draft or not draft.nickname or draft.pending_tariff!=key or draft.awaiting_nickname:
-     send("Сначала выбери тариф и введи ник, который укажешь при оплате.")
+     send("Сначала выбери тариф и введи свой ник.")
     else:
-     nickname=draft.nickname
-     shadow_email="telegram_"+telegram_id+"@telegram.flankvpn.local"
-     shadow=User.query.filter_by(email=shadow_email).first()
-     if not shadow:
-      internal_nick=("tg_"+telegram_id[-30:])[:40]
-      if User.query.filter_by(nickname=internal_nick).first(): internal_nick=("tg_"+telegram_id[-20:]+"_"+secrets.token_hex(3))[:40]
-      shadow=User(nickname=internal_nick,email=shadow_email,password_hash=generate_password_hash(secrets.token_urlsafe(32)))
-      db.session.add(shadow); db.session.flush()
-     order=Order(user_id=shadow.id,nickname=nickname,email="",telegram_id=telegram_id,tariff_key=key,amount=tariff["price"],payment_method=method,status="awaiting_payment")
-     db.session.add(order)
-     try:
-      db.session.commit()
-      # Telegram-уведомление о заказе отключено.
-      details=PAYMENTS[method]["detail"]
-      recipient=os.getenv("PAYMENT_RECIPIENT","").strip() or "Получатель не настроен — свяжись с поддержкой"
-      months=tariff.get("months",0)
-      payment_text=(
-       f"🧾 ЗАКАЗ FLANKVPN #{order.id}\n\n"
-       f"Тариф: {tariff['title']}\n"
-       f"К оплате: {order.amount} ₽\n"
-       f"Способ оплаты: {PAYMENTS[method]['title']}\n\n"
-       f"💳 РЕКВИЗИТЫ ДЛЯ ПЕРЕВОДА\n{details}\n"
-       f"Получатель: {recipient}\n\n"
-       f"⚠️ ОБЯЗАТЕЛЬНО УКAЖИ НИК В СООБЩЕНИИ К ПЕРЕВОДУ\n"
-       f"Твой ник: {order.nickname}\n"
-       f"Укажи именно «{order.nickname}», без изменений. Не указывай вместо него имя или email. Если поле сообщения к переводу доступно, впиши ник туда.\n\n"
-       f"📋 ЧТО ДЕЛАТЬ\n"
-       f"1. Переведи ровно {order.amount} ₽ по указанным реквизитам.\n"
-       f"2. В сообщении к переводу укажи ник «{order.nickname}».\n"
-       f"3. Нажми «Я оплатил» только после фактической оплаты.\n\n"
-       f"После нажатия администратор вручную проверит поступление денег. Само нажатие не подтверждает оплату; доступ выдаётся после проверки."
-      )
-      send(payment_text,keyboard=False,
-       inline=[[{"text":"💳 Я оплатил","callback_data":f"paid:{order.id}"}],
-               [{"text":"🌐 Открыть сайт","url":"https://flankvpn.ru"}]])
-     except Exception:
-      db.session.rollback()
-      app.logger.exception("Could not create Telegram order")
-      send("Не получилось создать заказ. Попробуй ещё раз или напиши в поддержку.")
+     shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip()
+     secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
+     if not shop_id or not secret_key:
+      send("Онлайн-оплата временно не настроена. Напиши в поддержку или попробуй позже.")
+     else:
+      try:
+       nickname=draft.nickname
+       shadow_email="telegram_"+telegram_id+"@telegram.flankvpn.local"
+       shadow=User.query.filter_by(email=shadow_email).first()
+       if not shadow:
+        internal_nick=("tg_"+telegram_id[-30:])[:40]
+        if User.query.filter_by(nickname=internal_nick).first(): internal_nick=("tg_"+telegram_id[-20:]+"_"+secrets.token_hex(3))[:40]
+        shadow=User(nickname=internal_nick,email=shadow_email,password_hash=generate_password_hash(secrets.token_urlsafe(32)))
+        db.session.add(shadow); db.session.flush()
+       order=Order(user_id=shadow.id,nickname=nickname,email="",telegram_id=telegram_id,tariff_key=key,amount=tariff["price"],payment_method="yookassa",status="awaiting_payment")
+       db.session.add(order)
+       db.session.flush()
+       response=requests.post("https://api.yookassa.ru/v3/payments",
+        auth=(shop_id,secret_key),
+        headers={"Idempotence-Key":f"flankvpn-telegram-order-{order.id}","Content-Type":"application/json"},
+        json={"amount":{"value":f"{order.amount}.00","currency":"RUB"},"capture":True,
+         "confirmation":{"type":"redirect","return_url":"https://flankvpn.ru/"},
+         "description":f"FlankVPN Telegram order #{order.id}",
+         "metadata":{"order_id":str(order.id),"user_id":str(order.user_id),"tariff_key":order.tariff_key,"telegram_id":telegram_id}},
+        timeout=20)
+       response.raise_for_status()
+       payment_data=response.json()
+       payment_id=payment_data.get("id")
+       confirmation_url=(payment_data.get("confirmation") or {}).get("confirmation_url")
+       if not payment_id or not confirmation_url: raise RuntimeError("ЮKassa не вернула ID платежа или ссылку оплаты.")
+       order.yookassa_payment_id=payment_id
+       db.session.commit()
+       send(f"🧾 Заказ FlankVPN #{order.id}\n\nТариф: {tariff['title']}\nК оплате: {order.amount} ₽\nСпособ оплаты: ЮKassa\n\nЗаверши оплату на защищённой странице ЮKassa. Не отправляй данные карты в чат. После подтверждения платежа подписка автоматически придёт сюда отдельным сообщением.",
+        keyboard=False,inline=[[{"text":"💳 Перейти к оплате","url":confirmation_url}]])
+      except Exception:
+       db.session.rollback()
+       app.logger.exception("Could not create YooKassa payment for Telegram order")
+       send("Не удалось создать платёж. Попробуй позже. Если деньги уже списались, не создавай повторный платёж — напиши в поддержку.")
   elif callback_data.startswith("paid:"):
    try: order_id=int(callback_data.split(":",1)[1])
    except (ValueError,IndexError): order_id=0
