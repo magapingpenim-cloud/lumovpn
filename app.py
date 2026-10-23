@@ -965,7 +965,6 @@ def support_send():
   app.logger.exception("Could not save support message")
   flash("Не удалось отправить сообщение. Попробуй ещё раз.","error")
   return redirect(request.referrer or url_for("index"))
- notify_admin_telegram(f"✉️ Новое сообщение в поддержку FlankVPN #{item.id}\nОт: {item.nickname}\nEmail: {item.email or 'не указан'}\nСообщение: {item.message[:1200]}")
  flash("Сообщение отправлено в поддержку. Мы увидим его в панели администратора.","success")
  return redirect(request.referrer or url_for("index"))
 
@@ -988,7 +987,7 @@ def admin_reply_support(mid):
   app.logger.exception("Could not save support reply for message %s",mid)
   flash("Не удалось сохранить ответ. Попробуй ещё раз.","error")
   return redirect(url_for("admin_support"))
- flash("Ответ сохранён в разделе клиента «Мои вопросы».","success")
+ flash("Ответ сохранён для клиента в разделе «Мои вопросы». Сообщения в Telegram не отправляются.","success")
  return redirect(url_for("admin_support"))
 
 @app.route("/support/my")
@@ -1039,14 +1038,14 @@ def admin_award_game_contest():
 @app.route("/admin/login",methods=["GET","POST"])
 def admin_login():
  if request.method=="POST" and request.form.get("username","").strip().casefold()==os.getenv("ADMIN_USERNAME","admin").strip().casefold() and request.form.get("password","")==os.getenv("ADMIN_PASSWORD","change-this-now"):
-  session["flankadmin"]=True; return redirect(url_for("admin_orders"))
+  session["flankadmin"]=True; return redirect(url_for("admin_support"))
  elif request.method=="POST": flash("Неверные данные администратора.","error")
  return render_template("admin_login.html")
 @app.route("/admin")
 @app.route("/admin/orders")
 def admin_orders():
  if not is_admin(): return redirect(url_for("admin_login"))
- orders=Order.query.order_by(Order.created_at.desc()).all(); game_purchases=GamePurchase.query.order_by(GamePurchase.created_at.desc()).all(); campaign=get_game_campaign(); leaderboard=User.query.join(GameState,GameState.user_id==User.id).order_by(GameState.contest_points.desc(),User.nickname.asc()).limit(10).all(); support_new_count=SupportMessage.query.filter_by(status="new").count(); return render_template("admin.html",support_new_count=support_new_count,game_purchases=game_purchases,orders=orders,campaign=campaign,leaderboard=leaderboard,now=datetime.utcnow(),total_orders=len(orders),total_pending=sum(o.amount for o in orders if o.status=="awaiting_review"),awaiting_payment_count=sum(1 for o in orders if o.status=="awaiting_payment"),awaiting_review_count=sum(1 for o in orders if o.status=="awaiting_review"),active_count=sum(1 for o in orders if o.status=="active"),error_count=sum(1 for o in orders if o.status=="error"))
+ return redirect(url_for("admin_support"))
 @app.route("/admin/support")
 def admin_support():
  if not is_admin(): return redirect(url_for("admin_login"))
