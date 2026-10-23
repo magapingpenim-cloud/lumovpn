@@ -6,12 +6,7 @@
     <div class="auth-brand-mark" aria-hidden="true">M</div>
     <div class="eyebrow">FLANKVPN ACCOUNT</div>
     <h1>{{ 'Создать аккаунт' if mode == 'register' else 'С возвращением' }}</h1>
-    <p class="muted auth-lead">{{ 'Выбери удобный способ регистрации и получи доступ к личному кабинету.' if mode == 'register' else 'Войди удобным способом, чтобы открыть личный кабинет.' }}</p>
-    <div class="social-login social-login-modern">
-      <a class="social-btn social-btn-google" href="{{ url_for('google_login') }}" aria-label="Продолжить с Google"><span class="google-logo" aria-hidden="true">G</span><span>Продолжить с Google</span></a>
-      <a class="social-btn social-btn-apple" href="{{ url_for('apple_login') }}" aria-label="Продолжить с Apple"><span class="apple-logo" aria-hidden="true"></span><span>Продолжить с Apple</span></a>
-    </div>
-    <div class="social-divider"><span>или по email</span></div>
+    <p class="muted auth-lead">{{ 'Зарегистрируйся по email, чтобы получить доступ к личному кабинету.' if mode == 'register' else 'Войди по никнейму или email и паролю.' }}</p>
     <form method="post" class="stack auth-form">
       {% if mode == 'register' %}
         <label>Никнейм<input name="nickname" minlength="3" maxlength="40" autocomplete="username" placeholder="Например, alex" required></label>
