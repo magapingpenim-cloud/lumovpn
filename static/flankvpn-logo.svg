@@ -4,7 +4,6 @@
  <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ffff0"/><stop offset=".38" stop-color="#28cfc1"/><stop offset=".72" stop-color="#087e7b"/><stop offset="1" stop-color="#063b43"/></linearGradient>
  <linearGradient id="tiffany" x1=".1" y1="0" x2=".85" y2="1"><stop offset="0" stop-color="#e0fff9"/><stop offset=".18" stop-color="#a4fff0"/><stop offset=".43" stop-color="#55f2dc"/><stop offset=".7" stop-color="#19cbb9"/><stop offset="1" stop-color="#087e82"/></linearGradient>
  <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset=".46" stop-color="#83ffec" stop-opacity=".035"/><stop offset="1" stop-color="#001d20" stop-opacity=".24"/></linearGradient>
- <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
 <rect x="4" y="4" width="120" height="120" rx="30" fill="#010b0d" stroke="#073b3b" stroke-width="2"/>
 <rect x="7" y="7" width="114" height="114" rx="28" fill="url(#tile)" stroke="url(#rim)" stroke-width="2.5"/>
@@ -13,6 +12,6 @@
 <path d="M28 94V39Q28 27 40 27H90Q99 27 99 36Q99 45 90 45H46V57H80Q89 57 89 65Q89 73 80 73H46V94Q46 103 37 103Q28 103 28 94Z" fill="url(#tiffany)" stroke="#a5fff1" stroke-opacity=".72" stroke-width="1.2"/>
 <path d="M42 33H88" stroke="#fff" stroke-opacity=".72" stroke-width="2.2" stroke-linecap="round"/>
 <path d="M84 79L101 96L84 113L67 96Z" fill="#001715" opacity=".85" transform="translate(1 2)"/>
-<path d="M84 77L101 94L84 111L67 94Z" fill="url(#tiffany)" stroke="#a5fff1" stroke-opacity=".78" stroke-width="1.2" filter="url(#glow)"/>
+<path d="M84 77L101 94L84 111L67 94Z" fill="url(#tiffany)" stroke="#a5fff1" stroke-opacity=".78" stroke-width="1.2"/>
 <path d="M79 88L86 95" stroke="#e6fffa" stroke-opacity=".8" stroke-width="1.6" stroke-linecap="round"/>
 </svg>
