@@ -10,7 +10,7 @@
 <rect x="7" y="7" width="114" height="114" rx="28" fill="url(#tile)" stroke="url(#rim)" stroke-width="2.5"/>
 <rect x="10" y="10" width="108" height="108" rx="25" fill="url(#shine)"/>
 <path d="M29 98V39Q29 27 41 27H91Q99 27 99 35Q99 43 90 43H47V55H81Q90 55 90 63Q90 71 81 71H47V98Q47 106 38 106Q29 106 29 98Z" transform="translate(0 2)" fill="#001715" opacity=".9"/>
-<path d="M28 94V39Q28 27 40 27H90Q99 27 99 36Q99 45 90 45H46V57H80Q89 57 89 65Q89 73 80 73H46V94Q46 103 37 103Q28 103 28 94Z" fill="url(#tiffany)" stroke="#a5fff1" stroke-opacity=".72" stroke-width="1.2" filter="url(#glow)"/>
+<path d="M28 94V39Q28 27 40 27H90Q99 27 99 36Q99 45 90 45H46V57H80Q89 57 89 65Q89 73 80 73H46V94Q46 103 37 103Q28 103 28 94Z" fill="url(#tiffany)" stroke="#a5fff1" stroke-opacity=".72" stroke-width="1.2"/>
 <path d="M42 33H88" stroke="#fff" stroke-opacity=".72" stroke-width="2.2" stroke-linecap="round"/>
 <path d="M84 79L101 96L84 113L67 96Z" fill="#001715" opacity=".85" transform="translate(1 2)"/>
 <path d="M84 77L101 94L84 111L67 94Z" fill="url(#tiffany)" stroke="#a5fff1" stroke-opacity=".78" stroke-width="1.2" filter="url(#glow)"/>
