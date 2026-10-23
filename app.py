@@ -789,8 +789,27 @@ def yookassa_webhook():
   provision(o)
   if o.email: send_subscription_email(o)
   if o.telegram_id and o.subscription_url and os.getenv("TELEGRAM_BOT_TOKEN","").strip():
-   try: requests.post("https://api.telegram.org/bot"+os.getenv("TELEGRAM_BOT_TOKEN").strip()+"/sendMessage",json={"chat_id":o.telegram_id,"text":"Оплата FlankVPN подтверждена. Твоя подписка готова:\n"+o.subscription_url,"disable_web_page_preview":True},timeout=10).raise_for_status()
-   except Exception: app.logger.exception("Could not send subscription to Telegram for order %s",o.id)
+   bot_token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
+   try:
+    tg_text=f"✅ Оплата FlankVPN подтверждена!\nТариф: {TARIFFS.get(o.tariff_key,{}).get('title',o.tariff_key)}\n\nСсылка для подключения:\n{o.subscription_url}\n\nОтсканируй QR-код или скопируй ссылку в совместимый VPN-клиент."
+    qr_image=qrcode.make(o.subscription_url)
+    qr_buffer=io.BytesIO()
+    qr_image.save(qr_buffer,format="PNG")
+    qr_buffer.seek(0)
+    photo_response=requests.post("https://api.telegram.org/bot"+bot_token+"/sendPhoto",
+     data={"chat_id":o.telegram_id,"caption":tg_text[:1000]},
+     files={"photo":("flankvpn-subscription.png",qr_buffer.getvalue(),"image/png")},timeout=20)
+    photo_response.raise_for_status()
+    if not photo_response.json().get("ok"):
+     raise RuntimeError("Telegram sendPhoto returned ok=false")
+   except Exception:
+    app.logger.exception("Could not send subscription QR to Telegram for order %s",o.id)
+    try:
+     fallback=requests.post("https://api.telegram.org/bot"+bot_token+"/sendMessage",
+      json={"chat_id":o.telegram_id,"text":f"✅ Оплата FlankVPN подтверждена.\nСсылка для подключения:\n{o.subscription_url}\n\nQR-код отправить не удалось; используй ссылку выше.","disable_web_page_preview":True},timeout=10)
+     fallback.raise_for_status()
+    except Exception:
+     app.logger.exception("Could not send subscription link fallback to Telegram for order %s",o.id)
   return {"ok":True},200
  except Exception:
   db.session.rollback()
