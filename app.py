@@ -619,15 +619,6 @@ def telegram_webhook(secret):
     send(f"Текущий статус заказа #{order.id}: {order.status}. Если нужна помощь, напиши в поддержку.")
   return {"ok":True}
  draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
- if draft and draft.awaiting_nickname and text_in and not text_in.startswith("/") and text_in not in ("🌐 Тарифы","📦 Мои заказы","💬 Поддержка","🔗 Привязать аккаунт","🏠 Главное меню"):
-  nickname=text_in.strip()
-  if len(nickname)<2 or len(nickname)>40 or "\n" in nickname:
-   send("Ник должен быть длиной от 2 до 40 символов. Введи ник ещё раз.")
-  else:
-   draft.nickname=nickname; draft.awaiting_nickname=False; draft.updated_at=datetime.utcnow(); db.session.commit()
-   send(f"Ник для оплаты сохранён: {nickname}. Используй именно его в комментарии к переводу. Теперь выбери способ оплаты.")
-   show_payment_methods(draft.pending_tariff)
-  return {"ok":True}
  if cmd=="/start" or text_in=="🏠 Главное меню":
   send("Привет! Это FlankVPN. Здесь можно выбрать тариф, оформить заказ, проверить его статус и написать в поддержку.")
  elif text_in in ("🌐 Тарифы","/tariffs"):
