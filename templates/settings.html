@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Настройки аккаунта — FlankVPN{% endblock %}
+{% block content %}
+<section class="settings-page">
+ <div class="settings-card">
+  <a class="back-link" href="{{ url_for('index') }}">← На главную</a>
+  <div class="eyebrow">FLANKVPN · АККАУНТ</div>
+  <h1>Настройки аккаунта</h1>
+  <p class="muted">Измени никнейм или email. Для сохранения введи текущий пароль.</p>
+  <form method="post" class="settings-form">
+   <label>Никнейм<input name="nickname" minlength="3" maxlength="40" value="{{ current_user.nickname }}" required autocomplete="nickname"></label>
+   <label>Email<input name="email" type="email" maxlength="160" value="{{ current_user.email }}" required autocomplete="email"></label>
+   <label>Текущий пароль<input name="current_password" type="password" required autocomplete="current-password"></label>
+   <label>Новый пароль <span class="muted tiny">(необязательно)</span><input name="new_password" type="password" minlength="8" autocomplete="new-password" placeholder="Не менять — оставь пустым"></label>
+   <button class="btn primary full" type="submit">Сохранить изменения</button>
+  </form>
+  <a class="btn secondary full" href="{{ url_for('dashboard') }}">Мои заказы и подписки</a>
+ </div>
+</section>
+{% endblock %}
