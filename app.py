@@ -390,7 +390,7 @@ def finish_social_login(provider, claims):
    return redirect(url_for("login"))
  login_user(user)
  flash("Аккаунт создан. Проверь личный кабинет и статус пробного доступа." if created else "Вход выполнен.","success")
- return redirect(url_for("dashboard"))
+ return redirect(url_for("index"))
 
 @app.route("/auth/google")
 def google_login():
@@ -441,7 +441,7 @@ def apple_callback():
 def login():
  if request.method=="POST":
   ident=request.form.get("identity","").strip(); u=User.query.filter((func.lower(User.email)==ident.lower())|(func.lower(User.nickname)==ident.lower())).first()
-  if u and u.check_password(request.form.get("password","")): login_user(u); return redirect(url_for("dashboard"))
+  if u and u.check_password(request.form.get("password","")): login_user(u); return redirect(url_for("index"))
   flash("Неверный ник/email или пароль.","error")
  return render_template("auth.html",mode="login")
 @app.route("/logout",methods=["POST"])
