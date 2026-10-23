@@ -1152,9 +1152,9 @@ with app.app_context():
     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN google_sub VARCHAR(255)'))
    if "apple_sub" not in user_columns:
     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN apple_sub VARCHAR(255)'))
-    if "h1_client_name" not in user_columns:
-     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN h1_client_name VARCHAR(100)'))
-    conn.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_h1_client_name ON "'+user_table+'" (h1_client_name)'))
+   if "h1_client_name" not in user_columns:
+    conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN h1_client_name VARCHAR(100)'))
+   conn.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_h1_client_name ON "'+user_table+'" (h1_client_name)'))
   order_table=Order.__tablename__
   if inspector.has_table(order_table):
    order_columns={column["name"] for column in inspector.get_columns(order_table)}
