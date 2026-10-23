@@ -532,10 +532,9 @@ def telegram_webhook(secret):
     if not draft:
      draft=TelegramCheckoutDraft(telegram_id=telegram_id)
      db.session.add(draft)
-    draft.pending_tariff=key; draft.nickname=None; draft.awaiting_nickname=True; draft.updated_at=datetime.utcnow()
+    draft.pending_tariff=key; draft.nickname=None; draft.awaiting_nickname=False; draft.updated_at=datetime.utcnow()
     db.session.commit()
-    tariff_title=TARIFFS[key]["title"]
-    send(f"Ты выбрал тариф «{tariff_title}».\n\nВведите свой ник, который вы будете использовать при оплате. Важно: при переводе укажи именно этот ник, без изменений.")
+    show_payment_methods(key)
 
   elif callback_data.startswith("buy:"):
    parts=callback_data.split(":")
@@ -544,8 +543,8 @@ def telegram_webhook(secret):
    else:
     key=parts[1]; tariff=TARIFFS[key]
     draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
-    if not draft or not draft.nickname or draft.pending_tariff!=key or draft.awaiting_nickname:
-     send("Сначала выбери тариф и введи свой ник.")
+    if not draft or draft.pending_tariff!=key or draft.awaiting_nickname:
+     send("Сначала выбери тариф ещё раз.")
     else:
      shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip()
      secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
@@ -553,15 +552,14 @@ def telegram_webhook(secret):
       send("Онлайн-оплата временно не настроена. Напиши в поддержку или попробуй позже.")
      else:
       try:
-       nickname=draft.nickname
-       shadow_email="telegram_"+telegram_id+"@telegram.flankvpn.local"
+              shadow_email="telegram_"+telegram_id+"@telegram.flankvpn.local"
        shadow=User.query.filter_by(email=shadow_email).first()
        if not shadow:
         internal_nick=("tg_"+telegram_id[-30:])[:40]
         if User.query.filter_by(nickname=internal_nick).first(): internal_nick=("tg_"+telegram_id[-20:]+"_"+secrets.token_hex(3))[:40]
         shadow=User(nickname=internal_nick,email=shadow_email,password_hash=generate_password_hash(secrets.token_urlsafe(32)))
         db.session.add(shadow); db.session.flush()
-       order=Order(user_id=shadow.id,nickname=nickname,email="",telegram_id=telegram_id,tariff_key=key,amount=tariff["price"],payment_method="yookassa",status="awaiting_payment")
+       order=Order(user_id=shadow.id,nickname=shadow.nickname,email="",telegram_id=telegram_id,tariff_key=key,amount=tariff["price"],payment_method="yookassa",status="awaiting_payment")
        db.session.add(order)
        db.session.flush()
        response=requests.post("https://api.yookassa.ru/v3/payments",
