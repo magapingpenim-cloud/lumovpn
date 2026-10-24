@@ -1105,7 +1105,7 @@ def provision(o):
   if d.get("ok") is False: raise RuntimeError(str(d))
  else:
   name="flank_u"+str(user.id)
-  r=requests.post(base+"/create",headers=h,json={"name":name,"days":days,"traffic_limit_gb":0,"device_limit":0},timeout=25)
+  r=requests.post(base+"/create",headers=h,json={"name":name,"days":days,"traffic_limit_gb":0,"device_limit":3},timeout=25)
   r.raise_for_status(); d=r.json()
   if d.get("ok") is False: raise RuntimeError(str(d))
  r=requests.get(base+"/info",headers=h,params={"name":name},timeout=25); r.raise_for_status(); c=r.json().get("client",r.json()); sub=c.get("sub_url") or c.get("subscription_url")
