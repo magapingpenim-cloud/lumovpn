@@ -11,8 +11,9 @@ const HOP_BY_HOP_HEADERS = new Set([
   "content-length",
 ]);
 
-export default async (request, context) => {
-  const backend = (Netlify.env.get("FLASK_BACKEND_URL") || "").trim().replace(/\/+$/, "");
+export default async (request) => {
+  // Configure this in Netlify UI; do not commit backend URLs or secrets here.
+  const backend = (process.env.FLASK_BACKEND_URL || "").trim().replace(/\/+$/, "");
 
   if (!backend) {
     return new Response(
@@ -22,25 +23,12 @@ export default async (request, context) => {
   }
 
   const incomingUrl = new URL(request.url);
-  const prefix = "/.netlify/functions/proxy";
-  let path = incomingUrl.pathname;
-
-  // Netlify rewrites the requested path to this function. Recover the suffix
-  // after the function prefix so Flask receives the original route.
-  const prefixIndex = path.indexOf(prefix);
-  if (prefixIndex >= 0) {
-    path = path.slice(prefixIndex + prefix.length) || "/";
-    if (!path.startsWith("/")) path = "/" + path;
-  }
-
-  const target = new URL(backend + path);
-  target.search = incomingUrl.search;
+  const target = new URL(incomingUrl.pathname + incomingUrl.search, backend);
 
   const headers = new Headers(request.headers);
   for (const name of HOP_BY_HOP_HEADERS) headers.delete(name);
   headers.set("x-forwarded-host", incomingUrl.host);
   headers.set("x-forwarded-proto", incomingUrl.protocol.replace(":", ""));
-  headers.set("x-forwarded-for", request.headers.get("x-nf-client-connection-ip") || request.headers.get("x-forwarded-for") || "");
 
   let upstream;
   try {
@@ -63,12 +51,13 @@ export default async (request, context) => {
   });
   responseHeaders.set("cache-control", "no-store");
 
-  // Do not rewrite Location headers: redirects from Flask should continue to
-  // work through the public domain where possible.
   return new Response(
-    ["HEAD", "204", "304"].includes(request.method) || upstream.status === 204 || upstream.status === 304
+    request.method === "HEAD" || upstream.status === 204 || upstream.status === 304
       ? null
       : await upstream.arrayBuffer(),
     { status: upstream.status, headers: responseHeaders }
   );
 };
+
+// Handle the original public path directly, avoiding a catch-all rewrite loop.
+export const config = { path: "/*" };
