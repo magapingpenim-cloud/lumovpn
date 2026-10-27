@@ -567,14 +567,19 @@ def telegram_webhook(secret):
       send("Онлайн-оплата временно не настроена. Напиши в поддержку или попробуй позже.")
      else:
       try:
-       shadow_email="telegram_"+telegram_id+"@telegram.flankvpn.local"
-       shadow=User.query.filter_by(email=shadow_email).first()
+       # Reuse the website account when this Telegram is linked, so purchases
+       # from either channel extend the same H1 client and subscription.
+       linked=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+       shadow=db.session.get(User,linked.user_id) if linked else None
        if not shadow:
-        internal_nick=("tg_"+telegram_id[-30:])[:40]
-        if User.query.filter_by(nickname=internal_nick).first(): internal_nick=("tg_"+telegram_id[-20:]+"_"+secrets.token_hex(3))[:40]
-        shadow=User(nickname=internal_nick,email=shadow_email,password_hash=generate_password_hash(secrets.token_urlsafe(32)))
-        db.session.add(shadow); db.session.flush()
-       order=Order(user_id=shadow.id,nickname=shadow.nickname,email="",telegram_id=telegram_id,tariff_key=key,amount=tariff["price"],payment_method="yookassa",status="awaiting_payment")
+        shadow_email="telegram_"+telegram_id+"@telegram.flankvpn.local"
+        shadow=User.query.filter_by(email=shadow_email).first()
+        if not shadow:
+         internal_nick=("tg_"+telegram_id[-30:])[:40]
+         if User.query.filter_by(nickname=internal_nick).first(): internal_nick=("tg_"+telegram_id[-20:]+"_"+secrets.token_hex(3))[:40]
+         shadow=User(nickname=internal_nick,email=shadow_email,password_hash=generate_password_hash(secrets.token_urlsafe(32)))
+         db.session.add(shadow); db.session.flush()
+       order=Order(user_id=shadow.id,nickname=shadow.nickname,email=(shadow.email if linked else ""),telegram_id=telegram_id,tariff_key=key,amount=tariff["price"],payment_method="yookassa",status="awaiting_payment")
        db.session.add(order)
        db.session.flush()
        response=requests.post("https://api.yookassa.ru/v3/payments",
@@ -802,10 +807,22 @@ def yookassa_webhook():
  except (TypeError,ValueError): return {"error":"invalid amount"},400
  if amount.get("currency")!="RUB" or amount_value!=float(o.amount): return {"error":"amount mismatch"},409
  if o.status=="active": return {"ok":True,"already_processed":True},200
- if o.status not in ("awaiting_payment","awaiting_review","error"): return {"ok":True,"ignored":True},200
+ # Atomically claim the order so duplicate YooKassa notifications cannot
+ # provision the same order concurrently and add the paid days twice.
+ claimable=("awaiting_payment","awaiting_review","error")
+ claimed=Order.query.filter(
+  Order.id==order_id,
+  Order.yookassa_payment_id==payment_id,
+  Order.status.in_(claimable)
+ ).update({Order.status:"processing"},synchronize_session=False)
+ db.session.commit()
+ if claimed!=1:
+  latest=db.session.get(Order,order_id)
+  if latest and latest.status in ("processing","active"):
+   return {"ok":True,"already_processing":True},200
+  return {"ok":True,"ignored":True},200
  try:
-  o.status="processing"
-  db.session.commit()
+  o=db.session.get(Order,order_id)
   provision(o)
   if o.email: send_subscription_email(o)
   if o.telegram_id and o.subscription_url and os.getenv("TELEGRAM_BOT_TOKEN","").strip():
