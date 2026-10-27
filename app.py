@@ -654,7 +654,7 @@ def telegram_webhook(secret):
    for order in orders:
     title=TARIFFS.get(order.tariff_key,{}).get("title","Заказ")
     lines.append(f"#{order.id} · {title} · {order.amount} ₽ · {labels.get(order.status,order.status)}")
-   send("\\n".join(lines))
+   send("\n".join(lines))
  elif text_in in ("🔐 Моя подписка","/subscription"):
   linked=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
   order_filter=or_(Order.telegram_id==telegram_id,Order.user_id==linked.user_id) if linked else (Order.telegram_id==telegram_id)
@@ -663,7 +663,7 @@ def telegram_webhook(secret):
    send("Активная подписка не найдена. Если ты только что оплатил, подожди подтверждения платежа или напиши в поддержку.")
   else:
    title=TARIFFS.get(active_order.tariff_key,{}).get("title",active_order.tariff_key)
-   send(f"🔐 Твоя подписка FlankVPN\\nСтатус: активна\\nТариф: {title}\\nЗаказ: #{active_order.id}\\n\\nСсылка для подключения:\\n{active_order.subscription_url}\\n\\nСрок действия управляется VPN-сервером. Здесь отображается последний успешно активированный заказ.",keyboard=False)
+   send(f"🔐 Твоя подписка FlankVPN\nСтатус: активна\nТариф: {title}\nЗаказ: #{active_order.id}\n\nСсылка для подключения:\n{active_order.subscription_url}\n\nСрок действия управляется VPN-сервером. Здесь отображается последний успешно активированный заказ.",keyboard=False)
  elif cmd=="/link" and arg:
   link=TelegramLinkCode.query.filter_by(code=arg.upper(),used=False).first()
   if not link or link.expires_at<datetime.utcnow():
