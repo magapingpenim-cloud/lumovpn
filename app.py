@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager,UserMixin,login_user,logout_user,login_required,current_user
 from werkzeug.security import generate_password_hash,check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
-from sqlalchemy import func, inspect, text
+from sqlalchemy import func, inspect, text, or_
 from html import escape
 from authlib.integrations.flask_client import OAuth
 import jwt
@@ -511,7 +511,7 @@ def telegram_webhook(secret):
   if inline is not None:
    payload["reply_markup"]={"inline_keyboard":inline}
   elif keyboard:
-   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"💬 Поддержка"},{"text":"🔗 Привязать аккаунт"}]],"resize_keyboard":True}
+   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"🔐 Моя подписка"},{"text":"💬 Поддержка"}],[{"text":"🔗 Привязать аккаунт"}]],"resize_keyboard":True}
   try:
    resp=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",json=payload,timeout=8)
    resp.raise_for_status()
@@ -644,7 +644,9 @@ def telegram_webhook(secret):
  elif text_in in ("🌐 Тарифы","/tariffs"):
   show_tariffs()
  elif text_in in ("📦 Мои заказы","/orders"):
-  orders=Order.query.filter_by(telegram_id=telegram_id).order_by(Order.created_at.desc()).limit(10).all()
+  linked=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+  order_filter=or_(Order.telegram_id==telegram_id,Order.user_id==linked.user_id) if linked else (Order.telegram_id==telegram_id)
+  orders=Order.query.filter(order_filter).order_by(Order.created_at.desc()).limit(10).all()
   if not orders: send("Заказов пока нет. Выбери «🌐 Тарифы», чтобы оформить подписку.")
   else:
    labels={"awaiting_payment":"ожидает оплаты","awaiting_review":"проверяется оплата","processing":"создаётся доступ","active":"активна","rejected":"отклонён","error":"ошибка выдачи"}
@@ -652,7 +654,16 @@ def telegram_webhook(secret):
    for order in orders:
     title=TARIFFS.get(order.tariff_key,{}).get("title","Заказ")
     lines.append(f"#{order.id} · {title} · {order.amount} ₽ · {labels.get(order.status,order.status)}")
-   send("\n".join(lines))
+   send("\\n".join(lines))
+ elif text_in in ("🔐 Моя подписка","/subscription"):
+  linked=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+  order_filter=or_(Order.telegram_id==telegram_id,Order.user_id==linked.user_id) if linked else (Order.telegram_id==telegram_id)
+  active_order=Order.query.filter(order_filter,Order.status=="active",Order.subscription_url.isnot(None)).order_by(Order.created_at.desc()).first()
+  if not active_order:
+   send("Активная подписка не найдена. Если ты только что оплатил, подожди подтверждения платежа или напиши в поддержку.")
+  else:
+   title=TARIFFS.get(active_order.tariff_key,{}).get("title",active_order.tariff_key)
+   send(f"🔐 Твоя подписка FlankVPN\\nСтатус: активна\\nТариф: {title}\\nЗаказ: #{active_order.id}\\n\\nСсылка для подключения:\\n{active_order.subscription_url}\\n\\nСрок действия управляется VPN-сервером. Здесь отображается последний успешно активированный заказ.",keyboard=False)
  elif cmd=="/link" and arg:
   link=TelegramLinkCode.query.filter_by(code=arg.upper(),used=False).first()
   if not link or link.expires_at<datetime.utcnow():
