@@ -22,6 +22,14 @@ Flask-проект с подтверждением email через Resend, ре
 - Отправитель в Resend: `FlankVPN <no-reply@flankvpn.ru>` — используй его только если домен по-прежнему подтверждён и принадлежит тебе.
 - Используй постоянную PostgreSQL-базу; SQLite на файловой системе Render может потеряться при redeploy.
 
+## Напоминания об окончании подписки
+
+- Каждый день GitHub Actions проверяет срок VPN-подписок и отправляет напоминание примерно за 2 дня до окончания.
+- Напоминание отправляется на email через Resend и/или в Telegram, если Telegram привязан к аккаунту либо заказ оформлялся через Telegram.
+- Для защиты служебного endpoint задай длинное случайное значение `SUBSCRIPTION_REMINDER_SECRET` в **Render → Environment** и такое же значение в **GitHub → Settings → Secrets and variables → Actions → New repository secret** с именем `SUBSCRIPTION_REMINDER_SECRET`.
+- После добавления секрета дождись deploy в Render. Проверить запуск можно в **GitHub → Actions → Subscription expiry reminders → Run workflow**.
+- Для email нужны рабочие `RESEND_API_KEY` и `RESEND_FROM_EMAIL`; для Telegram — `TELEGRAM_BOT_TOKEN`. Пользователю нужно хотя бы один раз открыть бота и/или привязать Telegram к аккаунту, иначе бот не сможет написать ему первым.
+
 ## Telegram-бот FlankVPN
 
 Вебхук бота обслуживается тем же Flask-приложением на Render. В Render → Environment добавь:
