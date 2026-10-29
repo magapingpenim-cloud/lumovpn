@@ -1,0 +1,28 @@
+name: Subscription expiry reminders
+
+on:
+  schedule:
+    - cron: "23 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger FlankVPN reminder check
+        env:
+          REMINDER_SECRET: ${{ secrets.SUBSCRIPTION_REMINDER_SECRET }}
+        run: |
+          if [ -z "$REMINDER_SECRET" ]; then
+            echo "Missing SUBSCRIPTION_REMINDER_SECRET repository secret."
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error \
+            --retry 2 --retry-delay 10 \
+            -X POST \
+            -H "X-Reminder-Secret: $REMINDER_SECRET" \
+            https://flankvpn.ru/internal/subscription-reminders
