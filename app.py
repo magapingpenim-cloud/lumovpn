@@ -94,7 +94,7 @@ def send_subscription_email(order):
   app.logger.exception("Failed to email subscription for order %s to %s.",order.id,order.email)
   return False
 class User(UserMixin,db.Model):
- id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False); google_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); apple_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); h1_client_name=db.Column(db.String(100),unique=True,nullable=True,index=True)
+ id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False); google_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); apple_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); h1_client_name=db.Column(db.String(100),unique=True,nullable=True,index=True); subscription_expires_at=db.Column(db.DateTime,nullable=True,index=True); reminder_email_sent_for=db.Column(db.String(32),nullable=True); reminder_telegram_sent_for=db.Column(db.String(32),nullable=True)
  def set_password(self,p): self.password_hash=generate_password_hash(p)
  def check_password(self,p): return check_password_hash(self.password_hash,p)
 class Order(db.Model):
@@ -1118,6 +1118,133 @@ def admin_support():
  if not is_admin(): return redirect(url_for("admin_login"))
  support_messages=SupportMessage.query.order_by(SupportMessage.created_at.desc()).all()
  return render_template("admin_support.html",support_messages=support_messages)
+
+def extract_subscription_expiry(client_data):
+ """Parse common expiry fields from H1 client-info responses."""
+ if not isinstance(client_data,dict): return None
+ keys=("expire_at","expires_at","expiration","expiry","expire","expiry_time","expireTime","expiration_date","end_date","valid_until")
+ value=next((client_data.get(key) for key in keys if client_data.get(key) not in (None,"",0,"0")),None)
+ if value is None:
+  for nested_key in ("client","data","subscription"):
+   nested=client_data.get(nested_key)
+   if isinstance(nested,dict):
+    parsed=extract_subscription_expiry(nested)
+    if parsed: return parsed
+  return None
+ try:
+  if isinstance(value,(int,float)) or (isinstance(value,str) and value.strip().replace(".","",1).isdigit()):
+   stamp=float(value)
+   if stamp<1000000000: return None
+   if stamp>100000000000: stamp/=1000
+   return datetime.utcfromtimestamp(stamp)
+  raw=str(value).strip().replace("Z","+00:00")
+  parsed=datetime.fromisoformat(raw)
+  if parsed.tzinfo:
+   from datetime import timezone
+   parsed=parsed.astimezone(timezone.utc).replace(tzinfo=None)
+  return parsed
+ except (ValueError,TypeError,OverflowError,OSError):
+  return None
+
+def send_expiry_reminder_email(user, expiry):
+ api_key=os.getenv("RESEND_API_KEY","").strip()
+ sender=os.getenv("RESEND_FROM_EMAIL","").strip()
+ if not api_key or not sender or not user.email or user.email.endswith("@telegram.flankvpn.local"):
+  return False
+ subject="FlankVPN: подписка заканчивается через 2 дня"
+ body=f"""<div style="font-family:Arial,sans-serif;color:#10203a;max-width:560px;margin:auto;padding:24px">
+ <h2 style="color:#1769ff">FLANKVPN</h2><h1>Не забудь продлить подписку</h1>
+ <p>Привет, {escape(user.nickname or "")}!</p>
+ <p>Срок твоей подписки FlankVPN заканчивается <strong>{expiry.strftime("%d.%m.%Y")}</strong>.</p>
+ <p>Продли подписку заранее, чтобы VPN-доступ не прерывался.</p>
+ <p><a href="https://flankvpn.ru" style="display:inline-block;background:#1769ff;color:white;padding:12px 18px;border-radius:10px;text-decoration:none">Продлить подписку</a></p>
+ </div>"""
+ text_body=f"Привет, {user.nickname}! Подписка FlankVPN заканчивается {expiry.strftime('%d.%m.%Y')}. Не забудь продлить её, чтобы VPN-доступ не прерывался: https://flankvpn.ru"
+ try:
+  response=requests.post("https://api.resend.com/emails",
+   headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json",
+    "Idempotency-Key":f"flankvpn-expiry-email-{user.id}-{expiry.date().isoformat()}"},
+   json={"from":sender,"to":[user.email],"subject":subject,"html":body,"text":text_body},timeout=15)
+  response.raise_for_status()
+  return True
+ except Exception:
+  app.logger.exception("Failed to send subscription expiry email for user %s",user.id)
+  return False
+
+def send_expiry_reminder_telegram(chat_id, user, expiry):
+ token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
+ if not token or not chat_id: return False
+ message=(f"⏰ Напоминание FlankVPN\n\nПривет, {user.nickname}! Твоя подписка заканчивается "
+  f"{expiry.strftime('%d.%m.%Y')} — осталось около двух дней. Не забудь продлить, чтобы VPN не прерывался.\n\n"
+  "Продлить подписку: https://flankvpn.ru")
+ try:
+  response=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",
+   json={"chat_id":str(chat_id),"text":message,"disable_web_page_preview":True},timeout=12)
+  response.raise_for_status()
+  return bool(response.json().get("ok"))
+ except Exception:
+  app.logger.exception("Failed to send subscription expiry Telegram reminder for user %s",user.id)
+  return False
+
+@app.route("/internal/subscription-reminders",methods=["POST"])
+def subscription_reminders():
+ expected=os.getenv("SUBSCRIPTION_REMINDER_SECRET","").strip()
+ supplied=request.headers.get("X-Reminder-Secret","").strip()
+ if not expected or not supplied or not secrets.compare_digest(expected,supplied):
+  abort(403)
+ today=datetime.utcnow().date()
+ target=today+timedelta(days=2)
+ users=User.query.filter(User.h1_client_name.isnot(None)).all()
+ sent_email=0; sent_telegram=0; skipped=0
+ for user in users:
+  try:
+   expiry=user.subscription_expires_at
+   base=os.getenv("H1_API_BASE","").rstrip("/")
+   token=os.getenv("H1_API_TOKEN","").strip()
+   # Refresh from H1 so older accounts can be matched to their actual expiry.
+   if base and token and user.h1_client_name:
+    try:
+     response=requests.get(base+"/info",headers={"Authorization":"Bearer "+token},
+      params={"name":user.h1_client_name},timeout=12)
+     response.raise_for_status()
+     data=response.json()
+     remote_expiry=extract_subscription_expiry(data.get("client",data))
+     if remote_expiry:
+      expiry=remote_expiry
+      user.subscription_expires_at=remote_expiry
+    except Exception:
+     app.logger.warning("Could not refresh H1 expiry for user %s; using stored date",user.id,exc_info=True)
+   # Legacy fallback for users whose H1 response has no expiry field.
+   if not expiry:
+    latest=Order.query.filter_by(user_id=user.id,status="active").order_by(Order.created_at.desc()).first()
+    if latest:
+     tariff=TARIFFS.get(latest.tariff_key,{})
+     days=int(latest.requested_days or tariff.get("days",tariff.get("months",0)*30))
+     if latest.created_at and days>0:
+      expiry=latest.created_at+timedelta(days=days)
+      user.subscription_expires_at=expiry
+   if not expiry or expiry.date()<today or expiry.date()>target:
+    skipped+=1
+    continue
+   expiry_key=expiry.date().isoformat()
+   linked=TelegramAccount.query.filter_by(user_id=user.id).first()
+   telegram_id=linked.telegram_id if linked else None
+   if not telegram_id:
+    latest_tg=Order.query.filter_by(user_id=user.id,status="active").filter(Order.telegram_id.isnot(None)).order_by(Order.created_at.desc()).first()
+    telegram_id=latest_tg.telegram_id if latest_tg else None
+   # Retry failed channels daily, but never duplicate a successful send for the same expiry.
+   if user.reminder_email_sent_for!=expiry_key and user.email and not user.email.endswith("@telegram.flankvpn.local"):
+    if send_expiry_reminder_email(user,expiry):
+     user.reminder_email_sent_for=expiry_key; sent_email+=1
+   if telegram_id and user.reminder_telegram_sent_for!=expiry_key:
+    if send_expiry_reminder_telegram(telegram_id,user,expiry):
+     user.reminder_telegram_sent_for=expiry_key; sent_telegram+=1
+   db.session.commit()
+  except Exception:
+   db.session.rollback()
+   app.logger.exception("Subscription reminder processing failed for user %s",user.id)
+ return {"ok":True,"checked":len(users),"email_sent":sent_email,"telegram_sent":sent_telegram,"skipped":skipped},200
+
 def provision(o):
  base=os.getenv("H1_API_BASE","").rstrip("/"); token=os.getenv("H1_API_TOKEN","")
  if not base or not token: raise RuntimeError("Настройте H1_API_BASE и H1_API_TOKEN в переменных окружения.")
@@ -1140,6 +1267,16 @@ def provision(o):
  if not sub and c.get("uuid") and os.getenv("H1_SUBSCRIPTION_BASE"): sub=urllib.parse.urljoin(os.getenv("H1_SUBSCRIPTION_BASE").rstrip("/")+"/",c["uuid"])
  if not sub: raise RuntimeError("H1 не вернула sub_url для клиента.")
  user.h1_client_name=name
+ # Track the subscription expiry for reminder delivery.
+ now=datetime.utcnow()
+ existing_expiry=user.subscription_expires_at
+ if existing_expiry and existing_expiry>now:
+  user.subscription_expires_at=existing_expiry+timedelta(days=days)
+ else:
+  user.subscription_expires_at=now+timedelta(days=days)
+ remote_expiry=extract_subscription_expiry(c)
+ if remote_expiry:
+  user.subscription_expires_at=remote_expiry
  o.subscription_url=sub+("&" if "?" in sub else "?")+"format=json"; o.status="active"; o.error_message=None; db.session.commit()
 @app.route("/admin/confirm/<int:oid>",methods=["POST"])
 def confirm(oid):
@@ -1203,6 +1340,12 @@ with app.app_context():
    if "h1_client_name" not in user_columns:
     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN h1_client_name VARCHAR(100)'))
    conn.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_h1_client_name ON "'+user_table+'" (h1_client_name)'))
+   if "subscription_expires_at" not in user_columns:
+    conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN subscription_expires_at TIMESTAMP'))
+   if "reminder_email_sent_for" not in user_columns:
+    conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN reminder_email_sent_for VARCHAR(32)'))
+   if "reminder_telegram_sent_for" not in user_columns:
+    conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN reminder_telegram_sent_for VARCHAR(32)'))
   order_table=Order.__tablename__
   if inspector.has_table(order_table):
    order_columns={column["name"] for column in inspector.get_columns(order_table)}
