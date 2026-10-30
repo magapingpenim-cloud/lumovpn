@@ -1355,4 +1355,4 @@ with app.app_context():
     conn.execute(text(f'ALTER TABLE "{order_table}" ADD COLUMN telegram_id VARCHAR(40)'))
    if "yookassa_payment_id" not in order_columns:
     conn.execute(text('ALTER TABLE "'+order_table+'" ADD COLUMN yookassa_payment_id VARCHAR(100)'))
-if __name__=="__main__": app.run(host="0.0.0.0",port=int(os.getenv("PORT","5001")),debug=False)
+if __name__=="__main__": app.run(host="0.0.0.0",port=int(os.getenv("PORT","5000")),debug=False)
