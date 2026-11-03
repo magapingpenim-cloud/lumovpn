@@ -225,13 +225,11 @@ def index(): return render_template("index.html")
 @app.route("/register",methods=["GET","POST"])
 def register():
  if request.method=="POST":
-  nick=request.form.get("nickname","").strip().lower(); email=request.form.get("email","").strip().lower(); pw=request.form.get("password","")
-  if len(nick)<3 or len(nick)>40 or "@" not in email or len(pw)<8:
-   flash("Проверь ник, email и пароль (не менее 8 символов).","error")
-  elif User.query.filter((func.lower(User.nickname)==nick)|(func.lower(User.email)==email)).first():
-   flash("Этот ник или email уже занят. Никнейм не должен повторяться; регистр букв не учитывается.","error")
-  elif EmailVerification.query.filter(func.lower(EmailVerification.nickname)==nick, EmailVerification.email!=email, EmailVerification.expires_at>datetime.utcnow()).first():
-   flash("Этот никнейм уже используется в другой незавершённой регистрации. Выбери другой ник.","error")
+  email=request.form.get("email","").strip().lower(); pw=request.form.get("password","")
+  if "@" not in email or len(email)>160 or len(pw)<8:
+   flash("Проверь email и пароль (не менее 8 символов).","error")
+  elif User.query.filter(func.lower(User.email)==email).first():
+   flash("Аккаунт с таким email уже зарегистрирован. Войди в аккаунт.","error")
   elif not os.getenv("RESEND_API_KEY") or not os.getenv("RESEND_FROM_EMAIL"):
    flash("Регистрация временно недоступна: администратор не настроил отправку email-кодов.","error")
   else:
@@ -248,7 +246,7 @@ def register():
       timeout=15)
     resp.raise_for_status()
     if pending:
-     pending.nickname=nick; pending.password_hash=generate_password_hash(pw); pending.code_hash=generate_password_hash(code)
+     pending.nickname='user_'+secrets.token_hex(12); pending.password_hash=generate_password_hash(pw); pending.code_hash=generate_password_hash(code)
      pending.expires_at=datetime.utcnow()+timedelta(minutes=10); pending.attempts=0; pending.created_at=datetime.utcnow()
     else:
      pending=EmailVerification(email=email,nickname=nick,password_hash=generate_password_hash(pw),
@@ -440,9 +438,9 @@ def apple_callback():
 @app.route("/login",methods=["GET","POST"])
 def login():
  if request.method=="POST":
-  ident=request.form.get("identity","").strip(); u=User.query.filter((func.lower(User.email)==ident.lower())|(func.lower(User.nickname)==ident.lower())).first()
+  email=request.form.get("email","").strip().lower(); u=User.query.filter(func.lower(User.email)==email).first()
   if u and u.check_password(request.form.get("password","")): login_user(u); return redirect(url_for("index"))
-  flash("Неверный ник/email или пароль.","error")
+  flash("Неверный email или пароль.","error")
  return render_template("auth.html",mode="login")
 @app.route("/logout",methods=["POST"])
 @login_required
