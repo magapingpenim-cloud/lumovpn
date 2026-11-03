@@ -220,14 +220,26 @@ def load_user(uid): return db.session.get(User,int(uid))
 def is_admin(): return bool(session.get("flankadmin"))
 @app.context_processor
 def globals_(): return {"tariffs":TARIFFS,"payments":PAYMENTS}
+
+@app.after_request
+def prevent_auth_page_cache(response):
+ if request.path in ("/login","/register","/verify-email"):
+  response.headers["Cache-Control"]="no-store, no-cache, must-revalidate, max-age=0"
+  response.headers["Pragma"]="no-cache"
+  response.headers["Expires"]="0"
+ return response
 @app.route("/")
 def index(): return render_template("index.html")
 @app.route("/register",methods=["GET","POST"])
 def register():
+ if current_user.is_authenticated:
+  return redirect(url_for("dashboard"))
  if request.method=="POST":
-  email=request.form.get("email","").strip().lower(); pw=request.form.get("password","")
+  email=request.form.get("email","").strip().lower(); pw=request.form.get("password",""); confirm_pw=request.form.get("confirm_password","")
   if "@" not in email or len(email)>160 or len(pw)<8:
    flash("Проверь email и пароль (не менее 8 символов).","error")
+  elif pw != confirm_pw:
+   flash("Пароли не совпадают. Проверь оба поля.","error")
   elif User.query.filter(func.lower(User.email)==email).first():
    flash("Аккаунт с таким email уже зарегистрирован. Войди в аккаунт.","error")
   elif not os.getenv("RESEND_API_KEY") or not os.getenv("RESEND_FROM_EMAIL"):
@@ -437,6 +449,8 @@ def apple_callback():
 
 @app.route("/login",methods=["GET","POST"])
 def login():
+ if current_user.is_authenticated:
+  return redirect(url_for("dashboard"))
  if request.method=="POST":
   email=request.form.get("email","").strip().lower(); u=User.query.filter(func.lower(User.email)==email).first()
   if u and u.check_password(request.form.get("password","")): login_user(u); return redirect(url_for("index"))
