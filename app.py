@@ -249,7 +249,7 @@ def register():
      pending.nickname='user_'+secrets.token_hex(12); pending.password_hash=generate_password_hash(pw); pending.code_hash=generate_password_hash(code)
      pending.expires_at=datetime.utcnow()+timedelta(minutes=10); pending.attempts=0; pending.created_at=datetime.utcnow()
     else:
-     pending=EmailVerification(email=email,nickname=nick,password_hash=generate_password_hash(pw),
+     pending=EmailVerification(email=email,nickname="user_"+secrets.token_hex(12),password_hash=generate_password_hash(pw),
        code_hash=generate_password_hash(code),expires_at=datetime.utcnow()+timedelta(minutes=10))
      db.session.add(pending)
     db.session.commit()
