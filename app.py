@@ -98,8 +98,23 @@ class User(UserMixin,db.Model):
  def set_password(self,p): self.password_hash=generate_password_hash(p)
  def check_password(self,p): return check_password_hash(self.password_hash,p)
 class Order(db.Model):
- id=db.Column(db.Integer,primary_key=True); user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False); nickname=db.Column(db.String(40),nullable=False); email=db.Column(db.String(160),nullable=False); tariff_key=db.Column(db.String(8),nullable=False); amount=db.Column(db.Integer,nullable=False); payment_method=db.Column(db.String(12),nullable=False); status=db.Column(db.String(24),default="awaiting_payment"); created_at=db.Column(db.DateTime,default=datetime.utcnow); subscription_url=db.Column(db.Text); error_message=db.Column(db.Text); requested_days=db.Column(db.Integer); telegram_id=db.Column(db.String(40),nullable=True,index=True); yookassa_payment_id=db.Column(db.String(100),nullable=True,index=True)
+ id=db.Column(db.Integer,primary_key=True); user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False); nickname=db.Column(db.String(40),nullable=False); email=db.Column(db.String(160),nullable=False); tariff_key=db.Column(db.String(8),nullable=False); amount=db.Column(db.Integer,nullable=False); payment_method=db.Column(db.String(12),nullable=False); status=db.Column(db.String(24),default="awaiting_payment"); created_at=db.Column(db.DateTime,default=datetime.utcnow); subscription_url=db.Column(db.Text); error_message=db.Column(db.Text); requested_days=db.Column(db.Integer); telegram_id=db.Column(db.String(40),nullable=True,index=True); yookassa_payment_id=db.Column(db.String(100),nullable=True,index=True); promo_code=db.Column(db.String(40),nullable=True); discount_percent=db.Column(db.Integer,nullable=False,default=0)
  user=db.relationship("User",backref=db.backref("orders",lazy=True))
+
+class PromoCode(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ code=db.Column(db.String(40),unique=True,nullable=False,index=True)
+ discount_percent=db.Column(db.Integer,nullable=False,default=0)
+ active=db.Column(db.Boolean,nullable=False,default=True)
+ created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+
+class PromoCodeRedemption(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ promo_code_id=db.Column(db.Integer,db.ForeignKey("promo_code.id"),nullable=False)
+ user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False)
+ order_id=db.Column(db.Integer,db.ForeignKey("order.id"),unique=True,nullable=False)
+ redeemed_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+ __table_args__=(db.UniqueConstraint("promo_code_id","user_id",name="uq_promo_redemption_user_code"),)
 class EmailVerification(db.Model):
  id=db.Column(db.Integer,primary_key=True)
  email=db.Column(db.String(160),nullable=False,index=True)
@@ -761,7 +776,26 @@ def checkout():
   flash("Онлайн-оплата ЮKassa временно не настроена. Попробуй позже.","error")
   return redirect(url_for("dashboard"))
  t=TARIFFS[k]
- o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=t["price"],payment_method="yookassa",status="awaiting_payment")
+ entered_code=(request.form.get("promo_code") or "").strip().upper()
+ promo=None
+ discount=0
+ amount=t["price"]
+ if entered_code:
+  promo=PromoCode.query.filter_by(code=entered_code,active=True).first()
+  if not promo:
+   flash("Промокод не найден или больше не действует.","error")
+   return redirect(url_for("dashboard")+"#buy")
+  used=PromoCodeRedemption.query.filter_by(promo_code_id=promo.id,user_id=current_user.id).first()
+  pending=Order.query.filter_by(user_id=current_user.id,promo_code=promo.code).filter(Order.status.in_(("awaiting_payment","awaiting_review","processing","active"))).first()
+  if used or pending:
+   flash("Этот промокод уже использован или привязан к другому заказу.","error")
+   return redirect(url_for("dashboard")+"#buy")
+  discount=int(promo.discount_percent)
+  if discount<1 or discount>90:
+   flash("У промокода некорректная скидка. Обратись в поддержку.","error")
+   return redirect(url_for("dashboard")+"#buy")
+  amount=int(round(t["price"]*(100-discount)/100))
+ o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=amount,payment_method="yookassa",status="awaiting_payment",promo_code=promo.code if promo else None,discount_percent=discount)
  db.session.add(o)
  db.session.commit()
  return redirect(url_for("payment",oid=o.id))
@@ -811,6 +845,15 @@ def payment_return(oid):
      o.status="processing"; db.session.commit()
      try:
       provision(o)
+      if o.promo_code and o.discount_percent:
+       promo=PromoCode.query.filter_by(code=o.promo_code).first()
+       if promo:
+        try:
+         db.session.add(PromoCodeRedemption(promo_code_id=promo.id,user_id=o.user_id,order_id=o.id))
+         db.session.commit()
+        except Exception:
+         db.session.rollback()
+         app.logger.exception("Could not record promo-code redemption for order %s",o.id)
       if o.email: send_subscription_email(o)
      except Exception:
       db.session.rollback(); o=db.session.get(Order,oid)
@@ -874,6 +917,15 @@ def yookassa_webhook():
  try:
   o=db.session.get(Order,order_id)
   provision(o)
+  if o.promo_code and o.discount_percent:
+   promo=PromoCode.query.filter_by(code=o.promo_code).first()
+   if promo:
+    try:
+     db.session.add(PromoCodeRedemption(promo_code_id=promo.id,user_id=o.user_id,order_id=o.id))
+     db.session.commit()
+    except Exception:
+     db.session.rollback()
+     app.logger.exception("Could not record promo-code redemption for order %s",o.id)
   if o.email: send_subscription_email(o)
   if o.telegram_id and o.subscription_url and os.getenv("TELEGRAM_BOT_TOKEN","").strip():
    bot_token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
@@ -1358,6 +1410,10 @@ def confirm(oid):
  if o.status not in ("awaiting_review","error"): flash("Нельзя подтвердить заказ в этом статусе.","error"); return redirect(url_for("admin_orders"))
  try:
   o.status="processing"; db.session.commit(); provision(o)
+  if o.promo_code and o.discount_percent:
+   promo=PromoCode.query.filter_by(code=o.promo_code).first()
+   if promo:
+    db.session.add(PromoCodeRedemption(promo_code_id=promo.id,user_id=o.user_id,order_id=o.id)); db.session.commit()
   email_sent=send_subscription_email(o) if o.email else False
   telegram_sent=False
   if o.telegram_id and o.subscription_url:
@@ -1423,6 +1479,13 @@ with app.app_context():
   order_table=Order.__tablename__
   if inspector.has_table(order_table):
    order_columns={column["name"] for column in inspector.get_columns(order_table)}
+   if "promo_code" not in order_columns:
+    conn.execute(text('ALTER TABLE "'+order_table+'" ADD COLUMN promo_code VARCHAR(40)'))
+   if "discount_percent" not in order_columns:
+    conn.execute(text('ALTER TABLE "'+order_table+'" ADD COLUMN discount_percent INTEGER NOT NULL DEFAULT 0'))
+  if not PromoCode.query.filter_by(code="BANYA").first():
+   db.session.add(PromoCode(code="BANYA",discount_percent=30,active=True))
+   db.session.commit()
    if "requested_days" not in order_columns:
     conn.execute(text(f'ALTER TABLE "{order_table}" ADD COLUMN requested_days INTEGER'))
    if "telegram_id" not in order_columns:
