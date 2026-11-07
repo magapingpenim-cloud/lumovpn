@@ -1483,13 +1483,13 @@ with app.app_context():
     conn.execute(text('ALTER TABLE "'+order_table+'" ADD COLUMN promo_code VARCHAR(40)'))
    if "discount_percent" not in order_columns:
     conn.execute(text('ALTER TABLE "'+order_table+'" ADD COLUMN discount_percent INTEGER NOT NULL DEFAULT 0'))
-  if not PromoCode.query.filter_by(code="BANYA").first():
-   db.session.add(PromoCode(code="BANYA",discount_percent=30,active=True))
-   db.session.commit()
    if "requested_days" not in order_columns:
     conn.execute(text(f'ALTER TABLE "{order_table}" ADD COLUMN requested_days INTEGER'))
    if "telegram_id" not in order_columns:
     conn.execute(text(f'ALTER TABLE "{order_table}" ADD COLUMN telegram_id VARCHAR(40)'))
    if "yookassa_payment_id" not in order_columns:
     conn.execute(text('ALTER TABLE "'+order_table+'" ADD COLUMN yookassa_payment_id VARCHAR(100)'))
+ if not PromoCode.query.filter_by(code="BANYA").first():
+  db.session.add(PromoCode(code="BANYA",discount_percent=30,active=True))
+  db.session.commit()
 if __name__=="__main__": app.run(host="0.0.0.0",port=5000,debug=False)
