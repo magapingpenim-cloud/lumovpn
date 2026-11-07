@@ -662,7 +662,7 @@ def telegram_webhook(secret):
   promo_keyboard=[[{"text":"🎁 Бесплатный пробный период","url":"https://flankvpn.ru/register"}],
    [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],
    [{"text":"💳 Тарифы и продление","callback_data":"show_tariffs"}],
-   [{"text":"💬 Поддержка","url":"https://t.me/"+os.getenv("TELEGRAM_BOT_USERNAME","").strip().lstrip("@")}]]
+   [{"text":"💬 Поддержка","url":"https://t.me/"+(os.getenv("TELEGRAM_BOT_USERNAME","").strip().lstrip("@") or "flankvpn_bot")}]]
   image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
   if image_url:
    try:
@@ -673,9 +673,13 @@ def telegram_webhook(secret):
     if not photo_resp.json().get("ok"): raise RuntimeError("Telegram sendPhoto returned ok=false")
    except Exception:
     app.logger.exception("Could not send FlankVPN promo photo; falling back to text")
-    send(promo_text,keyboard=False,inline=promo_keyboard)
+    requests.post("https://api.telegram.org/bot"+token+"/sendMessage",
+     json={"chat_id":chat_id,"text":promo_text,"parse_mode":"HTML",
+      "reply_markup":{"inline_keyboard":promo_keyboard},"disable_web_page_preview":True},timeout=12)
   else:
-   send(promo_text,keyboard=False,inline=promo_keyboard)
+   requests.post("https://api.telegram.org/bot"+token+"/sendMessage",
+    json={"chat_id":chat_id,"text":promo_text,"parse_mode":"HTML",
+     "reply_markup":{"inline_keyboard":promo_keyboard},"disable_web_page_preview":True},timeout=12)
  elif text_in in ("🌐 Тарифы","/tariffs"):
   show_tariffs()
  elif text_in in ("📦 Мои заказы","/orders"):
