@@ -652,7 +652,30 @@ def telegram_webhook(secret):
   return {"ok":True}
  draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
  if cmd=="/start" or text_in=="🏠 Главное меню":
-  send("Привет! Это FlankVPN. Здесь можно выбрать тариф, оформить заказ, проверить его статус и написать в поддержку.")
+  promo_text=("📶 <b>Добро пожаловать в FlankVPN!</b>\n\n"
+   "Современный VPN для стабильного доступа к любимым сервисам.\n\n"
+   "⚡ Высокая скорость и стабильное соединение\n"
+   "🛡 Надёжное шифрование и защита данных\n"
+   "📱 Поддержка разных устройств\n"
+   "🌐 Удобное подключение и управление подпиской\n\n"
+   "🎁 <b>Попробуй FlankVPN бесплатно на 10 дней</b> — подробности и подключение на сайте.")
+  promo_keyboard=[[{"text":"🎁 Бесплатный пробный период","url":"https://flankvpn.ru/register"}],
+   [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],
+   [{"text":"💳 Тарифы и продление","callback_data":"show_tariffs"}],
+   [{"text":"💬 Поддержка","url":"https://t.me/"+os.getenv("TELEGRAM_BOT_USERNAME","").strip().lstrip("@")}]]
+  image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
+  if image_url:
+   try:
+    photo_resp=requests.post("https://api.telegram.org/bot"+token+"/sendPhoto",
+     data={"chat_id":chat_id,"photo":image_url,"caption":promo_text,"parse_mode":"HTML",
+      "reply_markup":__import__("json").dumps({"inline_keyboard":promo_keyboard})},timeout=15)
+    photo_resp.raise_for_status()
+    if not photo_resp.json().get("ok"): raise RuntimeError("Telegram sendPhoto returned ok=false")
+   except Exception:
+    app.logger.exception("Could not send FlankVPN promo photo; falling back to text")
+    send(promo_text,keyboard=False,inline=promo_keyboard)
+  else:
+   send(promo_text,keyboard=False,inline=promo_keyboard)
  elif text_in in ("🌐 Тарифы","/tariffs"):
   show_tariffs()
  elif text_in in ("📦 Мои заказы","/orders"):
@@ -1201,13 +1224,20 @@ def send_expiry_reminder_telegram(chat_id, user, expiry):
 def send_expired_subscription_telegram(chat_id, user, expiry):
  token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
  if not token or not chat_id: return False
- message=(f"⛔ Подписка FlankVPN закончилась\n\nПривет, {user.nickname}! Срок действия твоей подписки истёк "
-  f"{expiry.strftime('%d.%m.%Y')}. Чтобы снова пользоваться FlankVPN, продли подписку на сайте.")
+ message=(f"⛔ <b>Подписка FlankVPN закончилась</b>\n\nПривет, {escape(user.nickname or '')}! "
+  f"Срок действия подписки истёк {expiry.strftime('%d.%m.%Y')}. "
+  "Чтобы снова пользоваться VPN, выбери подходящий тариф.")
+ keyboard={"inline_keyboard":[[{"text":"💳 Продлить подписку","url":"https://flankvpn.ru"}]]}
  try:
-  response=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",
-   json={"chat_id":str(chat_id),"text":message,
-    "reply_markup":{"inline_keyboard":[[{"text":"💳 Продлить подписку","url":"https://flankvpn.ru"}]]},
-    "disable_web_page_preview":True},timeout=12)
+  image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
+  if image_url:
+   response=requests.post("https://api.telegram.org/bot"+token+"/sendPhoto",
+    data={"chat_id":str(chat_id),"photo":image_url,"caption":message,"parse_mode":"HTML",
+     "reply_markup":__import__("json").dumps(keyboard)},timeout=15)
+  else:
+   response=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",
+    json={"chat_id":str(chat_id),"text":message,"parse_mode":"HTML",
+     "reply_markup":keyboard,"disable_web_page_preview":True},timeout=12)
   response.raise_for_status()
   return bool(response.json().get("ok"))
  except Exception:
