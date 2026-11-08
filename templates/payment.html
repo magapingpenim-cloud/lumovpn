@@ -6,7 +6,7 @@
     <a class="back-link" href="{{ url_for('index') }}">← Назад к тарифам</a>
     <div class="eyebrow">FLANKVPN · ОФОРМЛЕНИЕ ПОДПИСКИ</div>
     <h1>Твоя подписка</h1>
-    <div class="selected-plan"><span class="selected-plan-label">Выбранный срок</span><strong>{{ tariff.title }}</strong>{% if order.discount_percent %}<span class="tiny muted">Промокод {{ order.promo_code }} · скидка {{ order.discount_percent }}%</span>{% endif %}<span class="selected-plan-price">{{ order.amount }} ₽</span></div>
+    <div class="selected-plan"><span class="selected-plan-label">Выбранный срок</span><strong>{{ tariff.title }}</strong><span class="selected-plan-price">{{ order.amount }} ₽</span></div>
     <div class="payment-provider-note"><span class="eyebrow">ЗАЩИЩЁННАЯ ОПЛАТА</span><strong>ЮKassa</strong><p class="muted">Нажми кнопку ниже, чтобы перейти на защищённую страницу оплаты. Не отправляй данные карты в чат.</p></div>
     <a class="btn primary full pay-yookassa" href="{{ confirmation_url }}">Оплатить через ЮKassa ↗</a>
     <p class="tiny muted payment-safety-note">После оплаты ты автоматически вернёшься на FlankVPN. Когда платёж подтвердится, на странице появятся QR-код, кнопка копирования ссылки и кнопка открытия подписки.</p>
