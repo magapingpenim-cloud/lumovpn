@@ -1487,7 +1487,7 @@ with app.app_context():
   draft_table=TelegramCheckoutDraft.__tablename__
   if inspector.has_table(draft_table):
    draft_columns={column["name"] for column in inspector.get_columns(draft_table)}
-   if "awaiting_promo" not in draft_columns: conn.execute(text('ALTER TABLE "'+draft_table+'" ADD COLUMN awaiting_promo BOOLEAN NOT NULL DEFAULT 0'))
+   if "awaiting_promo" not in draft_columns: conn.execute(text('ALTER TABLE "'+draft_table+'" ADD COLUMN awaiting_promo BOOLEAN NOT NULL DEFAULT FALSE'))
    if "promo_code" not in draft_columns: conn.execute(text('ALTER TABLE "'+draft_table+'" ADD COLUMN promo_code VARCHAR(40)'))
  if not PromoCode.query.filter_by(code="BANYA").first():
   db.session.add(PromoCode(code="BANYA",discount_percent=30,active=True))
