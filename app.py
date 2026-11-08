@@ -237,6 +237,21 @@ def game_state_for(user):
 @lm.user_loader
 def load_user(uid): return db.session.get(User,int(uid))
 def is_admin(): return bool(session.get("flankadmin"))
+
+def record_promo_redemption(order):
+ if not order.promo_code or not order.discount_percent: return
+ promo=PromoCode.query.filter_by(code=order.promo_code).first()
+ if not promo: return
+ existing=PromoCodeRedemption.query.filter_by(order_id=order.id).first()
+ if existing: return
+ already=PromoCodeRedemption.query.filter_by(promo_code_id=promo.id,user_id=order.user_id).first()
+ if already: return
+ try:
+  db.session.add(PromoCodeRedemption(promo_code_id=promo.id,user_id=order.user_id,order_id=order.id))
+  db.session.commit()
+ except Exception:
+  db.session.rollback()
+  app.logger.exception("Could not record promo redemption for order %s",order.id)
 @app.context_processor
 def globals_(): return {"tariffs":TARIFFS,"payments":PAYMENTS}
 
@@ -638,7 +653,7 @@ def telegram_webhook(secret):
        if not payment_id or not confirmation_url: raise RuntimeError("ЮKassa не вернула ID платежа или ссылку оплаты.")
        order.yookassa_payment_id=payment_id
        db.session.commit()
-       send(f"🧾 Заказ FlankVPN #{order.id}\n\nТариф: {tariff['title']}\nК оплате: {order.amount} ₽\nСпособ оплаты: ЮKassa\n\nЗаверши оплату на защищённой странице ЮKassa. Не отправляй данные карты в чат. После подтверждения платежа подписка автоматически придёт сюда отдельным сообщением.",
+       send(f"🧾 Заказ FlankVPN #{order.id}\n\nТариф: {tariff['title']}\n"+(f"Промокод {order.promo_code}: скидка {order.discount_percent}%\n" if order.discount_percent else "")+f"К оплате: {order.amount} ₽\nСпособ оплаты: ЮKassa\n\nЗаверши оплату на защищённой странице ЮKassa. Не отправляй данные карты в чат. После подтверждения платежа подписка автоматически придёт сюда отдельным сообщением.",
         keyboard=False,inline=[[{"text":"💳 Перейти к оплате","url":confirmation_url}]])
       except Exception as exc:
        db.session.rollback()
@@ -915,6 +930,7 @@ def yookassa_webhook():
  try:
   o=db.session.get(Order,order_id)
   provision(o)
+  record_promo_redemption(o)
   if o.email: send_subscription_email(o)
   if o.telegram_id and o.subscription_url and os.getenv("TELEGRAM_BOT_TOKEN","").strip():
    bot_token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
@@ -1392,6 +1408,7 @@ def confirm(oid):
  if o.status not in ("awaiting_review","error"): flash("Нельзя подтвердить заказ в этом статусе.","error"); return redirect(url_for("admin_orders"))
  try:
   o.status="processing"; db.session.commit(); provision(o)
+  record_promo_redemption(o)
   email_sent=send_subscription_email(o) if o.email else False
   telegram_sent=False
   if o.telegram_id and o.subscription_url:
