@@ -1297,7 +1297,7 @@ def provision(o):
   r.raise_for_status(); d=r.json()
   if d.get("ok") is False: raise RuntimeError(str(d))
  else:
-  name="flank_u"+str(user.id)
+  name="user_"+str(user.id)
   r=requests.post(base+"/create",headers=h,json={"name":name,"days":days,"traffic_limit_gb":0,"device_limit":3},timeout=25)
   r.raise_for_status(); d=r.json()
   if d.get("ok") is False: raise RuntimeError(str(d))
