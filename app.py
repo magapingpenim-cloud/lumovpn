@@ -696,19 +696,30 @@ def telegram_webhook(secret):
   return {"ok":True}
  draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
  if cmd=="/start" or text_in=="🏠 Главное меню":
-  welcome="👋 Привет! Это FlankVPN — VPN-сервис с простым подключением, удобными тарифами и быстрой поддержкой.\n\n⚡ Высокая скорость и стабильное подключение\n🔐 Защита соединения\n💬 Поддержка поможет разобраться\n📱 До 3 устройств на одной подписке\n\n🎁 Первый заказ: промокод BANYA даёт скидку 30%!\n\nВыбирай тариф или напиши нам — поможем начать."
+  welcome=("👋 Привет! Это FlankVPN — надёжный VPN для повседневного использования.\n\n"
+   "💨 Высокая скорость и стабильное подключение\n"
+   "🔐 Защита соединения и конфиденциальность\n"
+   "💬 Быстрая поддержка — поможем с настройкой\n"
+   "📱 До 3 устройств в одной подписке\n"
+   "🌐 Удобное подключение к сайтам и приложениям\n\n"
+   "🎁 Подарок на первую покупку: промокод DUBAY — скидка 30%!\n\n"
+   "Попробуй FlankVPN и выбери подходящий тариф.")
+  welcome_buttons=[[{"text":"🎁 Бесплатные 10 дней","url":"https://flankvpn.ru/register"}],
+   [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],
+   [{"text":"🌐 Выбрать тариф","callback_data":"show_tariffs"},{"text":"🎟 Промокод","callback_data":"enter_promo"}],
+   [{"text":"💬 Поддержка","callback_data":"support_info"}]]
   image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
   if image_url:
    try:
-    photo=requests.post("https://api.telegram.org/bot"+token+"/sendPhoto",data={"chat_id":chat_id,"photo":image_url,"caption":welcome[:1000]},timeout=15)
+    photo=requests.post("https://api.telegram.org/bot"+token+"/sendPhoto",
+     data={"chat_id":chat_id,"photo":image_url,"caption":welcome,"reply_markup":__import__("json").dumps({"inline_keyboard":welcome_buttons},ensure_ascii=False)},timeout=20)
     photo.raise_for_status()
     if not photo.json().get("ok"): raise RuntimeError("Telegram sendPhoto returned ok=false")
    except Exception:
     app.logger.exception("Could not send FlankVPN welcome image")
-    send(welcome)
+    send(welcome,keyboard=False,inline=welcome_buttons)
   else:
-   send(welcome,keyboard=False,inline=[[{"text":"🌐 Выбрать тариф","callback_data":"show_tariffs"}],[{"text":"🎟 Ввести промокод","callback_data":"enter_promo"}],[{"text":"💬 Поддержка","callback_data":"support_info"}]])
-  if image_url: send("Выбери, что сделать дальше:",keyboard=False,inline=[[{"text":"🌐 Тарифы","callback_data":"show_tariffs"}],[{"text":"🎟 Промокод","callback_data":"enter_promo"}],[{"text":"💬 Поддержка","callback_data":"support_info"}]])
+   send(welcome,keyboard=False,inline=welcome_buttons)
  elif text_in in ("🎟 Промокод","/promo"):
   draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
   if not draft: draft=TelegramCheckoutDraft(telegram_id=telegram_id); db.session.add(draft)
