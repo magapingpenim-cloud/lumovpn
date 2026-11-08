@@ -821,6 +821,31 @@ def checkout():
  db.session.add(o)
  db.session.commit()
  return redirect(url_for("payment",oid=o.id))
+
+@app.route("/promo/preview",methods=["POST"])
+@login_required
+def promo_preview():
+ data=request.get_json(silent=True) or {}
+ code=str(data.get("code") or "").strip().upper()
+ tariff=str(data.get("tariff") or "1").strip()
+ if tariff not in TARIFFS or tariff in ("trial","game"):
+  return {"ok":False,"message":"Сначала выбери тариф."},400
+ if not code:
+  return {"ok":False,"message":"Введи промокод."},400
+ promo=PromoCode.query.filter_by(code=code,active=True).first()
+ if not promo or (promo.expires_at and promo.expires_at<datetime.utcnow()):
+  return {"ok":False,"message":"Промокод не найден или срок его действия истёк."},400
+ if promo.usage_limit is not None and PromoCodeRedemption.query.filter_by(promo_code_id=promo.id).count()>=promo.usage_limit:
+  return {"ok":False,"message":"Лимит использований промокода исчерпан."},400
+ if PromoCodeRedemption.query.filter_by(promo_code_id=promo.id,user_id=current_user.id).first():
+  return {"ok":False,"message":"Ты уже использовал этот промокод."},400
+ discount=int(promo.discount_percent)
+ if discount<1 or discount>90:
+  return {"ok":False,"message":"Для промокода настроена некорректная скидка."},400
+ base=int(TARIFFS[tariff]["price"])
+ amount=int(round(base*(100-discount)/100))
+ return {"ok":True,"code":promo.code,"discount":discount,"base":base,"amount":amount,"saving":base-amount}
+
 @app.route("/payment/<int:oid>")
 @login_required
 def payment(oid):
