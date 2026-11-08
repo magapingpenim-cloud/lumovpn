@@ -582,7 +582,40 @@ def telegram_webhook(secret):
  arg=text_in.split(maxsplit=1)[1].strip() if len(text_in.split(maxsplit=1))>1 else ""
  if callback_data:
   answer_callback("Готовлю ссылку оплаты…") if callback_data.startswith("buy:") else answer_callback()
-  if callback_data=="show_tariffs":
+  if callback_data=="claim_trial":
+   linked=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+   trial_user=db.session.get(User,linked.user_id) if linked else None
+   if not trial_user:
+    trial_email="telegram_"+telegram_id+"@telegram.flankvpn.local"
+    trial_user=User.query.filter_by(email=trial_email).first()
+    if not trial_user:
+     nick=("tg_"+telegram_id[-30:])[:40]
+     if User.query.filter_by(nickname=nick).first(): nick=("tg_"+telegram_id[-20:]+"_"+secrets.token_hex(3))[:40]
+     trial_user=User(nickname=nick,email=trial_email,password_hash=generate_password_hash(secrets.token_urlsafe(32)))
+     db.session.add(trial_user); db.session.flush()
+    if not linked:
+     db.session.add(TelegramAccount(telegram_id=telegram_id,user_id=trial_user.id))
+     db.session.flush()
+   previous_trial=Order.query.filter_by(user_id=trial_user.id,tariff_key="trial",status="active").first()
+   pending_trial=Order.query.filter_by(user_id=trial_user.id,tariff_key="trial",status="processing").first()
+   if previous_trial:
+    send("🎁 Пробные 10 дней уже были активированы для этого Telegram-аккаунта. Повторно получить пробный период нельзя.\n\nОткрой «🔐 Моя подписка», чтобы посмотреть доступ.",keyboard=True)
+   elif pending_trial:
+    send("⏳ Твой пробный период уже создаётся. Подожди немного и открой «🔐 Моя подписка».")
+   else:
+    try:
+     trial_order=Order(user_id=trial_user.id,nickname=trial_user.nickname,email=trial_user.email,telegram_id=telegram_id,tariff_key="trial",amount=0,payment_method="trial",status="processing",requested_days=10)
+     db.session.add(trial_order); db.session.commit()
+     provision(trial_order)
+     send("🎉 Бесплатные 10 дней FlankVPN активированы!\n\nТвой доступ готов:\n"+str(trial_order.subscription_url)+"\n\nСсылка привязана к этому Telegram-аккаунту. Сохрани её и добавь в VPN-приложение.",keyboard=True)
+    except Exception as e:
+     db.session.rollback()
+     app.logger.exception("Could not activate Telegram free trial for %s",telegram_id)
+     failed=Order.query.filter_by(telegram_id=telegram_id,tariff_key="trial",status="processing").first()
+     if failed:
+      failed.status="error"; failed.error_message=str(e)[:400]; db.session.commit()
+     send("Не удалось автоматически выдать пробные 10 дней. Попробуй позже или напиши в поддержку FlankVPN.")
+  elif callback_data=="show_tariffs":
    show_tariffs()
   elif callback_data=="enter_promo":
    draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
@@ -704,7 +737,7 @@ def telegram_webhook(secret):
    "🌐 Удобное подключение к сайтам и приложениям\n\n"
    "🎁 Подарок на первую покупку: промокод DUBAI — скидка 30%!\n\n"
    "Попробуй FlankVPN и выбери подходящий тариф.")
-  welcome_buttons=[[{"text":"🎁 Бесплатные 10 дней","url":"https://flankvpn.ru/register"}],
+  welcome_buttons=[[{"text":"🎁 Бесплатные 10 дней","callback_data":"claim_trial"}],
    [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],
    [{"text":"🌐 Выбрать тариф","callback_data":"show_tariffs"},{"text":"🎟 Промокод","callback_data":"enter_promo"}],
    [{"text":"💬 Поддержка","callback_data":"support_info"}]]
