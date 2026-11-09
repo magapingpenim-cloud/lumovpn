@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#09172b" id="theme-color-meta">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <script>try{const t=localStorage.getItem('flankvpn-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
   <meta name="description" content="FlankVPN — простой личный кабинет, удобная подписка и быстрое подключение.">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
@@ -75,6 +76,17 @@
         <div class="support-actions"><button class="support-send" type="submit">Отправить</button><button class="support-close" type="button" id="support-close">Закрыть</button></div>
       </form>
     </section>
+    <script>
+      (function(){
+        const token=document.querySelector('meta[name="csrf-token"]')?.content;
+        if(!token)return;
+        document.querySelectorAll('form[method="post" i],form:not([method])').forEach(form=>{
+          if(!form.querySelector('input[name="csrf_token"]')){const input=document.createElement('input');input.type='hidden';input.name='csrf_token';input.value=token;form.appendChild(input);}
+        });
+        document.addEventListener('submit',event=>{const form=event.target;if(form instanceof HTMLFormElement&&!form.querySelector('input[name="csrf_token"]')){const input=document.createElement('input');input.type='hidden';input.name='csrf_token';input.value=token;form.appendChild(input);}},true);
+        window.flankCsrfToken=token;
+      })();
+    </script>
     <script>
       (function(){
         const button=document.getElementById('theme-toggle');
