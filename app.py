@@ -1561,7 +1561,11 @@ with app.app_context():
  if not PromoCode.query.filter_by(code="BANYA").first():
   db.session.add(PromoCode(code="BANYA",discount_percent=30,active=True))
   db.session.commit()
- if not PromoCode.query.filter_by(code="DUBAI").first():
+ dubai_promo=PromoCode.query.filter_by(code="DUBAI").first()
+ if not dubai_promo:
   db.session.add(PromoCode(code="DUBAI",discount_percent=30,active=True))
-  db.session.commit()
+ else:
+  dubai_promo.discount_percent=30
+  dubai_promo.active=True
+ db.session.commit()
 if __name__=="__main__": app.run(host="0.0.0.0",port=5000,debug=False)
