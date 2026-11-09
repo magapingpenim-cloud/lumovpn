@@ -488,8 +488,8 @@ def apple_login():
   flash("Не удалось запустить вход через Apple. Проверь настройки сервиса.","error")
   return redirect(url_for("login"))
 
-@csrf.exempt
 @app.route("/auth/apple/callback",methods=["GET","POST"])
+@csrf.exempt
 def apple_callback():
  try:
   client=register_apple_client()
@@ -545,8 +545,8 @@ def telegram_link_code():
  bot_link=("https://t.me/"+bot_name) if bot_name else "Открой своего Telegram-бота FlankVPN"
  return (f"<h1>Привязка Telegram — FlankVPN</h1><p>Твой одноразовый код: <strong style='font-size:28px'>{code}</strong></p><p>Код действует 10 минут. В Telegram отправь боту команду <code>/link {code}</code>.</p><p>Не пересылай код другим людям.</p><p><a href='{bot_link}'>Открыть Telegram-бота</a></p><p><a href='/dashboard'>Вернуться в кабинет</a></p>",200,{"Content-Type":"text/html; charset=utf-8"})
 
-@csrf.exempt
 @app.route("/telegram/webhook/<secret>",methods=["POST"])
+@csrf.exempt
 def telegram_webhook(secret):
  expected=os.getenv("TELEGRAM_WEBHOOK_SECRET","").strip()
  if not expected or not secrets.compare_digest(secret,expected):
@@ -975,8 +975,8 @@ def paid(oid):
   # Telegram-уведомление о заказе отключено.
   flash("Заявка отправлена. Администратор проверит поступление денег.","success")
  return redirect(url_for("dashboard"))
-@csrf.exempt
 @app.route("/yookassa/webhook",methods=["POST"])
+@csrf.exempt
 def yookassa_webhook():
  payload=request.get_json(silent=True) or {}
  if payload.get("event")!="payment.succeeded": return {"ok":True,"ignored":True},200
@@ -1396,8 +1396,8 @@ def send_expired_subscription_telegram(chat_id, user, expiry):
   app.logger.exception("Failed to send expired-subscription Telegram notice for user %s",user.id)
   return False
 
-@csrf.exempt
 @app.route("/internal/subscription-reminders",methods=["POST"])
+@csrf.exempt
 def subscription_reminders():
  expected=os.getenv("SUBSCRIPTION_REMINDER_SECRET","").strip()
  supplied=request.headers.get("X-Reminder-Secret","").strip()
