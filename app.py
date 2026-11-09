@@ -10,10 +10,19 @@ from sqlalchemy import func, inspect, text, or_
 from html import escape
 from authlib.integrations.flask_client import OAuth
 import jwt
-# Redeploy trigger: apply current Render environment settings.
-app=Flask(__name__); app.config["SECRET_KEY"]=os.getenv("SECRET_KEY","dev-only-change-me")
-# Trust Render’s reverse-proxy headers so OAuth callbacks use the public HTTPS URL.
-app.wsgi_app=ProxyFix(app.wsgi_app,x_for=1,x_proto=1,x_host=1)
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+# Refuse to start with a publicly known fallback signing key.
+_secret_key=os.getenv("SECRET_KEY","").strip()
+if len(_secret_key)<32 or _secret_key=="dev-only-change-me":
+ raise RuntimeError("SECRET_KEY must be configured with a unique random value of at least 32 characters.")
+app=Flask(__name__); app.config["SECRET_KEY"]=_secret_key
+# Trust only the platform proxy address/protocol headers; never accept forwarded host values.
+app.wsgi_app=ProxyFix(app.wsgi_app,x_for=1,x_proto=1)
+app.config.update(SESSION_COOKIE_SECURE=True,SESSION_COOKIE_HTTPONLY=True,SESSION_COOKIE_SAMESITE="None",PERMANENT_SESSION_LIFETIME=timedelta(hours=8))
+csrf=CSRFProtect(app)
+limiter=Limiter(get_remote_address,app=app,default_limits=[],storage_uri=os.getenv("RATELIMIT_STORAGE_URI","memory://"),headers_enabled=True)
 dburl=os.getenv("DATABASE_URL","sqlite:///flankvpn.db")
 # Render PostgreSQL URLs use psycopg2, which is installed via psycopg2-binary.
 if dburl.startswith("postgres://"):
@@ -23,8 +32,6 @@ elif dburl.startswith("postgresql://"):
 app.config["SQLALCHEMY_DATABASE_URI"]=dburl; app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False; app.config["SEND_FILE_MAX_AGE_DEFAULT"]=86400
 app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
 # Apple uses a cross-site form_post callback; production must allow the secure session cookie.
-app.config["SESSION_COOKIE_SAMESITE"] = "None"
-app.config["SESSION_COOKIE_SECURE"] = os.getenv("RENDER", "").lower() == "true"
 oauth = OAuth(app)
 oauth.register(name="google", client_id=os.getenv("GOOGLE_CLIENT_ID"), client_secret=os.getenv("GOOGLE_CLIENT_SECRET"), server_metadata_url="https://accounts.google.com/.well-known/openid-configuration", client_kwargs={"scope":"openid email profile"})
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
@@ -262,9 +269,20 @@ def prevent_auth_page_cache(response):
   response.headers["Pragma"]="no-cache"
   response.headers["Expires"]="0"
  return response
+@app.after_request
+def apply_security_headers(response):
+ response.headers.setdefault("X-Content-Type-Options","nosniff")
+ response.headers.setdefault("X-Frame-Options","DENY")
+ response.headers.setdefault("Referrer-Policy","strict-origin-when-cross-origin")
+ response.headers.setdefault("Permissions-Policy","camera=(), microphone=(), geolocation=()")
+ if request.is_secure:
+  response.headers.setdefault("Strict-Transport-Security","max-age=31536000; includeSubDomains")
+ return response
+
 @app.route("/")
 def index(): return render_template("index.html")
 @app.route("/register",methods=["GET","POST"])
+@limiter.limit("3 per hour",methods=["POST"])
 def register():
  if current_user.is_authenticated:
   return redirect(url_for("dashboard"))
@@ -308,6 +326,7 @@ def register():
  return render_template("auth.html",mode="register")
 
 @app.route("/verify-email",methods=["GET","POST"])
+@limiter.limit("6 per minute",methods=["POST"])
 def verify_email():
  email=session.get("verify_email")
  if not email: return redirect(url_for("register"))
@@ -469,6 +488,7 @@ def apple_login():
   flash("Не удалось запустить вход через Apple. Проверь настройки сервиса.","error")
   return redirect(url_for("login"))
 
+@csrf.exempt
 @app.route("/auth/apple/callback",methods=["GET","POST"])
 def apple_callback():
  try:
@@ -482,6 +502,7 @@ def apple_callback():
   return redirect(url_for("login"))
 
 @app.route("/login",methods=["GET","POST"])
+@limiter.limit("5 per minute",methods=["POST"])
 def login():
  if current_user.is_authenticated:
   return redirect(url_for("dashboard"))
@@ -524,6 +545,7 @@ def telegram_link_code():
  bot_link=("https://t.me/"+bot_name) if bot_name else "Открой своего Telegram-бота FlankVPN"
  return (f"<h1>Привязка Telegram — FlankVPN</h1><p>Твой одноразовый код: <strong style='font-size:28px'>{code}</strong></p><p>Код действует 10 минут. В Telegram отправь боту команду <code>/link {code}</code>.</p><p>Не пересылай код другим людям.</p><p><a href='{bot_link}'>Открыть Telegram-бота</a></p><p><a href='/dashboard'>Вернуться в кабинет</a></p>",200,{"Content-Type":"text/html; charset=utf-8"})
 
+@csrf.exempt
 @app.route("/telegram/webhook/<secret>",methods=["POST"])
 def telegram_webhook(secret):
  expected=os.getenv("TELEGRAM_WEBHOOK_SECRET","").strip()
@@ -953,6 +975,7 @@ def paid(oid):
   # Telegram-уведомление о заказе отключено.
   flash("Заявка отправлена. Администратор проверит поступление денег.","success")
  return redirect(url_for("dashboard"))
+@csrf.exempt
 @app.route("/yookassa/webhook",methods=["POST"])
 def yookassa_webhook():
  payload=request.get_json(silent=True) or {}
@@ -1268,9 +1291,15 @@ def admin_award_game_contest():
  return redirect(url_for("admin_orders"))
 
 @app.route("/admin/login",methods=["GET","POST"])
+@limiter.limit("5 per minute",methods=["POST"])
 def admin_login():
- if request.method=="POST" and request.form.get("username","").strip().casefold()==os.getenv("ADMIN_USERNAME","admin").strip().casefold() and request.form.get("password","")==os.getenv("ADMIN_PASSWORD","change-this-now"):
-  session["flankadmin"]=True; return redirect(url_for("admin_support"))
+ admin_username=os.getenv("ADMIN_USERNAME","").strip()
+ admin_password=os.getenv("ADMIN_PASSWORD","")
+ if not admin_username or len(admin_password)<16:
+  abort(503,description="Admin credentials are not configured securely.")
+ if request.method=="POST" and secrets.compare_digest(request.form.get("username","").strip().casefold(),admin_username.casefold()) and secrets.compare_digest(request.form.get("password",""),admin_password):
+  session.clear(); session["flankadmin"]=True; session.permanent=True
+  return redirect(url_for("admin_support"))
  elif request.method=="POST": flash("Неверные данные администратора.","error")
  return render_template("admin_login.html")
 @app.route("/admin")
@@ -1367,6 +1396,7 @@ def send_expired_subscription_telegram(chat_id, user, expiry):
   app.logger.exception("Failed to send expired-subscription Telegram notice for user %s",user.id)
   return False
 
+@csrf.exempt
 @app.route("/internal/subscription-reminders",methods=["POST"])
 def subscription_reminders():
  expected=os.getenv("SUBSCRIPTION_REMINDER_SECRET","").strip()
