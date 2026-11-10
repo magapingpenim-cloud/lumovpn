@@ -755,3 +755,43 @@ img,svg,video { max-width:100%; }
 .referral-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:22px 0}.referral-stat{display:flex;flex-direction:column;justify-content:space-between;gap:16px;min-width:0;min-height:140px;padding:22px;border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:var(--shadow)}.referral-stat span{min-height:32px;color:#55bfb1;font-size:10px;font-weight:850;letter-spacing:2px;line-height:1.5}.referral-stat strong{display:block;color:var(--ink);font-size:clamp(26px,4vw,36px);line-height:1.1;letter-spacing:-1px;font-variant-numeric:tabular-nums}
 .referral-how{margin:22px 0 34px;padding:clamp(22px,4vw,30px);border:1px solid var(--line);border-radius:20px;background:var(--surface)}.referral-how h2{margin:0 0 14px}.referral-how ol{padding-left:22px;color:var(--ink);line-height:1.9}.referral-how li{padding-left:4px}.referral-how p{margin-bottom:0}
 @media(max-width:680px){.referral-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.referral-stat{min-height:126px;padding:17px}.referral-stat:last-child{grid-column:1/-1}.referral-stat span{min-height:30px}.referral-dashboard-banner{padding:14px;gap:10px}.referral-dashboard-banner strong{font-size:13px}}
+
+
+/* Responsive navigation and dashboard layout refinements */
+.nav{width:100%;box-sizing:border-box;min-width:0;flex-wrap:nowrap;align-items:center}
+.nav>.brand{flex:0 1 auto;min-width:0;white-space:nowrap}
+.nav>nav{margin-left:auto;min-width:0;flex:0 1 auto;display:flex;align-items:center;justify-content:flex-end;gap:clamp(8px,1.5vw,18px)}
+.nav>nav>a{white-space:nowrap}
+.nav>nav .theme-toggle{flex:0 0 auto;white-space:nowrap}
+.site-menu-panel{z-index:100}
+.site-menu-panel a,.site-menu-panel button{font-size:14px;line-height:1.35}
+.dashboard-welcome{min-width:0}
+.dashboard-welcome>div:first-child{min-width:0}
+.dashboard-welcome h1{overflow-wrap:anywhere}
+.checkout-panel-clean .checkout-advanced{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(150px,auto)}
+.checkout-panel-clean .promo-entry{min-width:0}
+.checkout-panel-clean .promo-entry input{min-width:0}
+@media(max-width:900px){
+ .nav{padding:15px 18px;gap:12px}
+ .nav>nav{gap:9px}
+ .navcta{padding:10px 12px}
+ .checkout-panel-clean .checkout-advanced{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .checkout-panel-clean .checkout-advanced>button,.checkout-panel-clean .checkout-advanced>.btn{grid-column:1/-1;width:100%}
+ .dashboard-welcome{padding:clamp(20px,4vw,30px)}
+}
+@media(max-width:640px){
+ .nav{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px;padding:12px 14px}
+ .brand{grid-column:2;grid-row:1;justify-self:end;font-size:19px}
+ .site-menu{grid-column:1;grid-row:1}
+ .nav>nav{grid-column:1/-1;grid-row:2;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+ .nav>nav>a:not(.navcta){padding:7px 0}
+ .navcta{padding:8px 10px;font-size:11px}
+ .theme-toggle{padding:7px 9px!important}
+ .checkout-panel-clean .checkout-advanced{grid-template-columns:minmax(0,1fr)}
+ .checkout-panel-clean .checkout-advanced>button,.checkout-panel-clean .checkout-advanced>.btn{grid-column:auto}
+ .dashboard-welcome h1{font-size:clamp(26px,8vw,36px)}
+}
+@media(min-width:641px) and (max-width:900px){
+ .nav{flex-wrap:wrap}
+ .nav>nav{flex:1 1 100%;justify-content:flex-end}
+}
