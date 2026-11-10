@@ -1665,6 +1665,12 @@ with app.app_context():
     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN reminder_telegram_sent_for VARCHAR(32)'))
    if "expiry_notice_telegram_sent_for" not in user_columns:
     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN expiry_notice_telegram_sent_for VARCHAR(32)'))
+   if "referral_code" not in user_columns:
+    conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN referral_code VARCHAR(20)'))
+   if "referred_by_user_id" not in user_columns:
+    conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN referred_by_user_id INTEGER'))
+   conn.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_referral_code ON "'+user_table+'" (referral_code)'))
+   conn.execute(text('CREATE INDEX IF NOT EXISTS ix_user_referred_by_user_id ON "'+user_table+'" (referred_by_user_id)'))
   order_table=Order.__tablename__
   if inspector.has_table(order_table):
    order_columns={column["name"] for column in inspector.get_columns(order_table)}
