@@ -304,10 +304,14 @@ def award_referral_reward(order):
   response.raise_for_status()
   data=response.json()
   if data.get("ok") is False: raise RuntimeError("H1 rejected referral reward.")
-  info=requests.get(base+"/info",headers=headers,params={"name":referrer.h1_client_name},timeout=25)
-  info.raise_for_status()
-  client=info.json().get("client",info.json())
-  expiry=extract_subscription_expiry(client)
+  expiry=None
+  try:
+   info=requests.get(base+"/info",headers=headers,params={"name":referrer.h1_client_name},timeout=25)
+   info.raise_for_status()
+   client=info.json().get("client",info.json())
+   expiry=extract_subscription_expiry(client)
+  except Exception:
+   app.logger.warning("Could not refresh referrer expiry after successful H1 reward; using local date.",exc_info=True)
   if expiry: referrer.subscription_expires_at=expiry
   elif referrer.subscription_expires_at and referrer.subscription_expires_at>datetime.utcnow():
    referrer.subscription_expires_at=referrer.subscription_expires_at+timedelta(days=30)
