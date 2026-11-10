@@ -3,7 +3,7 @@
 {% block content %}
 <section class="hero hero-advanced">
   <div class="hero-copy">
-    <div class="eyebrow"><span class="live-dot"></span> FLANKVPN · ТВОЁ ПОДКЛЮЧЕНИЕ</div>
+    <div class="eyebrow"><span class="live-dot"></span> 🌐 FLANKVPN · ТВОЁ ПОДКЛЮЧЕНИЕ</div>
     <h1>Интернет —<br><span>по твоим правилам.</span></h1>
     <p>Понятная подписка, личный кабинет и быстрый старт через совместимый VPN-клиент. Без запутанных инструкций и лишних экранов.</p>
     <div class="actions">{% if not current_user.is_authenticated %}<a class="btn primary" href="{{ url_for('register') }}">Начать бесплатно ↗</a>{% elif current_user.orders|selectattr('tariff_key','equalto','trial')|selectattr('status','equalto','active')|list %}<a class="btn primary" href="{{ url_for('referrals') }}">Пригласить друга 🎁</a>{% else %}<a class="btn primary" href="{{ url_for('dashboard') }}">Открыть кабинет ↗</a>{% endif %}<a class="btn glass" href="#tariffs">Сравнить тарифы</a></div>
@@ -21,15 +21,15 @@
   <div><strong>QR + ссылка</strong><span>для импорта подписки</span></div>
 </div>
 <section class="feature-section">
-  <div class="section-heading"><div class="eyebrow">ПРОСТОЙ СТАРТ</div><h2>Всё нужное — в одном месте</h2><p>От регистрации до управления подпиской — понятные шаги и аккуратный интерфейс.</p></div>
+  <div class="section-heading"><div class="eyebrow">ПРОСТОЙ СТАРТ</div><h2>✨ Всё нужное — в одном месте</h2><p>От регистрации до управления подпиской — понятные шаги и аккуратный интерфейс.</p></div>
   <div class="feature-grid">
-    <article class="feature-card"><div class="feature-icon">↗</div><h3>Быстрый старт</h3><p>Создай аккаунт, подтверди email и получи пробный доступ на 10 дней.</p><span class="feature-number">01 / START</span></article>
-    <article class="feature-card"><div class="feature-icon">⌘</div><h3>Подписка под рукой</h3><p>В личном кабинете можно открыть ссылку подписки, скопировать её или использовать QR-код.</p><span class="feature-number">02 / ACCESS</span></article>
-    <article class="feature-card"><div class="feature-icon">◷</div><h3>Понятные тарифы</h3><p>Выбирай срок заранее: чем дольше подписка, тем ниже стоимость в пересчёте на месяц.</p><span class="feature-number">03 / PRICING</span></article>
+    <article class="feature-card"><div class="feature-icon">↗</div><h3>⚡ Быстрый старт</h3><p>Создай аккаунт, подтверди email и получи пробный доступ на 10 дней.</p><span class="feature-number">01 / START</span></article>
+    <article class="feature-card"><div class="feature-icon">⌘</div><h3>📲 Подписка под рукой</h3><p>В личном кабинете можно открыть ссылку подписки, скопировать её или использовать QR-код.</p><span class="feature-number">02 / ACCESS</span></article>
+    <article class="feature-card"><div class="feature-icon">◷</div><h3>💎 Понятные тарифы</h3><p>Выбирай срок заранее: чем дольше подписка, тем ниже стоимость в пересчёте на месяц.</p><span class="feature-number">03 / PRICING</span></article>
   </div>
 </section>
 <section id="tariffs" class="pricing-section">
-  <div class="section-heading"><div class="eyebrow">ПРОЗРАЧНАЯ ЦЕНА</div><h2>Выбери свой срок</h2><p>Без скрытых расчётов: стоимость и экономия указаны прямо на карточке.</p></div>
+  <div class="section-heading"><div class="eyebrow">ПРОЗРАЧНАЯ ЦЕНА</div><h2>💳 Выбери свой срок</h2><p>Без скрытых расчётов: стоимость и экономия указаны прямо на карточке.</p></div>
   <div class="plans plans-advanced">
     {% for k,t in tariffs.items() if k != 'trial' %}
     <article class="plan plan-advanced {% if k=='12' %}plan-best{% endif %}">
@@ -48,7 +48,7 @@
   <p class="muted tiny pricing-note">10 дней пробного доступа доступны после регистрации. Платный доступ активируется автоматически после подтверждения оплаты ЮKassa. *VPN не гарантирует абсолютную анонимность или безопасность на любом устройстве.</p>
 </section>
 <section class="steps-section">
-  <div class="section-heading"><div class="eyebrow">КАК ЭТО РАБОТАЕТ</div><h2>Три шага до подключения</h2></div>
+  <div class="section-heading"><div class="eyebrow">КАК ЭТО РАБОТАЕТ</div><h2>🚀 Три шага до подключения</h2></div>
   <div class="steps-grid">
     <div class="step"><span>01</span><div><h3>Создай аккаунт</h3><p>Подтверди адрес электронной почты.</p></div></div>
     <div class="step"><span>02</span><div><h3>Выбери тариф</h3><p>Оформи пробный доступ или выбери срок подписки.</p></div></div>
@@ -56,7 +56,7 @@
   </div>
 </section>
 <section class="faq-section">
-  <div class="section-heading"><div class="eyebrow">FAQ</div><h2>Частые вопросы</h2></div>
+  <div class="section-heading"><div class="eyebrow">FAQ</div><h2>❓ Частые вопросы</h2></div>
   <details class="faq-item"><summary>Как получить пробный доступ?</summary><p>Зарегистрируйся и подтверди email. Пробный доступ рассчитан на 10 дней; его выдача зависит от доступности и настройки VPN-сервера.</p></details>
   <details class="faq-item"><summary>Как оплатить подписку?</summary><p>Выбери тариф, оплати через ЮKassa и вернись на сайт: QR-код и ссылка появятся автоматически после подтверждения платежа.</p></details>
   <details class="faq-item"><summary>Как подключиться к VPN?</summary><p>После подтверждения оплаты сайт покажет QR-код и ссылку подписки. Их можно открыть или скопировать. Следуй инструкции для своего устройства.</p></details>
