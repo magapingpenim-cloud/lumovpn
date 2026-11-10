@@ -1,20 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Реферальная программа — FlankVPN{% endblock %}
 {% block content %}
-<section class="dashboard-welcome"><div><div class="eyebrow">РЕФЕРАЛЬНАЯ ПРОГРАММА</div><h1>Приглашай друзей</h1><p>Друг впервые оплатит FlankVPN — получишь 30 дней подписки бесплатно.</p></div><div class="welcome-mark"><span style="font-size:42px">🎁</span></div></section>
-<section class="panel" style="padding:24px;margin:22px 0">
- <div class="eyebrow">ТВОЯ ЛИЧНАЯ ССЫЛКА</div>
- <p style="overflow-wrap:anywhere;font-weight:700;font-size:16px;margin:12px 0" id="referral-link">{{ referral_url }}</p>
- <button class="btn primary" type="button" id="copy-referral">Копировать ссылку</button>
- <p class="muted tiny" style="margin-top:12px">Отправь ссылку другу. Бонус начисляется после его первой успешной оплаты и активации VPN.</p>
-</section>
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:18px 0">
- <section class="panel" style="padding:20px"><div class="eyebrow">ПРИГЛАШЕНО</div><div style="font-size:32px;font-weight:800">{{ invited }}</div></section>
- <section class="panel" style="padding:20px"><div class="eyebrow">БОНУСОВ НАЧИСЛЕНО</div><div style="font-size:32px;font-weight:800">{{ rewarded }}</div></section>
- <section class="panel" style="padding:20px"><div class="eyebrow">НАГРАДА</div><div style="font-size:32px;font-weight:800">30 дней</div></section>
-</div>
-<section class="panel" style="padding:22px;margin:18px 0"><h2>Как это работает</h2><ol><li>Скопируй свою ссылку и отправь другу.</li><li>Друг регистрируется по этой ссылке.</li><li>После его первой успешной оплаты тебе автоматически добавляются 30 дней VPN.</li></ol><p class="muted tiny">Один приглашённый пользователь может принести только один бонус. Самоприглашения не засчитываются.</p></section>
-<script>
-(function(){const button=document.getElementById("copy-referral");const link=document.getElementById("referral-link");if(!button||!link)return;button.addEventListener("click",async()=>{const value=link.textContent.trim();try{await navigator.clipboard.writeText(value);button.textContent="Скопировано ✓";}catch(e){window.prompt("Скопируй реферальную ссылку:",value);}});})();
-</script>
+<section class="referral-hero"><div class="eyebrow">РЕФЕРАЛЬНАЯ ПРОГРАММА</div><h1>Приглашай друзей</h1><p>Друг впервые оплатит FlankVPN и получит активную подписку — тебе начислим <strong>30 дней бесплатно</strong>.</p></section>
+<section class="referral-link-card"><div class="eyebrow">ТВОЯ ЛИЧНАЯ ССЫЛКА</div><p id="referral-link" class="referral-url">{{ referral_url }}</p><button class="btn primary" type="button" id="copy-referral">Копировать ссылку</button><p class="muted tiny">Отправь ссылку другу. Бонус начисляется только после первой успешной оплаты и активации VPN.</p></section>
+<div class="referral-stats"><section class="referral-stat"><span>ПРИГЛАШЕНО</span><strong>{{ invited }}</strong></section><section class="referral-stat"><span>БОНУСОВ НАЧИСЛЕНО</span><strong>{{ rewarded }}</strong></section><section class="referral-stat"><span>НАГРАДА ЗА ДРУГА</span><strong>30 дней</strong></section></div>
+<section class="referral-how"><h2>Как это работает</h2><ol><li>Скопируй свою ссылку и отправь другу.</li><li>Друг регистрируется по этой ссылке и получает пробные 10 дней.</li><li>После его первой успешной оплаты тебе автоматически добавляются 30 дней VPN.</li></ol><p class="muted tiny">Один приглашённый пользователь может принести только один бонус. Самоприглашения не засчитываются.</p></section>
+<script>(function(){const button=document.getElementById("copy-referral"),link=document.getElementById("referral-link");if(!button||!link)return;button.addEventListener("click",async()=>{const value=link.textContent.trim();try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(value);else{const field=document.createElement("textarea");field.value=value;field.style.position="fixed";field.style.opacity="0";document.body.appendChild(field);field.select();if(!document.execCommand("copy"))throw Error("copy failed");field.remove();}button.textContent="Скопировано ✓";}catch(e){window.prompt("Скопируй реферальную ссылку:",value);}});})();</script>
 {% endblock %}
