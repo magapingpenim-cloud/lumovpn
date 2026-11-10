@@ -101,7 +101,7 @@ def send_subscription_email(order):
   app.logger.exception("Failed to email subscription for order %s to %s.",order.id,order.email)
   return False
 class User(UserMixin,db.Model):
- id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False); google_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); apple_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); h1_client_name=db.Column(db.String(100),unique=True,nullable=True,index=True); subscription_expires_at=db.Column(db.DateTime,nullable=True,index=True); reminder_email_sent_for=db.Column(db.String(32),nullable=True); reminder_telegram_sent_for=db.Column(db.String(32),nullable=True); expiry_notice_telegram_sent_for=db.Column(db.String(32),nullable=True)
+ id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False); google_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); apple_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); h1_client_name=db.Column(db.String(100),unique=True,nullable=True,index=True); subscription_expires_at=db.Column(db.DateTime,nullable=True,index=True); reminder_email_sent_for=db.Column(db.String(32),nullable=True); reminder_telegram_sent_for=db.Column(db.String(32),nullable=True); expiry_notice_telegram_sent_for=db.Column(db.String(32),nullable=True); referral_code=db.Column(db.String(20),unique=True,nullable=True,index=True); referred_by_user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=True,index=True)
  def set_password(self,p): self.password_hash=generate_password_hash(p)
  def check_password(self,p): return check_password_hash(self.password_hash,p)
 class Order(db.Model):
@@ -124,6 +124,17 @@ class PromoCodeRedemption(db.Model):
  order_id=db.Column(db.Integer,db.ForeignKey("order.id"),unique=True,nullable=False)
  redeemed_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
  __table_args__=(db.UniqueConstraint("promo_code_id","user_id",name="uq_promo_redemption_user_code"),)
+class ReferralReward(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ referrer_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False,index=True)
+ referred_user_id=db.Column(db.Integer,db.ForeignKey("user.id"),unique=True,nullable=False,index=True)
+ days=db.Column(db.Integer,nullable=False,default=30)
+ status=db.Column(db.String(20),nullable=False,default="processing")
+ created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+ applied_at=db.Column(db.DateTime,nullable=True)
+ referrer=db.relationship("User",foreign_keys=[referrer_id])
+ referred_user=db.relationship("User",foreign_keys=[referred_user_id])
+
 class EmailVerification(db.Model):
  id=db.Column(db.Integer,primary_key=True)
  email=db.Column(db.String(160),nullable=False,index=True)
@@ -259,6 +270,63 @@ def record_promo_redemption(order):
  except Exception:
   db.session.rollback()
   app.logger.exception("Could not record promo redemption for order %s",order.id)
+def ensure_referral_code(user):
+ if user.referral_code: return user.referral_code
+ for _ in range(10):
+  code=secrets.token_urlsafe(8).replace("-","").replace("_","")[:10].upper()
+  if not User.query.filter_by(referral_code=code).first():
+   user.referral_code=code
+   db.session.commit()
+   return code
+ raise RuntimeError("Could not create a unique referral code.")
+
+def award_referral_reward(order):
+ if not order or order.status!="active" or order.amount<=0 or order.tariff_key in ("trial","referral"): return False
+ referred=db.session.get(User,order.user_id)
+ if not referred or not referred.referred_by_user_id or referred.referred_by_user_id==referred.id: return False
+ if ReferralReward.query.filter_by(referred_user_id=referred.id).first(): return False
+ referrer=db.session.get(User,referred.referred_by_user_id)
+ if not referrer or not referrer.h1_client_name:
+  app.logger.warning("Referral reward skipped: referrer VPN client unavailable for user %s",referred.id)
+  return False
+ reward=ReferralReward(referrer_id=referrer.id,referred_user_id=referred.id,days=30,status="processing")
+ db.session.add(reward)
+ try: db.session.commit()
+ except Exception:
+  db.session.rollback(); app.logger.exception("Could not reserve referral reward"); return False
+ base=os.getenv("H1_API_BASE","").rstrip("/")
+ token=os.getenv("H1_API_TOKEN","").strip()
+ if not base or not token:
+  reward.status="failed"; db.session.commit(); return False
+ headers={"Authorization":"Bearer "+token,"Content-Type":"application/json"}
+ try:
+  response=requests.patch(base+"/edit",headers=headers,json={"name":referrer.h1_client_name,"days":30},timeout=25)
+  response.raise_for_status()
+  data=response.json()
+  if data.get("ok") is False: raise RuntimeError("H1 rejected referral reward.")
+  info=requests.get(base+"/info",headers=headers,params={"name":referrer.h1_client_name},timeout=25)
+  info.raise_for_status()
+  client=info.json().get("client",info.json())
+  expiry=extract_subscription_expiry(client)
+  if expiry: referrer.subscription_expires_at=expiry
+  elif referrer.subscription_expires_at and referrer.subscription_expires_at>datetime.utcnow():
+   referrer.subscription_expires_at=referrer.subscription_expires_at+timedelta(days=30)
+  else: referrer.subscription_expires_at=datetime.utcnow()+timedelta(days=30)
+  reward.status="applied"; reward.applied_at=datetime.utcnow(); db.session.commit()
+  linked=TelegramAccount.query.filter_by(user_id=referrer.id).first()
+  bot_token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
+  if linked and bot_token:
+   try:
+    requests.post("https://api.telegram.org/bot"+bot_token+"/sendMessage",json={"chat_id":linked.telegram_id,"text":"🎁 Твой друг впервые оплатил FlankVPN! Тебе начислено 30 дополнительных дней подписки."},timeout=10).raise_for_status()
+   except Exception: app.logger.exception("Referral reward notification failed")
+  return True
+ except Exception:
+  db.session.rollback()
+  failed=db.session.get(ReferralReward,reward.id)
+  if failed: failed.status="failed"; db.session.commit()
+  app.logger.exception("Could not apply referral reward for referred user %s",referred.id)
+  return False
+
 @app.context_processor
 def globals_(): return {"tariffs":TARIFFS,"payments":PAYMENTS}
 
@@ -347,10 +415,15 @@ def verify_email():
     db.session.delete(pending); db.session.commit(); session.pop("verify_email",None)
     flash("Этот ник или email уже зарегистрирован. Войди в аккаунт.","error")
     return redirect(url_for("login"))
-   user=User(nickname=pending.nickname,email=pending.email,password_hash=pending.password_hash)
+   referrer_id=session.get("referral_referrer_id")
+   referrer=db.session.get(User,referrer_id) if referrer_id else None
+   if not referrer or referrer.email.lower()==pending.email.lower(): referrer=None
+   user=User(nickname=pending.nickname,email=pending.email,password_hash=pending.password_hash,
+    referred_by_user_id=referrer.id if referrer else None)
    db.session.add(user); db.session.flush()
+   ensure_referral_code(user)
    trial=Order(user_id=user.id,nickname=user.nickname,email=user.email,tariff_key="trial",amount=0,payment_method="trial",status="processing")
-   db.session.add(trial); db.session.delete(pending); db.session.commit(); session.pop("verify_email",None); login_user(user)
+   db.session.add(trial); db.session.delete(pending); db.session.commit(); session.pop("verify_email",None); session.pop("referral_referrer_id",None); login_user(user)
    try:
     provision(trial)
     email_sent=send_subscription_email(trial)
@@ -530,6 +603,26 @@ def settings():
    if new_password: current_user.set_password(new_password)
    db.session.commit(); flash("Настройки аккаунта сохранены.","success"); return redirect(url_for("settings"))
  return render_template("settings.html")
+@app.route("/r/<code>")
+def referral_landing(code):
+ referrer=User.query.filter_by(referral_code=code.strip().upper()).first()
+ if not referrer:
+  flash("Реферальная ссылка недействительна.","error")
+  return redirect(url_for("register"))
+ if current_user.is_authenticated:
+  flash("Это твоя собственная ссылка." if current_user.id==referrer.id else "Выйди из аккаунта, чтобы зарегистрироваться по приглашению.","info")
+  return redirect(url_for("dashboard"))
+ session["referral_referrer_id"]=referrer.id
+ return redirect(url_for("register"))
+
+@app.route("/referrals")
+@login_required
+def referrals():
+ code=ensure_referral_code(current_user)
+ invited=User.query.filter_by(referred_by_user_id=current_user.id).count()
+ rewarded=ReferralReward.query.filter_by(referrer_id=current_user.id,status="applied").count()
+ return render_template("referrals.html",referral_url="https://flankvpn.ru/r/"+code,invited=invited,rewarded=rewarded)
+
 @app.route("/dashboard")
 @login_required
 def dashboard(): return render_template("dashboard.html",orders=Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all())
@@ -1023,6 +1116,7 @@ def yookassa_webhook():
   o=db.session.get(Order,order_id)
   provision(o)
   record_promo_redemption(o)
+  award_referral_reward(o)
   if o.email: send_subscription_email(o)
   if o.telegram_id and o.subscription_url and os.getenv("TELEGRAM_BOT_TOKEN","").strip():
    bot_token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
@@ -1508,6 +1602,7 @@ def confirm(oid):
  try:
   o.status="processing"; db.session.commit(); provision(o)
   record_promo_redemption(o)
+  award_referral_reward(o)
   email_sent=send_subscription_email(o) if o.email else False
   telegram_sent=False
   if o.telegram_id and o.subscription_url:
