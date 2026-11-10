@@ -62,7 +62,10 @@ def send_subscription_email(order):
  if not api_key or not sender or not order.email or not sub_url:
   app.logger.error("Subscription email not sent: missing Resend setting, email, or subscription URL for order %s.",order.id)
   return False
- safe_nick=escape(order.nickname or "")
+ display_name=(order.nickname or "").strip()
+ if (not display_name or display_name.startswith("user_")) and order.email:
+  display_name=order.email.split("@",1)[0]
+ safe_nick=escape(display_name or "друг")
  safe_url=escape(sub_url,quote=True)
  subject="Твой бесплатный пробный период FlankVPN готов" if order.tariff_key=="trial" else "Спасибо за оплату — FlankVPN"
  trial_note="<p><strong>Пробный период:</strong> 10 дней бесплатно с момента подключения.</p>" if order.tariff_key=="trial" else ""
@@ -359,9 +362,13 @@ def register():
  if current_user.is_authenticated:
   return redirect(url_for("dashboard"))
  if request.method=="POST":
-  email=request.form.get("email","").strip().lower(); pw=request.form.get("password",""); confirm_pw=request.form.get("confirm_password","")
+  email=request.form.get("email","").strip().lower(); nickname=request.form.get("nickname","").strip(); pw=request.form.get("password",""); confirm_pw=request.form.get("confirm_password","")
   if "@" not in email or len(email)>160 or len(pw)<8:
    flash("Проверь email и пароль (не менее 8 символов).","error")
+  elif len(nickname)<3 or len(nickname)>24 or not all(ch.isalnum() or ch in "_-" for ch in nickname):
+   flash("Ник должен содержать 3–24 символа: буквы, цифры, _ или -.","error")
+  elif User.query.filter(func.lower(User.nickname)==nickname.lower()).first():
+   flash("Этот ник уже занят. Выбери другой.","error")
   elif pw != confirm_pw:
    flash("Пароли не совпадают. Проверь оба поля.","error")
   elif User.query.filter(func.lower(User.email)==email).first():
@@ -382,10 +389,10 @@ def register():
       timeout=15)
     resp.raise_for_status()
     if pending:
-     pending.nickname='user_'+secrets.token_hex(12); pending.password_hash=generate_password_hash(pw); pending.code_hash=generate_password_hash(code)
+     pending.nickname=nickname; pending.password_hash=generate_password_hash(pw); pending.code_hash=generate_password_hash(code)
      pending.expires_at=datetime.utcnow()+timedelta(minutes=10); pending.attempts=0; pending.created_at=datetime.utcnow()
     else:
-     pending=EmailVerification(email=email,nickname="user_"+secrets.token_hex(12),password_hash=generate_password_hash(pw),
+     pending=EmailVerification(email=email,nickname=nickname,password_hash=generate_password_hash(pw),
        code_hash=generate_password_hash(code),expires_at=datetime.utcnow()+timedelta(minutes=10))
      db.session.add(pending)
     db.session.commit()
@@ -481,11 +488,16 @@ def create_social_account(email, provider_sub, provider):
  nickname=base
  while User.query.filter(func.lower(User.nickname)==nickname.lower()).first():
   nickname=(base[:24]+"_"+secrets.token_hex(2))
+ referrer_id=session.get("referral_referrer_id")
+ referrer=db.session.get(User,referrer_id) if referrer_id else None
+ if not referrer or referrer.email.lower()==email: referrer=None
  user=User(nickname=nickname,email=email,password_hash=generate_password_hash(secrets.token_urlsafe(32)),
-  google_sub=provider_sub if provider=="google" else None,apple_sub=provider_sub if provider=="apple" else None)
+  google_sub=provider_sub if provider=="google" else None,apple_sub=provider_sub if provider=="apple" else None,
+  referred_by_user_id=referrer.id if referrer else None)
  db.session.add(user)
  try:
   db.session.flush()
+  ensure_referral_code(user)
   trial=Order(user_id=user.id,nickname=user.nickname,email=user.email,tariff_key="trial",amount=0,payment_method="trial",status="processing")
   db.session.add(trial)
   db.session.commit()
@@ -529,8 +541,9 @@ def finish_social_login(provider, claims):
    flash("Не удалось создать аккаунт. Попробуй позже.","error")
    return redirect(url_for("login"))
  login_user(user)
+ if created: session.pop("referral_referrer_id",None)
  flash("Аккаунт создан. Проверь личный кабинет и статус пробного доступа." if created else "Вход выполнен.","success")
- return redirect(url_for("index"))
+ return redirect(url_for("dashboard"))
 
 @app.route("/auth/google")
 def google_login():
@@ -629,7 +642,10 @@ def referrals():
 
 @app.route("/dashboard")
 @login_required
-def dashboard(): return render_template("dashboard.html",orders=Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all())
+def dashboard():
+ orders=Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all()
+ trial_activated=any(o.tariff_key=="trial" and o.status=="active" for o in orders)
+ return render_template("dashboard.html",orders=orders,trial_activated=trial_activated)
 
 @app.route("/telegram/link-code")
 @login_required
@@ -1055,6 +1071,8 @@ def payment_return(oid):
      o.status="processing"; db.session.commit()
      try:
       provision(o)
+      record_promo_redemption(o)
+      award_referral_reward(o)
       if o.email: send_subscription_email(o)
      except Exception:
       db.session.rollback(); o=db.session.get(Order,oid)
