@@ -541,7 +541,7 @@ def finish_social_login(provider, claims):
    flash("Не удалось создать аккаунт. Попробуй позже.","error")
    return redirect(url_for("login"))
  login_user(user)
- if created: session.pop("referral_referrer_id",None)
+ session.pop("referral_referrer_id",None)
  flash("Аккаунт создан. Проверь личный кабинет и статус пробного доступа." if created else "Вход выполнен.","success")
  return redirect(url_for("dashboard"))
 
