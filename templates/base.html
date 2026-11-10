@@ -20,6 +20,7 @@
         <div class="site-menu-panel">
           <a href="{{ url_for('index') }}">Главная и тарифы</a>
           <a href="{{ url_for('dashboard') }}">Мои заказы и подписки</a>
+          <a href="{{ url_for('referrals') }}">🎁 Пригласить друга</a>
           <a href="{{ url_for('settings') }}">Настройки аккаунта</a>
           <a href="{{ url_for('my_support') }}">Поддержка</a>
           <form method="post" action="{{ url_for('logout') }}"><button type="submit">Выйти</button></form>
