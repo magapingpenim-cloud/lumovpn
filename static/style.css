@@ -830,3 +830,31 @@ img,svg,video { max-width:100%; }
  .theme-toggle{width:36px;min-width:36px!important;height:34px;min-height:34px}
  .site-menu>summary{width:34px;height:34px;padding:7px}
 }
+
+
+/* Consistent header controls: orders as a visible button, centered with theme and menu */
+.nav{min-height:64px}
+.nav>.brand,.nav>nav,.nav>.site-menu{align-self:center!important}
+.nav>nav .nav-orders-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:40px;padding:0 15px;border:1px solid rgba(114,228,210,.34);
+  border-radius:999px;background:rgba(114,228,210,.10);color:var(--ink);
+  font-size:13px;font-weight:800;line-height:1;white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+  transition:background .18s ease,border-color .18s ease,transform .18s ease;
+}
+.nav>nav .nav-orders-btn:hover{background:rgba(114,228,210,.19);border-color:#72e4d2;transform:translateY(-1px)}
+.nav>nav .theme-toggle{width:42px;height:40px;min-height:40px;min-width:42px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center}
+.nav>.site-menu>summary{width:42px;height:40px;display:flex;align-items:center;justify-content:center}
+@media(max-width:760px){
+ .nav{min-height:62px}
+ .nav>nav{align-items:center!important}
+ .nav>nav .nav-orders-btn{min-height:38px;padding:0 10px;font-size:11px}
+ .nav>nav .theme-toggle{width:40px;height:38px;min-width:40px;min-height:38px}
+ .nav>.site-menu>summary{width:40px;height:38px}
+}
+@media(max-width:390px){
+ .nav>nav .nav-orders-btn{padding:0 8px;font-size:10px;gap:4px}
+ .nav>nav .theme-toggle{width:36px;height:36px;min-width:36px;min-height:36px}
+ .nav>.site-menu>summary{width:36px;height:36px}
+}
