@@ -9,7 +9,7 @@
   <meta name="description" content="FlankVPN — простой личный кабинет, удобная подписка и быстрое подключение.">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
   <title>{% block title %}FlankVPN — свобода подключений{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261111') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261112') }}">
 </head>
 <body>
   <div class="site-shell">
@@ -33,7 +33,7 @@
       </a>
       <nav>
         {% if current_user.is_authenticated %}
-          <a href="{{ url_for('dashboard') }}">📦 Мои заказы</a>
+          <a class="nav-orders-btn" href="{{ url_for('dashboard') }}">📦 Мои заказы</a>
         {% else %}
           <a href="{{ url_for('login') }}">🔐 Войти</a>
           <a class="navcta" href="{{ url_for('register') }}">✨ Регистрация <span aria-hidden="true">↗</span></a>
