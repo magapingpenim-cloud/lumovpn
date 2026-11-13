@@ -439,6 +439,7 @@ def verify_email():
     provision(trial)
     email_sent=send_subscription_email(trial)
     notify_admin_telegram(f"🆓 Бесплатный пробный период выдан\nНикнейм: {trial.nickname}\nEmail: {trial.email}\nСрок: 10 дней\nПисьмо со ссылкой: {'отправлено' if email_sent else 'не отправлено — проверь Resend'}")
+    session["show_connect_guide"]=True
     if email_sent:
      flash("Аккаунт создан! Твои первые 10 дней FlankVPN бесплатны. Ссылка также отправлена на email.","success")
     else:
@@ -645,7 +646,8 @@ def referrals():
 def dashboard():
  orders=Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all()
  trial_activated=any(o.tariff_key=="trial" and o.status=="active" for o in orders)
- return render_template("dashboard.html",orders=orders,trial_activated=trial_activated)
+ show_connect_guide=bool(session.pop("show_connect_guide",False))
+ return render_template("dashboard.html",orders=orders,trial_activated=trial_activated,show_connect_guide=show_connect_guide)
 
 @app.route("/telegram/link-code")
 @login_required
