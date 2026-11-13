@@ -7,6 +7,37 @@
 <section class="panel checkout-panel checkout-panel-clean" id="buy"><div class="checkout-title"><div><div class="eyebrow">📦 ПОДПИСКА</div><h2>💳 Выбери тариф</h2><p class="muted tiny">После оплаты доступ появится автоматически.</p></div></div>
 <form method="post" action="{{ url_for('checkout') }}" class="checkout checkout-advanced"><label>Срок подписки<select name="tariff" id="tariff-select">{% for k,t in tariffs.items() if k != 'trial' %}<option value="{{ k }}" data-price="{{ t.price }}" data-months="{{ t.months }}" data-discount="{{ t.discount }}" data-save="{{ t.save }}">{{ t.title }} — {{ t.price }} ₽{% if t.discount %} (−{{ t.discount }}%){% endif %}</option>{% endfor %}</select></label><label class="promo-entry" for="promo-code"><span>🎁 Промокод</span><input id="promo-code" type="text" name="promo_code" placeholder="Введите промокод" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"><small class="muted">Если у тебя есть промокод, введи его здесь — скидка появится автоматически.</small></label><input type="hidden" name="method" value="yookassa"><button class="btn primary">Купить подписку ↗</button></form><div class="checkout-summary" id="checkout-summary" aria-live="polite">Итого: 129 ₽</div><div class="payment-provider-note payment-provider-bottom"><span class="payment-provider-mark">✓</span><span>Безопасная оплата через <strong>ЮKassa</strong></span></div></section>
 {% set ready_orders = orders|selectattr('status','equalto','active')|selectattr('subscription_url')|list %}
+{% if show_connect_guide and ready_orders %}
+<div class="connect-guide-backdrop" id="connect-guide" role="dialog" aria-modal="true" aria-labelledby="connect-guide-title">
+ <section class="connect-guide-card">
+  <button class="connect-guide-close" type="button" aria-label="Закрыть" id="connect-guide-close">×</button>
+  <div class="eyebrow">FLANKVPN · БЫСТРЫЙ СТАРТ</div>
+  <h2 id="connect-guide-title">🎉 Подписка готова!</h2>
+  <p class="muted">Осталось добавить её в приложение — это займёт пару минут.</p>
+  <div class="connect-guide-step"><span>1</span><div><strong>📲 Скачай INCY</strong><p>Установи приложение из App Store на iPhone или iPad.</p><a class="btn secondary full" href="https://apps.apple.com/app/incy/id6756943388" target="_blank" rel="noopener">Скачать INCY в App Store ↗</a></div></div>
+  <div class="connect-guide-step"><span>2</span><div><strong>📋 Скопируй ссылку подписки</strong><p>Нажми кнопку — скопируется твоя личная ссылка.</p><button type="button" class="btn primary full copy-subscription" data-copy-subscription="{{ ready_orders[0].subscription_url }}">Скопировать ссылку</button></div></div>
+  <div class="connect-guide-step"><span>3</span><div><strong>🚀 Добавь ссылку в INCY</strong><p>Открой INCY → нажми «Добавить» → выбери импорт из буфера обмена. После импорта появятся серверы FlankVPN.</p></div></div>
+  <button type="button" class="btn secondary full" id="connect-guide-done">Понятно, начать пользоваться</button>
+ </section>
+</div>
+<style>
+.connect-guide-backdrop{position:fixed;inset:0;z-index:2000;background:rgba(1,12,13,.78);backdrop-filter:blur(9px);display:grid;place-items:center;padding:16px}
+.connect-guide-card{position:relative;width:min(100%,520px);max-height:min(90vh,850px);overflow:auto;padding:clamp(22px,5vw,34px);border:1px solid rgba(114,228,210,.42);border-radius:26px;background:linear-gradient(145deg,#123b38,#0b2425 72%);color:#edfffc;box-shadow:0 28px 90px #0009}
+.connect-guide-card h2{font-size:clamp(25px,6vw,34px);margin:10px 36px 8px 0}
+.connect-guide-card>p{margin:0 0 20px;color:#a8c9c5}
+.connect-guide-close{position:absolute;right:16px;top:14px;border:1px solid #47716c;background:#1a4641;color:#eafffb;border-radius:50%;width:38px;height:38px;font-size:25px;cursor:pointer}
+.connect-guide-step{display:flex;gap:14px;padding:15px 0;border-top:1px solid #ffffff20}
+.connect-guide-step>span{flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#72e4d2;color:#082b29;font-weight:900}
+.connect-guide-step>div{min-width:0;flex:1}
+.connect-guide-step strong{font-size:16px}
+.connect-guide-step p{margin:5px 0 12px;color:#aac8c4;font-size:14px}
+.connect-guide-card .btn{margin-top:4px}
+@media(max-width:480px){.connect-guide-backdrop{padding:10px}.connect-guide-card{padding:22px 18px;border-radius:22px;max-height:88vh}.connect-guide-step{gap:10px}}
+</style>
+<script>
+(()=>{const modal=document.getElementById("connect-guide");if(!modal)return;const close=()=>modal.remove();document.getElementById("connect-guide-close")?.addEventListener("click",close);document.getElementById("connect-guide-done")?.addEventListener("click",close);modal.addEventListener("click",e=>{if(e.target===modal)close()});document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("connect-guide"))close()});})();
+</script>
+{% endif %}
 {% if ready_orders %}<section class="ready-subscriptions" aria-label="Активные подписки"><div class="section-title-row"><div><div class="eyebrow">🔌 ГОТОВО К ПОДКЛЮЧЕНИЮ</div><h2>Твоя подписка</h2></div></div>
 {% for o in ready_orders %}<article class="ready-card"><div class="ready-card-head"><div><span class="status status-active">Подписка активна</span><h3>{{ tariffs[o.tariff_key].title }}</h3><p class="muted tiny">Заказ #{{ o.id }}</p></div><strong class="order-amount">{{ o.amount }} ₽</strong></div><div class="ready-card-body"><a class="ready-qr-link" href="{{ url_for('qr',oid=o.id) }}" target="_blank" rel="noopener"><img class="ready-qr" src="{{ url_for('qr',oid=o.id) }}" alt="QR-код подписки"><span>Открыть QR-код</span></a><div class="ready-actions"><a class="btn primary full" href="{{ o.subscription_url }}" target="_blank" rel="noopener">Открыть ссылку ↗</a><button type="button" class="btn secondary full copy-subscription" data-copy-subscription="{{ o.subscription_url }}">Копировать ссылку</button></div></div></article>{% endfor %}</section>{% endif %}
 <details class="orders-drawer" {% if orders|selectattr('status','equalto','awaiting_payment')|list or orders|selectattr('status','equalto','awaiting_review')|list or orders|selectattr('status','equalto','processing')|list or orders|selectattr('status','equalto','error')|list %}open{% endif %}><summary><span><span class="eyebrow">ИСТОРИЯ</span><strong>Мои заказы и платежи</strong><small>История и статусы заказов · {{ orders|length }}</small></span><span class="drawer-chevron">⌄</span></summary><div class="orders-drawer-content">
