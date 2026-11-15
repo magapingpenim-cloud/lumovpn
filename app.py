@@ -1085,7 +1085,8 @@ def payment_return(oid):
  # dedicated subscription page (QR code + copyable personal URL), never home.
  o=db.session.get(Order,oid)
  if o and o.status=="active" and o.subscription_url:
-  return redirect(url_for("subscription_page",oid=oid))
+  session["show_connect_guide"]=True
+  return redirect(url_for("dashboard"))
  return render_template("payment_return.html",order=o)
 @app.route("/subscription/<int:oid>")
 @login_required
