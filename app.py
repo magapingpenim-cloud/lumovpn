@@ -35,7 +35,7 @@ app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
 oauth = OAuth(app)
 oauth.register(name="google", client_id=os.getenv("GOOGLE_CLIENT_ID"), client_secret=os.getenv("GOOGLE_CLIENT_SECRET"), server_metadata_url="https://accounts.google.com/.well-known/openid-configuration", client_kwargs={"scope":"openid email profile"})
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
-TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"1":{"months":1,"price":129,"title":"1 месяц","discount":0,"save":0},"3":{"months":3,"price":349,"title":"3 месяца","discount":10,"save":38},"12":{"months":12,"price":1239,"title":"12 месяцев","discount":20,"save":309}}
+TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"1":{"months":1,"price":249,"title":"1 месяц","discount":0,"save":0},"3":{"months":3,"price":749,"title":"3 месяца","discount":0,"save":0},"12":{"months":12,"price":2199,"title":"12 месяцев","discount":26,"save":789}}
 PAYMENTS={"sbp":{"title":"СБП","detail":os.getenv("PAYMENT_SBP_PHONE","Настройте PAYMENT_SBP_PHONE")},"card":{"title":"Банковская карта","detail":os.getenv("PAYMENT_CARD_NUMBER","Настройте PAYMENT_CARD_NUMBER")}}
 
 def notify_admin_telegram(message):
