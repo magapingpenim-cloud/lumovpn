@@ -13,10 +13,19 @@
       <span>QR-код подписки</span>
     </div>
     <div class="return-actions">
-      <button class="btn secondary full" type="button" id="copy-subscription" data-value="{{ order.subscription_url }}">Копировать ссылку</button>
-      <a class="btn primary full" href="{{ order.subscription_url }}" target="_blank" rel="noopener noreferrer">Открыть ссылку ↗</a>
+      <button class="btn primary full" type="button" id="copy-subscription" data-value="{{ order.subscription_url }}">📋 Скопировать ссылку подписки</button>
+      <a class="btn secondary full" href="https://apps.apple.com/ae/app/happ-proxy-utility/id6504287215" target="_blank" rel="noopener noreferrer">📲 Скачать Happ в App Store ↗</a>
     </div>
-    <p class="return-hint">Открой ссылку или отсканируй QR-код в совместимом VPN-приложении.</p>
+    <div class="payment-connect-instructions">
+      <h2>Как подключить FlankVPN</h2>
+      <ol>
+        <li><strong>Скачай Happ.</strong><span>Нажми кнопку App Store выше. Проверь, что приложение называется Happ — Proxy Utility, разработчик Flyfrog LLC.</span></li>
+        <li><strong>Скопируй свою ссылку.</strong><span>Нажми «Скопировать ссылку подписки» выше. Если iPhone спросит разрешение на копирование или вставку — разреши.</span></li>
+        <li><strong>Добавь подписку в Happ.</strong><span>Открой Happ, нажми «+» в правом верхнем углу и выбери импорт из буфера обмена (Import from Clipboard). Подписка FlankVPN и список серверов появятся в приложении.</span></li>
+        <li><strong>Подключись.</strong><span>Выбери сервер и нажми подключение. При первом запуске iPhone попросит разрешить добавление VPN-конфигурации — нажми «Разрешить» и подтверди Face ID или кодом устройства.</span></li>
+      </ol>
+    </div>
+    <p class="return-hint">Ссылка персональная — не отправляй её посторонним. Её можно скопировать повторно в личном кабинете.</p>
   </div>
   {% elif order.status=='error' %}
   <div class="payment-return-card">
@@ -36,6 +45,18 @@
   </div>
   {% endif %}
 </section>
+<style>
+.payment-connect-instructions{margin:24px 0 8px;padding:20px;border:1px solid rgba(114,228,210,.28);border-radius:18px;background:rgba(114,228,210,.06);text-align:left}
+.payment-connect-instructions h2{margin:0 0 16px;font-size:20px}
+.payment-connect-instructions ol{list-style:none;counter-reset:connect;display:grid;gap:14px;padding:0;margin:0}
+.payment-connect-instructions li{counter-increment:connect;position:relative;padding-left:42px;min-height:32px}
+.payment-connect-instructions li:before{content:counter(connect);position:absolute;left:0;top:0;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:#72e4d2;color:#092b29;font-weight:900}
+.payment-connect-instructions li strong,.payment-connect-instructions li span{display:block}
+.payment-connect-instructions li strong{margin-bottom:4px}
+.payment-connect-instructions li span{color:var(--muted,#9ab7b4);font-size:14px;line-height:1.55}
+@media(max-width:480px){.payment-connect-instructions{padding:16px}.payment-connect-instructions h2{font-size:18px}}
+</style>
+
 <script>
 (function(){
  const b=document.getElementById("copy-subscription");
