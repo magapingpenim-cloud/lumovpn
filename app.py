@@ -1081,6 +1081,19 @@ def payment_return(oid):
       if o: o.status="error"; o.error_message="Оплата подтверждена, но выдача подписки не удалась."; db.session.commit()
       app.logger.exception("Return-page provisioning failed for order %s",oid)
    except Exception: app.logger.exception("Could not verify payment on return for order %s",oid)
+ # Once payment and provisioning are complete, send the customer to the
+ # dedicated subscription page (QR code + copyable personal URL), never home.
+ o=db.session.get(Order,oid)
+ if o and o.status=="active" and o.subscription_url:
+  return redirect(url_for("subscription_page",oid=oid))
+ return render_template("payment_return.html",order=o)
+@app.route("/subscription/<int:oid>")
+@login_required
+def subscription_page(oid):
+ o=db.session.get(Order,oid)
+ if not o or o.user_id!=current_user.id: abort(404)
+ if o.status!="active" or not o.subscription_url:
+  return redirect(url_for("payment_return",oid=oid))
  return render_template("payment_return.html",order=o)
 @app.route("/payment/<int:oid>/paid",methods=["POST"])
 @login_required
