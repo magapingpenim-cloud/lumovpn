@@ -14,7 +14,8 @@
 <a class="referral-dashboard-banner" href="{{ url_for('referrals') }}"><span class="referral-banner-icon">🎁</span><span><strong>Приглашай друзей — получай 30 дней бесплатно</strong><small>Твоя личная реферальная ссылка и бонусы</small></span><span class="referral-banner-arrow">↗</span></a>
 {% endif %}
 {% set ready_orders = orders|selectattr('status','equalto','active')|selectattr('subscription_url')|list %}
-{% if show_connect_guide and ready_orders %}
+{% set current_subscription = ready_orders[0] if ready_orders else none %}
+{% if show_connect_guide and current_subscription %}
 <div class="connect-guide-backdrop" id="connect-guide" role="dialog" aria-modal="true" aria-labelledby="connect-guide-title">
  <section class="connect-guide-card">
   <button class="connect-guide-close" type="button" aria-label="Закрыть" id="connect-guide-close">×</button>
@@ -23,7 +24,7 @@
   <p class="muted">Осталось добавить её в приложение — это займёт пару минут.</p>
   <div class="connect-guide-step"><span>1</span><div><strong>📲 Скачай INCY</strong><p>Установи приложение из App Store на iPhone или iPad.</p><a class="btn secondary full" href="https://apps.apple.com/app/incy/id6756943388" target="_blank" rel="noopener">Скачать INCY в App Store ↗</a>
   <a class="btn secondary full" href="https://apps.apple.com/ae/app/happ-proxy-utility/id6504287215" target="_blank" rel="noopener">Скачать HAPP в App Store ↗</a></div></div>
-  <div class="connect-guide-step"><span>2</span><div><strong>📋 Скопируй ссылку подписки</strong><p>Нажми кнопку — скопируется твоя личная ссылка.</p><button type="button" class="btn primary full copy-subscription" data-copy-subscription="{{ ready_orders[0].subscription_url }}">Скопировать ссылку</button></div></div>
+  <div class="connect-guide-step"><span>2</span><div><strong>📋 Скопируй ссылку подписки</strong><p>Нажми кнопку — скопируется твоя личная ссылка.</p><button type="button" class="btn primary full copy-subscription" data-copy-subscription="{{ current_subscription.subscription_url }}">Скопировать ссылку</button></div></div>
   <div class="connect-guide-step"><span>3</span><div><strong>🚀 Добавь ссылку в INCY</strong><p>Открой INCY или HAPP → нажми «+» / «Добавить подписку» → вставь скопированную ссылку или отсканируй QR-код. После импорта появятся серверы FlankVPN.</p></div></div>
   <button type="button" class="btn secondary full" id="connect-guide-done">Понятно, начать пользоваться</button>
  </section>
@@ -47,9 +48,9 @@
 </script>
 {% endif %}
 <section class="ready-subscriptions" aria-label="Мои активные подписки">
-  <div class="section-title-row"><div><div class="eyebrow">🔌 ТВОЙ ДОСТУП</div><h2>Активные подписки</h2><p class="muted">Покупка и продление доступны на главной странице в разделе «Тарифы».</p></div></div>
-  {% if ready_orders %}
-    {% for o in ready_orders %}
+  <div class="section-title-row"><div><div class="eyebrow">🔌 ТВОЙ ДОСТУП</div><h2>Твоя подписка</h2><p class="muted">Все продления добавляются к этой же подписке. Покупка и продление доступны на главной странице в разделе «Тарифы».</p></div></div>
+  {% if current_subscription %}
+    {% set o = current_subscription %}
     <article class="ready-card">
       <div class="ready-card-head">
         <div><span class="status status-active">Подписка активна</span><h3>{{ tariffs[o.tariff_key].title }}</h3><p class="muted tiny">Заказ #{{ o.id }} · {{ o.created_at.strftime('%d.%m.%Y') }}</p></div>
@@ -63,7 +64,6 @@
         </div>
       </div>
     </article>
-    {% endfor %}
   {% else %}
     <div class="panel empty-subscriptions">
       <div class="eyebrow">ПОКА ПУСТО</div>
