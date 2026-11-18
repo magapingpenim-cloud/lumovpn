@@ -111,6 +111,15 @@ class Order(db.Model):
  id=db.Column(db.Integer,primary_key=True); user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False); nickname=db.Column(db.String(40),nullable=False); email=db.Column(db.String(160),nullable=False); tariff_key=db.Column(db.String(8),nullable=False); amount=db.Column(db.Integer,nullable=False); payment_method=db.Column(db.String(12),nullable=False); status=db.Column(db.String(24),default="awaiting_payment"); created_at=db.Column(db.DateTime,default=datetime.utcnow); subscription_url=db.Column(db.Text); error_message=db.Column(db.Text); requested_days=db.Column(db.Integer); telegram_id=db.Column(db.String(40),nullable=True,index=True); yookassa_payment_id=db.Column(db.String(100),nullable=True,index=True); promo_code=db.Column(db.String(40),nullable=True); discount_percent=db.Column(db.Integer,nullable=False,default=0)
  user=db.relationship("User",backref=db.backref("orders",lazy=True))
 
+class SubscriptionNotice(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False,index=True)
+ expiry_date=db.Column(db.String(10),nullable=False)
+ days_left=db.Column(db.Integer,nullable=False)
+ channel=db.Column(db.String(12),nullable=False)
+ sent_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+ __table_args__=(db.UniqueConstraint("user_id","expiry_date","days_left","channel",name="uq_subscription_notice_stage"),)
+
 class PromoCode(db.Model):
  id=db.Column(db.Integer,primary_key=True)
  code=db.Column(db.String(40),unique=True,nullable=False,index=True)
@@ -1472,51 +1481,48 @@ def extract_subscription_expiry(client_data):
  except (ValueError,TypeError,OverflowError,OSError):
   return None
 
-def send_expiry_reminder_email(user, expiry):
+def send_subscription_notice_email(user, expiry, days_left):
  api_key=os.getenv("RESEND_API_KEY","").strip()
  sender=os.getenv("RESEND_FROM_EMAIL","").strip()
  if not api_key or not sender or not user.email or user.email.endswith("@telegram.flankvpn.local"):
   return False
- subject="FlankVPN: подписка заканчивается через 2 дня"
+ if days_left>0:
+  subject=f"FlankVPN: до окончания подписки осталось {days_left} дн."
+  headline=f"Осталось {days_left} дн." 
+  detail=f"Твоя подписка FlankVPN заканчивается {expiry.strftime('%d.%m.%Y')}."
+ else:
+  subject="FlankVPN: срок подписки закончился"
+  headline="Подписка закончилась"
+  detail=f"Срок действия подписки истёк {expiry.strftime('%d.%m.%Y')}."
  body=f"""<div style="font-family:Arial,sans-serif;color:#10203a;max-width:560px;margin:auto;padding:24px">
- <h2 style="color:#1769ff">FLANKVPN</h2><h1>Не забудь продлить подписку</h1>
- <p>Привет, {escape(user.nickname or "")}!</p>
- <p>Срок твоей подписки FlankVPN заканчивается <strong>{expiry.strftime("%d.%m.%Y")}</strong>.</p>
- <p>Продли подписку заранее, чтобы VPN-доступ не прерывался.</p>
- <p><a href="https://flankvpn.ru" style="display:inline-block;background:#1769ff;color:white;padding:12px 18px;border-radius:10px;text-decoration:none">Продлить подписку</a></p>
+ <h2 style="color:#159f98">FLANKVPN</h2><h1>{headline}</h1>
+ <p>Привет, {escape(user.nickname or "")}!</p><p>{detail}</p>
+ <p>Чтобы сохранить доступ или снова подключиться, продли подписку на сайте.</p>
+ <p><a href="https://flankvpn.ru" style="display:inline-block;background:#19bcae;color:#062b2a;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:bold">Продлить подписку</a></p>
  </div>"""
- text_body=f"Привет, {user.nickname}! Подписка FlankVPN заканчивается {expiry.strftime('%d.%m.%Y')}. Не забудь продлить её, чтобы VPN-доступ не прерывался: https://flankvpn.ru"
+ text_body=f"Привет, {user.nickname}! {headline}. {detail} Продлить: https://flankvpn.ru"
  try:
   response=requests.post("https://api.resend.com/emails",
    headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json",
-    "Idempotency-Key":f"flankvpn-expiry-email-{user.id}-{expiry.date().isoformat()}"},
+    "Idempotency-Key":f"flankvpn-subscription-notice-{user.id}-{expiry.date().isoformat()}-{days_left}"},
    json={"from":sender,"to":[user.email],"subject":subject,"html":body,"text":text_body},timeout=15)
   response.raise_for_status()
   return True
  except Exception:
-  app.logger.exception("Failed to send subscription expiry email for user %s",user.id)
+  app.logger.exception("Failed to send subscription notice email for user %s at %s days",user.id,days_left)
   return False
 
-def send_expiry_reminder_telegram(chat_id, user, expiry):
+def send_subscription_notice_telegram(chat_id, user, expiry, days_left):
  token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
  if not token or not chat_id: return False
- message=(f"⏰ Напоминание FlankVPN\n\nПривет, {user.nickname}! Твоя подписка заканчивается "
-  f"{expiry.strftime('%d.%m.%Y')} — осталось около двух дней. Не забудь продлить, чтобы VPN не прерывался.\n\n"
-  "Продлить подписку: https://flankvpn.ru")
- try:
-  response=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",
-   json={"chat_id":str(chat_id),"text":message,"disable_web_page_preview":True},timeout=12)
-  response.raise_for_status()
-  return bool(response.json().get("ok"))
- except Exception:
-  app.logger.exception("Failed to send subscription expiry Telegram reminder for user %s",user.id)
-  return False
-
-def send_expired_subscription_telegram(chat_id, user, expiry):
- token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
- if not token or not chat_id: return False
- message=(f"⛔ Подписка FlankVPN закончилась\n\nПривет, {user.nickname}! Срок действия твоей подписки истёк "
-  f"{expiry.strftime('%d.%m.%Y')}. Чтобы снова пользоваться FlankVPN, продли подписку на сайте.")
+ if days_left>0:
+  message=(f"⏰ FlankVPN — осталось {days_left} дн.\n\nПривет, {user.nickname}! "
+   f"Твоя подписка заканчивается {expiry.strftime('%d.%m.%Y')}. "
+   "Продли её заранее, чтобы VPN не отключился.\n\nПродлить: https://flankvpn.ru")
+ else:
+  message=(f"⛔ FlankVPN — подписка закончилась\n\nПривет, {user.nickname}! "
+   f"Срок действия подписки истёк {expiry.strftime('%d.%m.%Y')}. "
+   "Чтобы снова пользоваться VPN, продли подписку.\n\nПродлить: https://flankvpn.ru")
  try:
   response=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",
    json={"chat_id":str(chat_id),"text":message,
@@ -1525,7 +1531,7 @@ def send_expired_subscription_telegram(chat_id, user, expiry):
   response.raise_for_status()
   return bool(response.json().get("ok"))
  except Exception:
-  app.logger.exception("Failed to send expired-subscription Telegram notice for user %s",user.id)
+  app.logger.exception("Failed to send subscription notice Telegram for user %s at %s days",user.id,days_left)
   return False
 
 @app.route("/internal/subscription-reminders",methods=["POST"])
@@ -1536,7 +1542,6 @@ def subscription_reminders():
  if not expected or not supplied or not secrets.compare_digest(expected,supplied):
   abort(403)
  today=datetime.utcnow().date()
- target=today+timedelta(days=2)
  users=User.query.filter(User.h1_client_name.isnot(None)).all()
  sent_email=0; sent_telegram=0; skipped=0
  for user in users:
@@ -1544,7 +1549,6 @@ def subscription_reminders():
    expiry=user.subscription_expires_at
    base=os.getenv("H1_API_BASE","").rstrip("/")
    token=os.getenv("H1_API_TOKEN","").strip()
-   # Refresh from H1 so older accounts can be matched to their actual expiry.
    if base and token and user.h1_client_name:
     try:
      response=requests.get(base+"/info",headers={"Authorization":"Bearer "+token},
@@ -1557,7 +1561,6 @@ def subscription_reminders():
       user.subscription_expires_at=remote_expiry
     except Exception:
      app.logger.warning("Could not refresh H1 expiry for user %s; using stored date",user.id,exc_info=True)
-   # Legacy fallback for users whose H1 response has no expiry field.
    if not expiry:
     latest=Order.query.filter_by(user_id=user.id,status="active").order_by(Order.created_at.desc()).first()
     if latest:
@@ -1569,29 +1572,29 @@ def subscription_reminders():
    if not expiry:
     skipped+=1
     continue
+   days_left=(expiry.date()-today).days
+   # Send a separate notice at 3, 2, 1 days, and once the subscription has expired.
+   if days_left not in (3,2,1) and expiry<=datetime.utcnow():
+    days_left=0
+   elif days_left not in (3,2,1):
+    skipped+=1
+    continue
    expiry_key=expiry.date().isoformat()
    linked=TelegramAccount.query.filter_by(user_id=user.id).first()
    telegram_id=linked.telegram_id if linked else None
    if not telegram_id:
     latest_tg=Order.query.filter_by(user_id=user.id,status="active").filter(Order.telegram_id.isnot(None)).order_by(Order.created_at.desc()).first()
     telegram_id=latest_tg.telegram_id if latest_tg else None
-   # Once the expiry moment has passed, send a single Telegram message with a renewal button.
-   if expiry<=datetime.utcnow():
-    if telegram_id and user.expiry_notice_telegram_sent_for!=expiry_key:
-     if send_expired_subscription_telegram(telegram_id,user,expiry):
-      user.expiry_notice_telegram_sent_for=expiry_key
-    db.session.commit()
-    continue
-   if expiry.date()>target:
-    skipped+=1
-    continue
-   # Retry failed channels daily, but never duplicate a successful send for the same expiry.
-   if user.reminder_email_sent_for!=expiry_key and user.email and not user.email.endswith("@telegram.flankvpn.local"):
-    if send_expiry_reminder_email(user,expiry):
-     user.reminder_email_sent_for=expiry_key; sent_email+=1
-   if telegram_id and user.reminder_telegram_sent_for!=expiry_key:
-    if send_expiry_reminder_telegram(telegram_id,user,expiry):
-     user.reminder_telegram_sent_for=expiry_key; sent_telegram+=1
+   if user.email and not user.email.endswith("@telegram.flankvpn.local"):
+    already=SubscriptionNotice.query.filter_by(user_id=user.id,expiry_date=expiry_key,days_left=days_left,channel="email").first()
+    if not already and send_subscription_notice_email(user,expiry,days_left):
+     db.session.add(SubscriptionNotice(user_id=user.id,expiry_date=expiry_key,days_left=days_left,channel="email"))
+     sent_email+=1
+   if telegram_id:
+    already=SubscriptionNotice.query.filter_by(user_id=user.id,expiry_date=expiry_key,days_left=days_left,channel="telegram").first()
+    if not already and send_subscription_notice_telegram(telegram_id,user,expiry,days_left):
+     db.session.add(SubscriptionNotice(user_id=user.id,expiry_date=expiry_key,days_left=days_left,channel="telegram"))
+     sent_telegram+=1
    db.session.commit()
   except Exception:
    db.session.rollback()
