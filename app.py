@@ -655,8 +655,11 @@ def referrals():
 def dashboard():
  orders=Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all()
  trial_activated=any(o.tariff_key=="trial" and o.status=="active" for o in orders)
- show_connect_guide=bool(session.pop("show_connect_guide",False))
- return render_template("dashboard.html",orders=orders,trial_activated=trial_activated,show_connect_guide=show_connect_guide)
+ expiry=current_user.subscription_expires_at
+ subscription_active=bool(expiry and expiry>datetime.utcnow())
+ latest_subscription=next((o for o in orders if o.status=="active" and o.subscription_url),None)
+ show_connect_guide=bool(session.pop("show_connect_guide",False)) and subscription_active
+ return render_template("dashboard.html",orders=orders,trial_activated=trial_activated,show_connect_guide=show_connect_guide,subscription_active=subscription_active,subscription_expiry=expiry,latest_subscription=latest_subscription)
 
 @app.route("/telegram/link-code")
 @login_required
