@@ -14,7 +14,7 @@
 <a class="referral-dashboard-banner" href="{{ url_for('referrals') }}"><span class="referral-banner-icon">🎁</span><span><strong>Приглашай друзей — получай 30 дней бесплатно</strong><small>Твоя личная реферальная ссылка и бонусы</small></span><span class="referral-banner-arrow">↗</span></a>
 {% endif %}
 {% set ready_orders = orders|selectattr('status','equalto','active')|selectattr('subscription_url')|list %}
-{% set current_subscription = ready_orders[0] if ready_orders else none %}
+{% set current_subscription = latest_subscription if subscription_active else none %}
 {% if show_connect_guide and current_subscription %}
 <div class="connect-guide-backdrop" id="connect-guide" role="dialog" aria-modal="true" aria-labelledby="connect-guide-title">
  <section class="connect-guide-card">
@@ -47,7 +47,14 @@
 (()=>{const modal=document.getElementById("connect-guide");if(!modal)return;const close=()=>modal.remove();document.getElementById("connect-guide-close")?.addEventListener("click",close);document.getElementById("connect-guide-done")?.addEventListener("click",close);modal.addEventListener("click",e=>{if(e.target===modal)close()});document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("connect-guide"))close()});})();
 </script>
 {% endif %}
-<section class="ready-subscriptions" aria-label="Мои активные подписки">
+<style>
+.expired-subscription-card{border-color:rgba(220,80,80,.28)}
+.status-expired{display:inline-flex;align-items:center;padding:8px 13px;border-radius:999px;background:#fff0ed;color:#b42318;font-weight:800;font-size:13px}
+.expired-subscription-notice{width:100%;padding:20px;border:1px solid rgba(220,80,80,.2);border-radius:18px;background:linear-gradient(145deg,rgba(255,241,238,.9),rgba(255,255,255,.96));color:#263044}
+.expired-subscription-notice p{color:#667085;line-height:1.55;margin:9px 0 16px}
+.expired-subscription-notice .btn{margin-top:9px}
+</style>
+<section class="ready-subscriptions" aria-label="Мои подписки">
   <div class="section-title-row"><div><div class="eyebrow">🔌 ТВОЙ ДОСТУП</div><h2>Твоя подписка</h2><p class="muted">Все продления добавляются к этой же подписке. Покупка и продление доступны на главной странице в разделе «Тарифы».</p></div></div>
   {% if current_subscription %}
     {% set o = current_subscription %}
@@ -61,6 +68,22 @@
         <div class="ready-actions">
           <button type="button" class="btn primary full copy-subscription" data-copy-subscription="{{ o.subscription_url }}">📋 Скопировать ссылку</button>
           <a class="btn secondary full" href="{{ url_for('subscription_page',oid=o.id) }}">Открыть подключение ↗</a>
+        </div>
+      </div>
+    </article>
+  {% elif latest_subscription and not subscription_active %}
+    <article class="ready-card expired-subscription-card">
+      <div class="ready-card-head">
+        <div><span class="status status-expired">Подписка истекла</span><h3>Доступ приостановлен</h3>
+          <p class="muted tiny">Срок действия закончился{% if subscription_expiry %} {{ subscription_expiry.strftime('%d.%m.%Y') }}{% endif %}.</p>
+        </div>
+      </div>
+      <div class="ready-card-body">
+        <div class="expired-subscription-notice">
+          <strong>⏳ Подписка FlankVPN закончилась</strong>
+          <p>Серверы временно недоступны. Продли подписку, чтобы восстановить доступ.</p>
+          <a class="btn primary full" href="{{ url_for('index') }}#tariffs">💳 Продлить подписку</a>
+          <a class="btn secondary full" href="https://t.me/flankvpn_bot" target="_blank" rel="noopener">Открыть Telegram-бота ↗</a>
         </div>
       </div>
     </article>
