@@ -1484,24 +1484,6 @@ def extract_subscription_expiry(client_data):
  except (ValueError,TypeError,OverflowError,OSError):
   return None
 
-def set_h1_client_banned(client_name, banned):
- base=os.getenv("H1_API_BASE","").rstrip("/")
- token=os.getenv("H1_API_TOKEN","").strip()
- if not base or not token or not client_name:
-  raise RuntimeError("H1 API is not configured for client status change.")
- action="ban" if banned else "unban"
- url=base+"/clients/"+urllib.parse.quote(client_name,safe="")+"/"+action
- payload={"reason":"FlankVPN subscription expired"} if banned else {}
- response=requests.patch(url,headers={"Authorization":"Bearer "+token,"Content-Type":"application/json"},json=payload,timeout=20)
- if response.status_code==404 and banned:
-  app.logger.warning("H1 client %s already absent while expiring; feed should omit it",client_name)
-  return False
- response.raise_for_status()
- data=response.json() if response.content else {}
- if isinstance(data,dict) and data.get("ok") is False:
-  raise RuntimeError("H1 could not change client status: "+str(data))
- return True
-
 def send_subscription_notice_email(user, expiry, days_left):
  api_key=os.getenv("RESEND_API_KEY","").strip()
  sender=os.getenv("RESEND_FROM_EMAIL","").strip()
@@ -1594,15 +1576,10 @@ def subscription_reminders():
     skipped+=1
     continue
    days_left=(expiry.date()-today).days
-   # Disable expired H1 clients without deleting their identity or UUID.
-   if expiry<=datetime.utcnow():
-    try:
-     set_h1_client_banned(user.h1_client_name,True)
-    except Exception:
-     app.logger.exception("Could not disable expired H1 client for user %s",user.id)
-    days_left=0
    # Send a separate notice at 3, 2, 1 days, and once the subscription has expired.
-   if days_left not in (3,2,1,0):
+   if days_left not in (3,2,1) and expiry<=datetime.utcnow():
+    days_left=0
+   elif days_left not in (3,2,1):
     skipped+=1
     continue
    expiry_key=expiry.date().isoformat()
@@ -1640,8 +1617,6 @@ def provision(o):
   r=requests.patch(base+"/edit",headers=h,json={"name":name,"days":days},timeout=25)
   r.raise_for_status(); d=r.json()
   if d.get("ok") is False: raise RuntimeError(str(d))
-  # Renewal restores the same H1 client; its UUID and subscription URL remain unchanged.
-  set_h1_client_banned(name,False)
  else:
   name="user_"+str(user.id)
   r=requests.post(base+"/create",headers=h,json={"name":name,"days":days,"traffic_limit_gb":0,"device_limit":3},timeout=25)
