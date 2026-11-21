@@ -251,3 +251,15 @@ body{background-color:var(--paper)!important}
 @media(max-width:800px){.brand{font-size:clamp(26px,7vw,34px)!important;letter-spacing:-1.5px!important}.brand-dot{width:9px!important;height:9px!important;margin-top:10px!important}}
 /* Blend the source artwork's near-white canvas into the site's warm paper background */
 .hero-visual img{mix-blend-mode:multiply!important;background:transparent!important}
+
+/* Home page: display the user's supplied full-page artwork as-is, with no live UI layered over it */
+body:has(.homepage-art-only) .nav,
+body:has(.homepage-art-only) .site-footer,
+body:has(.homepage-art-only) .support-launch,
+body:has(.homepage-art-only) .support-panel,
+body:has(.homepage-art-only) .site-shell:before,
+body:has(.homepage-art-only) .site-shell:after{display:none!important}
+body:has(.homepage-art-only) .site-shell{max-width:none!important;width:100%!important;margin:0!important;padding:0!important;overflow:visible!important;background:#f7f3ed!important}
+body:has(.homepage-art-only) .container{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+.homepage-art-only{width:100%;margin:0 auto;padding:0;background:#f7f3ed;line-height:0}
+.homepage-art-only img{display:block;width:100%;max-width:707px;height:auto;margin:0 auto;object-fit:contain;image-rendering:auto}
