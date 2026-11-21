@@ -706,7 +706,7 @@ def telegram_webhook(secret):
   if inline is not None:
    payload["reply_markup"]={"inline_keyboard":inline}
   elif keyboard:
-   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"🔐 Моя подписка"}],[{"text":"💬 Поддержка"}]],"resize_keyboard":True}
+   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"🔐 Моя подписка"},{"text":"🎟 Промокод"}],[{"text":"💬 Поддержка"},{"text":"🔗 Привязать аккаунт"}]],"resize_keyboard":True}
   try:
    resp=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",json=payload,timeout=8)
    resp.raise_for_status()
@@ -766,6 +766,11 @@ def telegram_webhook(secret):
      send("Не удалось автоматически выдать пробные 10 дней. Попробуй позже или напиши в поддержку FlankVPN.")
   elif callback_data=="show_tariffs":
    show_tariffs()
+  elif callback_data=="enter_promo":
+   draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
+   if not draft: draft=TelegramCheckoutDraft(telegram_id=telegram_id); db.session.add(draft)
+   draft.awaiting_promo=True; draft.updated_at=datetime.utcnow(); db.session.commit()
+   send("Отправь промокод одним сообщением. Например: BANYA")
   elif callback_data=="support_info":
    send("💬 Поддержка FlankVPN поможет с подключением, оплатой и настройкой. Напиши /support и свой вопрос.")
   elif callback_data.startswith("tariff:"):
@@ -809,8 +814,10 @@ def telegram_webhook(secret):
          if User.query.filter_by(nickname=internal_nick).first(): internal_nick=("tg_"+telegram_id[-20:]+"_"+secrets.token_hex(3))[:40]
          shadow=User(nickname=internal_nick,email=shadow_email,password_hash=generate_password_hash(secrets.token_urlsafe(32)))
          db.session.add(shadow); db.session.flush()
-       amount=int(tariff["price"])
-       order=Order(user_id=shadow.id,nickname=shadow.nickname,email=(shadow.email if linked else ""),telegram_id=telegram_id,tariff_key=key,amount=amount,payment_method="yookassa",status="awaiting_payment")
+       promo=PromoCode.query.filter_by(code=(draft.promo_code or "").upper(),active=True).first() if draft.promo_code else None
+       discount=int(promo.discount_percent) if promo and (not promo.expires_at or promo.expires_at>=datetime.utcnow()) else 0
+       amount=int(round(tariff["price"]*(100-discount)/100))
+       order=Order(user_id=shadow.id,nickname=shadow.nickname,email=(shadow.email if linked else ""),telegram_id=telegram_id,tariff_key=key,amount=amount,payment_method="yookassa",status="awaiting_payment",promo_code=promo.code if promo and discount else None,discount_percent=discount)
        db.session.add(order)
        db.session.flush()
        response=requests.post("https://api.yookassa.ru/v3/payments",
@@ -828,7 +835,7 @@ def telegram_webhook(secret):
        if not payment_id or not confirmation_url: raise RuntimeError("ЮKassa не вернула ID платежа или ссылку оплаты.")
        order.yookassa_payment_id=payment_id
        db.session.commit()
-       send(f"🧾 Заказ FlankVPN #{order.id}\n\nТариф: {tariff['title']}\n"+f"К оплате: {order.amount} ₽\nСпособ оплаты: ЮKassa\n\nЗаверши оплату на защищённой странице ЮKassa. Не отправляй данные карты в чат. После подтверждения платежа подписка автоматически придёт сюда отдельным сообщением.",
+       send(f"🧾 Заказ FlankVPN #{order.id}\n\nТариф: {tariff['title']}\n"+(f"Промокод {order.promo_code}: скидка {order.discount_percent}%\n" if order.discount_percent else "")+f"К оплате: {order.amount} ₽\nСпособ оплаты: ЮKassa\n\nЗаверши оплату на защищённой странице ЮKassa. Не отправляй данные карты в чат. После подтверждения платежа подписка автоматически придёт сюда отдельным сообщением.",
         keyboard=False,inline=[[{"text":"💳 Перейти к оплате","url":confirmation_url}]])
       except Exception as exc:
        db.session.rollback()
@@ -877,9 +884,11 @@ def telegram_webhook(secret):
    "💬 Быстрая поддержка — поможем с настройкой\n"
    "📱 До 3 устройств в одной подписке\n"
    "🌐 Удобное подключение к сайтам и приложениям\n\n"
+   "🎁 Подарок на первую покупку: промокод DUBAI — скидка 30%!\n\n"
    "Попробуй FlankVPN и выбери подходящий тариф.")
   welcome_buttons=[[{"text":"🎁 Бесплатные 10 дней","callback_data":"claim_trial"}],
    [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],
+   [{"text":"🌐 Выбрать тариф","callback_data":"show_tariffs"},{"text":"🎟 Промокод","callback_data":"enter_promo"}],
    [{"text":"💬 Поддержка","callback_data":"support_info"}]]
   image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
   if image_url:
@@ -898,6 +907,11 @@ def telegram_webhook(secret):
   if not draft: draft=TelegramCheckoutDraft(telegram_id=telegram_id); db.session.add(draft)
   draft.awaiting_promo=True; draft.updated_at=datetime.utcnow(); db.session.commit()
   send("Отправь промокод одним сообщением. Например: BANYA")
+ elif text_in in ("🌐 Тарифы","/tariffs"):
+  show_tariffs()
+ elif text_in in ("📦 Мои заказы","/orders"):
+  linked=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+  order_filter=or_(Order.telegram_id==telegram_id,Order.user_id==linked.user_id) if linked else (Order.telegram_id==telegram_id)
   orders=Order.query.filter(order_filter).order_by(Order.created_at.desc()).limit(10).all()
   if not orders: send("Заказов пока нет. Выбери «🌐 Тарифы», чтобы оформить подписку.")
   else:
@@ -926,6 +940,29 @@ def telegram_webhook(secret):
    if account_for_user and account_for_user.telegram_id!=telegram_id:
     send("К этому аккаунту FlankVPN уже привязан другой Telegram. Обратись в поддержку для смены привязки.")
    elif existing and existing.user_id!=link.user_id:
+    send("Этот Telegram уже привязан к другому аккаунту FlankVPN. Сначала отвяжи его через поддержку.")
+   else:
+    if not existing: db.session.add(TelegramAccount(telegram_id=telegram_id,user_id=link.user_id))
+    link.used=True
+    try:
+     db.session.commit()
+     send("Готово! Telegram привязан к аккаунту FlankVPN. Теперь можешь выбрать тариф и оформить заказ.")
+    except Exception:
+     db.session.rollback()
+     app.logger.exception("Could not link Telegram account")
+     send("Не удалось привязать аккаунт. Попробуй ещё раз.")
+ elif text_in in ("🔗 Привязать аккаунт","/link"):
+  send("Войди на https://flankvpn.ru, затем открой https://flankvpn.ru/telegram/link-code и отправь боту команду /link КОД.")
+ elif text_in in ("💬 Поддержка","/support"):
+  send("Чтобы написать в поддержку, отправь сообщение командой:\n/support Твой вопрос")
+ elif cmd=="/support" and len(arg)>=3:
+  account=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+  user=db.session.get(User,account.user_id) if account else None
+  username=(from_user.get("username") or "").strip()
+  nickname=user.nickname if user else ("@"+username if username else str(from_user.get("first_name") or "Telegram-клиент"))
+  email=user.email if user else ""
+  item=SupportMessage(user_id=user.id if user else None,nickname=nickname,email=email,message="[Telegram] "+arg[:1900])
+  db.session.add(item)
   try:
    db.session.commit()
    notify_admin_telegram(f"✉️ Обращение из Telegram #{item.id}\nОт: {nickname}\nEmail: {email or 'не привязан'}\nСообщение: {arg[:1000]}")
@@ -968,8 +1005,18 @@ def checkout():
   promo=PromoCode.query.filter_by(code=entered_code,active=True).first()
   if not promo or (promo.expires_at and promo.expires_at<datetime.utcnow()) or (promo.usage_limit is not None and PromoCodeRedemption.query.filter_by(promo_code_id=promo.id).count()>=promo.usage_limit):
    flash("Промокод недействителен или срок его действия истёк.","error"); return redirect(url_for("dashboard")+"#buy")
-  else:
-   send("Выбери пункт меню или используй /start.")
+  if PromoCodeRedemption.query.filter_by(promo_code_id=promo.id,user_id=current_user.id).first():
+   flash("Ты уже использовал этот промокод.","error"); return redirect(url_for("dashboard")+"#buy")
+  discount=int(promo.discount_percent)
+  if discount<1 or discount>90: flash("Некорректная скидка по промокоду.","error"); return redirect(url_for("dashboard")+"#buy")
+  amount=int(round(t["price"]*(100-discount)/100))
+ o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=amount,payment_method="yookassa",status="awaiting_payment",promo_code=promo.code if promo else None,discount_percent=discount)
+ db.session.add(o)
+ db.session.commit()
+ return redirect(url_for("payment",oid=o.id))
+
+@app.route("/promo/preview",methods=["POST"])
+@login_required
 def promo_preview():
  data=request.get_json(silent=True) or {}
  code=str(data.get("code") or "").strip().upper()
