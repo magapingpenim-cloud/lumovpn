@@ -1,66 +1,46 @@
 {% extends "base.html" %}
 {% block title %}FlankVPN — свободный интернет без ограничений{% endblock %}
 {% block content %}
-<section class="hero hero-advanced" id="home">
-  <div class="hero-copy">
-    <div class="eyebrow"><span class="live-dot"></span> FLANKVPN · ТВОЙ ИНТЕРНЕТ</div>
-    <h1>Свободный<br>интернет.<br><span>Без ограничений.</span></h1>
-    <p>Быстрый, безопасный и стабильный VPN для работы, общения, игр и путешествий.</p>
-    <div class="actions">
-      {% if not current_user.is_authenticated %}<a class="btn primary" href="{{ url_for('register') }}">Начать бесплатно ↗</a>{% elif current_user.orders|selectattr('tariff_key','equalto','trial')|selectattr('status','equalto','active')|list %}<a class="btn primary" href="{{ url_for('referrals') }}">Пригласить друга ↗</a>{% else %}<a class="btn primary" href="#tariffs">Выбрать тариф ↗</a>{% endif %}
-      <a class="btn secondary" href="#tariffs">Тарифы</a>
+<section class="editorial-hero" id="home">
+  <div class="editorial-copy">
+    <div class="editorial-kicker">VPN-СЕРВИС НОВОГО ПОКОЛЕНИЯ <span></span></div>
+    <h1>СВОБОДНЫЙ<br>ИНТЕРНЕТ.<br><em>БЕЗ ОГРАНИЧЕНИЙ.</em></h1>
+    <p>Быстрый, безопасный и стабильный VPN<br class="desktop-break"> для работы, игр и путешествий.</p>
+    <div class="editorial-actions">
+      {% if not current_user.is_authenticated %}
+        <a class="editorial-button dark" href="{{ url_for('register') }}">Начать бесплатно ↗</a>
+      {% elif current_user.orders|selectattr('tariff_key','equalto','trial')|selectattr('status','equalto','active')|list %}
+        <a class="editorial-button dark" href="{{ url_for('referrals') }}">Пригласить друга ↗</a>
+      {% else %}
+        <a class="editorial-button dark" href="#tariffs">Выбрать тариф ↗</a>
+      {% endif %}
+      <a class="editorial-button outline" href="#tariffs">Тарифы</a>
     </div>
-    <div class="checks"><span>✓ 10 дней пробного доступа</span><span>✓ QR и ссылка подписки</span><span>✓ Поддержка</span></div>
   </div>
-  <div class="hero-orbit" aria-label="Визуальный знак FlankVPN">
-    <div class="orbit-ring orbit-ring-one"></div><div class="orbit-ring orbit-ring-two"></div>
-    <div class="orbit-core"><img src="{{url_for('static', filename='flankvpn-logo.svg')}}" alt="FlankVPN"><span>FlankVPN</span><small>ПОДКЛЮЧЕНО</small></div>
-    <div class="orbit-chip chip-top">● Защищённое соединение</div><div class="orbit-chip chip-bottom">VPN · БЕЗ ГРАНИЦ</div>
+  <div class="editorial-art">
+    <img src="{{ url_for('static', filename='hero-statue.svg') }}" alt="Мраморная статуя в бирюзовых очках">
+    <div class="art-note">FLANKVPN®<br>EST. 2026<br><span>↗</span></div>
+  </div>
+  <div class="editorial-benefits">
+    <div class="benefit"><span class="benefit-icon">ϟ</span><div><strong>Высокая скорость</strong><p>Стабильное соединение<br>без лагов</p></div></div>
+    <div class="benefit"><span class="benefit-icon">♙</span><div><strong>Полная приватность</strong><p>Шифрование трафика<br>и защита данных</p></div></div>
+    <div class="benefit"><span class="benefit-icon">▣</span><div><strong>На всех устройствах</strong><p>Windows, macOS, iOS,<br>Android и другие</p></div></div>
+    <div class="benefit-index">↗ <i>/01</i></div>
   </div>
 </section>
-<div class="trust-strip">
-  <div><strong>10 дней</strong><span>пробного доступа</span></div>
-  <div><strong>3 тарифа</strong><span>выбери свой срок</span></div>
-  <div><strong>QR + ссылка</strong><span>быстрое подключение</span></div>
-</div>
-<section class="pricing-section" id="tariffs">
-  <div class="section-heading"><div class="eyebrow">01 / ТАРИФЫ</div><h2>Тарифы.<br><em>Выбери свой.</em></h2><p>Понятная стоимость, без скрытых условий.</p></div>
+<section class="editorial-tariffs" id="tariffs">
+  <div class="editorial-section-head"><span>02 / ТАРИФЫ</span><h2>ТАРИФЫ.<br><em>ВЫБЕРИ СВОЙ.</em></h2></div>
   <div class="plans plans-advanced">
     {% for k,t in tariffs.items() if k != 'trial' %}
     <article class="plan plan-advanced {% if k=='3' %}plan-best{% endif %}">
       {% if k=='3' %}<b class="popular">Выгодно</b>{% endif %}
       <div class="plan-period">{{'01' if k=='1' else ('03' if k=='3' else '12')}} МЕСЯЦ{{' ' if k=='1' else 'ЕВ'}}</div>
-      <h3>{{t.title}}</h3>
-      <div class="price-row"><div class="price">{{t.price}} ₽</div>{% if t.discount %}<span class="discount-pill">−{{t.discount}}%</span>{% endif %}</div>
-      <p class="price-month">≈ {{(t.price / (t.months or 1))|round(0)|int}} ₽/мес</p>
+      <h3>{{t.title}}</h3><div class="price">{{t.price}} ₽</div>
       <ul><li>Все серверы</li><li>Высокая скорость</li><li>Поддержка 24/7</li></ul>
-      {% if current_user.is_authenticated %}<form method="post" action="{{ url_for('checkout') }}"><input type="hidden" name="tariff" value="{{ k }}"><button class="btn {% if k=='3' %}primary{% else %}secondary{% endif %}" type="submit">Выбрать ↗</button></form>{% else %}<a class="btn {% if k=='3' %}primary{% else %}secondary{% endif %}" href="{{url_for('register')}}">Выбрать ↗</a>{% endif %}
-    </article>
-    {% endfor %}
-  </div>
-  <p class="muted tiny pricing-note">Пробный доступ на 10 дней доступен после регистрации. Оплата и активация выполняются через ЮKassa.</p>
-</section>
-<section class="steps-section" id="connect">
-  <div class="section-heading"><div class="eyebrow">02 / ПОДКЛЮЧЕНИЕ</div><h2>Подключение.<br><em>Просто и быстро.</em></h2></div>
-  <div class="steps-grid">
-    <div class="step"><span>01</span><div><h3>Выбери платформу</h3><p>Windows, macOS, iOS или Android.</p></div></div>
-    <div class="step"><span>02</span><div><h3>Скачай и установи</h3><p>Установи совместимый VPN-клиент.</p></div></div>
-    <div class="step"><span>03</span><div><h3>Войди в аккаунт</h3><p>Открой подписку и подключись по QR или ссылке.</p></div></div>
+      {% if current_user.is_authenticated %}<form method="post" action="{{ url_for('checkout') }}"><input type="hidden" name="tariff" value="{{ k }}"><button class="editorial-button dark" type="submit">Выбрать ↗</button></form>{% else %}<a class="editorial-button dark" href="{{url_for('register')}}">Выбрать ↗</a>{% endif %}
+    </article>{% endfor %}
   </div>
 </section>
-<section class="feature-section" id="about">
-  <div class="section-heading"><div class="eyebrow">03 / О ПРОЕКТЕ</div><h2>FlankVPN.<br><em>Больше, чем VPN.</em></h2><p>Управление подпиской, заказами и поддержкой — в одном личном кабинете.</p></div>
-  <div class="feature-grid">
-    <article class="feature-card"><div class="feature-icon">↗</div><h3>Быстрый старт</h3><p>Создай аккаунт и получи возможность начать с пробного доступа.</p><span class="feature-number">01 / START</span></article>
-    <article class="feature-card"><div class="feature-icon">⌘</div><h3>Подписка под рукой</h3><p>Ссылка подписки и QR-код доступны в личном кабинете.</p><span class="feature-number">02 / ACCESS</span></article>
-    <article class="feature-card"><div class="feature-icon">◷</div><h3>Поддержка</h3><p>Если возникнут вопросы, напиши команде FlankVPN.</p><span class="feature-number">03 / SUPPORT</span></article>
-  </div>
-</section>
-<section class="faq-section" id="support">
-  <div class="section-heading"><div class="eyebrow">04 / ПОДДЕРЖКА</div><h2>Мы на связи.</h2><p>Ответим на вопросы и поможем с подключением.</p></div>
-  <details class="faq-item"><summary>Как получить пробный доступ?</summary><p>Зарегистрируйся и подтверди email. Пробный доступ рассчитан на 10 дней; его выдача зависит от доступности и настройки VPN-сервера.</p></details>
-  <details class="faq-item"><summary>Как оплатить подписку?</summary><p>Выбери тариф, оплати через ЮKassa и вернись на сайт: QR-код и ссылка появятся после подтверждения платежа.</p></details>
-  <details class="faq-item"><summary>Как подключиться?</summary><p>Используй ссылку подписки или QR-код из личного кабинета в совместимом VPN-клиенте.</p></details>
-</section>
-{% if not current_user.is_authenticated %}<section class="callout callout-advanced"><div><div class="eyebrow">ГОТОВ НАЧАТЬ?</div><h2>Начни с пробного доступа</h2><p>Зарегистрируйся и посмотри, как устроен FlankVPN.</p></div><a class="btn primary" href="{{url_for('register')}}">Создать аккаунт ↗</a></section>{% endif %}
+<section class="editorial-lower" id="connect"><span>03 / ПОДКЛЮЧЕНИЕ</span><h2>ПОДКЛЮЧЕНИЕ.<br><em>ПРОСТО И БЫСТРО.</em></h2><div class="editorial-steps"><p><b>01</b> Выбери платформу — Windows, macOS, iOS, Android</p><p><b>02</b> Скачай и установи совместимый VPN-клиент</p><p><b>03</b> Войди в аккаунт и подключись</p></div></section>
+<section class="editorial-lower" id="support"><span>04 / ПОДДЕРЖКА</span><h2>МЫ НА СВЯЗИ.</h2><p>Ответим на любой вопрос и поможем с подключением.</p><a class="editorial-button dark" href="{{ url_for('my_support') if current_user.is_authenticated else url_for('login') }}">Открыть поддержку ↗</a></section>
 {% endblock %}
