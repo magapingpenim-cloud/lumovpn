@@ -22,7 +22,7 @@ html,body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,He
 .hero-visual{position:relative;align-self:center;height:100%;min-height:620px;display:flex;align-items:center;justify-content:center}
 .hero-teal-block{position:absolute;z-index:0;left:4%;top:22%;width:19%;height:26%;background:var(--teal)}
 .hero-black-block{position:absolute;z-index:0;left:18%;top:15%;width:80%;height:75%;background:#050606;transform:skew(-8deg)}
-.hero-visual img{position:relative;z-index:1;width:112%;height:100%;max-height:760px;object-fit:contain;object-position:center bottom;filter:grayscale(1) contrast(1.08)}
+.hero-visual img{position:relative;z-index:1;width:112%;height:100%;max-height:760px;object-fit:contain;object-position:center bottom;filter:contrast(1.08)}
 .visual-corner{position:absolute;z-index:2;width:38px;height:70px;border-color:#fff;border-style:solid;opacity:.9}.visual-corner-a{left:18%;bottom:19%;border-width:1px 0 0 1px}.visual-corner-b{right:0;top:26%;border-width:1px 0 0 1px}.visual-cross{position:absolute;z-index:2;left:13%;bottom:11%;color:#fff;font-size:46px;font-weight:200}
 .hero-benefits{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1.15fr .45fr;align-items:center;gap:25px;border-top:1px solid var(--line);padding:26px 12px 10px 20px}
 .benefit-item{display:flex;align-items:flex-start;gap:28px}.benefit-symbol{font-size:42px;line-height:1}.benefit-item strong{font-size:clamp(16px,1.5vw,23px);font-weight:800}.benefit-item p{margin:6px 0 0;color:#414141;font-size:clamp(13px,1.25vw,20px);line-height:1.35}
