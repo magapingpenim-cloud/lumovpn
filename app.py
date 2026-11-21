@@ -935,14 +935,8 @@ def telegram_webhook(secret):
    app.logger.exception("Could not save Telegram support message")
    send("Не получилось сохранить обращение. Попробуй ещё раз позже.")
  else:
-  draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
-  return {"ok":True},200
- except Exception:
-  db.session.rollback()
-  o=db.session.get(Order,order_id)
-  if o: o.status="error"; o.error_message="Оплата подтверждена, но выдача подписки не удалась; проверь админку." ; db.session.commit()
-  app.logger.exception("Paid order %s could not be provisioned",order_id)
-  return {"error":"subscription provisioning failed"},500
+  send("Выбери пункт меню или используй /start.")
+ return {"ok":True}
 @app.route("/payment-sbp-qr.png")
 def payment_sbp_qr():
  payment_url="https://www.tbank-online.com/rm/r_vAnkhgISyw.ZkhuMWpXtK/UbHFv58761"
