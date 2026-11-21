@@ -263,3 +263,14 @@ body:has(.homepage-art-only) .site-shell{max-width:none!important;width:100%!imp
 body:has(.homepage-art-only) .container{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
 .homepage-art-only{width:100%;margin:0 auto;padding:0;background:#f7f3ed;line-height:0}
 .homepage-art-only img{display:block;width:100%;max-width:707px;height:auto;margin:0 auto;object-fit:contain;image-rendering:auto}
+
+/* Homepage: the supplied full-page artwork is the entire visual landing page */
+body:has(.homepage-art-only) .nav,
+body:has(.homepage-art-only) .support-launch,
+body:has(.homepage-art-only) .support-panel,
+body:has(.homepage-art-only) .site-footer,
+body:has(.homepage-art-only) .footer{display:none!important}
+body:has(.homepage-art-only) .site-shell{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#f7f3ed!important}
+body:has(.homepage-art-only) main.container{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+.homepage-art-only{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;line-height:0!important;background:#f7f3ed!important}
+.homepage-art-only img{display:block!important;width:100%!important;height:auto!important;max-width:none!important;margin:0 auto!important;object-fit:contain!important;mix-blend-mode:normal!important}
