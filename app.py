@@ -158,6 +158,16 @@ class EmailVerification(db.Model):
  created_at=db.Column(db.DateTime,default=datetime.utcnow)
 
 
+class PasswordResetToken(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False,index=True)
+ token_hash=db.Column(db.String(255),nullable=False,unique=True)
+ expires_at=db.Column(db.DateTime,nullable=False,index=True)
+ used_at=db.Column(db.DateTime,nullable=True)
+ created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+ user=db.relationship("User")
+
+
 class GameState(db.Model):
  id=db.Column(db.Integer,primary_key=True)
  user_id=db.Column(db.Integer,db.ForeignKey("user.id"),unique=True,nullable=False)
@@ -611,6 +621,62 @@ def login():
   if u and u.check_password(request.form.get("password","")): login_user(u); return redirect(url_for("index"))
   flash("Неверный email или пароль.","error")
  return render_template("auth.html",mode="login")
+
+@app.route("/forgot-password",methods=["GET","POST"])
+@limiter.limit("3 per hour",methods=["POST"])
+def forgot_password():
+ if current_user.is_authenticated:
+  return redirect(url_for("dashboard"))
+ if request.method=="POST":
+  email=(request.form.get("email") or "").strip().lower()
+  user=User.query.filter(func.lower(User.email)==email).first() if email else None
+  if user:
+   api_key=os.getenv("RESEND_API_KEY","").strip()
+   sender=os.getenv("RESEND_FROM_EMAIL","").strip()
+   if api_key and sender:
+    raw_token=secrets.token_urlsafe(32)
+    reset=PasswordResetToken(user_id=user.id,token_hash=generate_password_hash(raw_token),expires_at=datetime.utcnow()+timedelta(minutes=30))
+    db.session.add(reset); db.session.commit()
+    reset_url=url_for("reset_password",token=raw_token,_external=True)
+    try:
+     response=requests.post("https://api.resend.com/emails",headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json"},json={"from":sender,"to":[user.email],"subject":"Восстановление пароля FlankVPN","html":f'<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:28px;color:#17243a"><h2>Сброс пароля FlankVPN</h2><p>Мы получили запрос на изменение пароля для аккаунта {escape(user.nickname)}.</p><p><a href="{escape(reset_url,quote=True)}">Изменить пароль</a></p><p>Ссылка действует 30 минут и используется один раз. Если это был не ты, проигнорируй письмо.</p></div>',"text":f"Измени пароль FlankVPN по ссылке (действует 30 минут): {reset_url}"},timeout=15)
+     response.raise_for_status()
+    except Exception:
+     db.session.delete(reset); db.session.commit()
+     app.logger.exception("Password reset email failed for user %s",user.id)
+   else:
+    app.logger.error("Password reset unavailable: missing Resend configuration.")
+  flash("Если аккаунт с таким email существует, мы отправили ссылку для смены пароля. Проверь почту и папку «Спам».","success")
+ return render_template("password_reset_request.html")
+
+@app.route("/reset-password/<token>",methods=["GET","POST"])
+@limiter.limit("5 per minute",methods=["POST"])
+def reset_password(token):
+ rows=PasswordResetToken.query.filter_by(used_at=None).order_by(PasswordResetToken.created_at.desc()).limit(20).all()
+ reset=next((row for row in rows if row.expires_at>datetime.utcnow() and check_password_hash(row.token_hash,token)),None)
+ if not reset:
+  flash("Ссылка недействительна или истекла. Запроси восстановление пароля ещё раз.","error")
+  return redirect(url_for("forgot_password"))
+ if request.method=="POST":
+  password=request.form.get("password") or ""
+  confirm=request.form.get("confirm_password") or ""
+  if len(password)<8:
+   flash("Пароль должен содержать не менее 8 символов.","error")
+  elif password!=confirm:
+   flash("Пароли не совпадают.","error")
+  else:
+   user=db.session.get(User,reset.user_id)
+   if not user:
+    flash("Аккаунт не найден. Обратись в поддержку.","error")
+    return redirect(url_for("login"))
+   user.set_password(password)
+   reset.used_at=datetime.utcnow()
+   PasswordResetToken.query.filter(PasswordResetToken.user_id==user.id,PasswordResetToken.id!=reset.id,PasswordResetToken.used_at.is_(None)).update({PasswordResetToken.used_at:datetime.utcnow()},synchronize_session=False)
+   db.session.commit()
+   flash("Пароль изменён. Теперь войди с email и новым паролем.","success")
+   return redirect(url_for("login"))
+ return render_template("password_reset_form.html")
+
 @app.route("/logout",methods=["POST"])
 @login_required
 def logout():
