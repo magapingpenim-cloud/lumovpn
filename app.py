@@ -67,14 +67,14 @@ def send_subscription_email(order):
   display_name=order.email.split("@",1)[0]
  safe_nick=escape(display_name or "друг")
  safe_url=escape(sub_url,quote=True)
- subject="Твой бесплатный пробный период FlankVPN готов" if order.tariff_key=="trial" else "Спасибо за оплату — FlankVPN"
+ subject="Твой бесплатный пробный период LumoVPN готов" if order.tariff_key=="trial" else "Спасибо за оплату — LumoVPN"
  trial_note="<p><strong>Пробный период:</strong> 10 дней бесплатно с момента подключения.</p>" if order.tariff_key=="trial" else ""
  html_body=f"""
  <div style="margin:0;background:#f2f6fc;padding:28px 12px;font-family:Arial,Helvetica,sans-serif;color:#10203a">
   <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #dce7f5;border-radius:20px;overflow:hidden">
    <div style="padding:26px 28px;background:#081529;color:#fff">
-    <div style="font-size:12px;letter-spacing:3px;color:#8fe1ff;font-weight:bold">FLANKVPN</div>
-    <h1 style="font-size:25px;margin:12px 0 6px">Спасибо за оплату!</h1>\n    <p style="margin:0;color:#d4e3f7">Спасибо, что выбрал FlankVPN. Твой платёж подтверждён, а подписка готова к подключению.</p>
+    <div style="font-size:12px;letter-spacing:3px;color:#8fe1ff;font-weight:bold">LUMOVPN</div>
+    <h1 style="font-size:25px;margin:12px 0 6px">Спасибо за оплату!</h1>\n    <p style="margin:0;color:#d4e3f7">Спасибо, что выбрал LumoVPN. Твой платёж подтверждён, а подписка готова к подключению.</p>
     <p style="margin:0;color:#d4e3f7">Заказ #{order.id}</p>
    </div>
    <div style="padding:28px">
@@ -91,7 +91,7 @@ def send_subscription_email(order):
   </div>
  </div>
  """
- text_body=(f"FlankVPN: бесплатный пробный период на 10 дней. Заказ #{order.id}. " if order.tariff_key=="trial" else f"Спасибо за оплату FlankVPN! Заказ #{order.id}. Твой платёж подтверждён, подписка готова. ") + f"Ссылка подписки: {sub_url}"
+ text_body=(f"LumoVPN: бесплатный пробный период на 10 дней. Заказ #{order.id}. " if order.tariff_key=="trial" else f"Спасибо за оплату LumoVPN! Заказ #{order.id}. Твой платёж подтверждён, подписка готова. ") + f"Ссылка подписки: {sub_url}"
  try:
   response=requests.post("https://api.resend.com/emails",
    headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json",
@@ -343,7 +343,7 @@ def award_referral_reward(order):
   bot_token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
   if linked and bot_token:
    try:
-    requests.post("https://api.telegram.org/bot"+bot_token+"/sendMessage",json={"chat_id":linked.telegram_id,"text":"🎁 Твой друг впервые оплатил FlankVPN! Тебе начислено 30 дополнительных дней подписки."},timeout=10).raise_for_status()
+    requests.post("https://api.telegram.org/bot"+bot_token+"/sendMessage",json={"chat_id":linked.telegram_id,"text":"🎁 Твой друг впервые оплатил LumoVPN! Тебе начислено 30 дополнительных дней подписки."},timeout=10).raise_for_status()
    except Exception: app.logger.exception("Referral reward notification failed")
   return True
  except Exception:
@@ -403,8 +403,8 @@ def register():
    try:
     resp=requests.post("https://api.resend.com/emails",
       headers={"Authorization":"Bearer "+os.getenv("RESEND_API_KEY"),"Content-Type":"application/json"},
-      json={"from":os.getenv("RESEND_FROM_EMAIL"),"to":[email],"subject":"Код подтверждения FlankVPN",
-            "html":f"<div style='font-family:Arial,sans-serif'><h2>FlankVPN</h2><p>Твой код подтверждения:</p><p style='font-size:32px;font-weight:bold;letter-spacing:8px'>{code}</p><p>Код действует 10 минут. Если ты не регистрировался, проигнорируй письмо.</p></div>"},
+      json={"from":os.getenv("RESEND_FROM_EMAIL"),"to":[email],"subject":"Код подтверждения LumoVPN",
+            "html":f"<div style='font-family:Arial,sans-serif'><h2>LumoVPN</h2><p>Твой код подтверждения:</p><p style='font-size:32px;font-weight:bold;letter-spacing:8px'>{code}</p><p>Код действует 10 минут. Если ты не регистрировался, проигнорируй письмо.</p></div>"},
       timeout=15)
     resp.raise_for_status()
     if pending:
@@ -460,12 +460,12 @@ def verify_email():
     notify_admin_telegram(f"🆓 Бесплатный пробный период выдан\nНикнейм: {trial.nickname}\nEmail: {trial.email}\nСрок: 10 дней\nПисьмо со ссылкой: {'отправлено' if email_sent else 'не отправлено — проверь Resend'}")
     session["show_connect_guide"]=True
     if email_sent:
-     flash("Аккаунт создан! Твои первые 10 дней FlankVPN бесплатны. Ссылка также отправлена на email.","success")
+     flash("Аккаунт создан! Твои первые 10 дней LumoVPN бесплатны. Ссылка также отправлена на email.","success")
     else:
      flash("Аккаунт создан, а пробный доступ подготовлен. Ссылка видна в личном кабинете; проверь почту и настройки отправки email.","success")
    except Exception as e:
     db.session.rollback(); trial=db.session.get(Order,trial.id); trial.status="error"; trial.error_message=str(e)[:400]; db.session.commit()
-    app.logger.exception("Could not provision free FlankVPN trial")
+    app.logger.exception("Could not provision free LumoVPN trial")
     notify_admin_telegram(f"⚠️ Не удалось автоматически выдать пробный период\nНикнейм: {trial.nickname}\nEmail: {trial.email}\nПричина: {trial.error_message}")
     flash("Аккаунт создан, но автоматическая выдача пробного доступа не сработала. Администратор получил уведомление и сможет повторить выдачу.","error")
    return redirect(url_for("dashboard"))
@@ -639,7 +639,7 @@ def forgot_password():
     db.session.add(reset); db.session.commit()
     reset_url=url_for("reset_password",token=raw_token,_external=True)
     try:
-     response=requests.post("https://api.resend.com/emails",headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json"},json={"from":sender,"to":[user.email],"subject":"Восстановление пароля FlankVPN","html":f'<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:28px;color:#17243a"><h2>Сброс пароля FlankVPN</h2><p>Мы получили запрос на изменение пароля для аккаунта {escape(user.nickname)}.</p><p><a href="{escape(reset_url,quote=True)}">Изменить пароль</a></p><p>Ссылка действует 30 минут и используется один раз. Если это был не ты, проигнорируй письмо.</p></div>',"text":f"Измени пароль FlankVPN по ссылке (действует 30 минут): {reset_url}"},timeout=15)
+     response=requests.post("https://api.resend.com/emails",headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json"},json={"from":sender,"to":[user.email],"subject":"Восстановление пароля LumoVPN","html":f'<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:28px;color:#17243a"><h2>Сброс пароля LumoVPN</h2><p>Мы получили запрос на изменение пароля для аккаунта {escape(user.nickname)}.</p><p><a href="{escape(reset_url,quote=True)}">Изменить пароль</a></p><p>Ссылка действует 30 минут и используется один раз. Если это был не ты, проигнорируй письмо.</p></div>',"text":f"Измени пароль LumoVPN по ссылке (действует 30 минут): {reset_url}"},timeout=15)
      response.raise_for_status()
     except Exception:
      db.session.delete(reset); db.session.commit()
@@ -735,8 +735,8 @@ def telegram_link_code():
  db.session.add(TelegramLinkCode(user_id=current_user.id,code=code,expires_at=datetime.utcnow()+timedelta(minutes=10)))
  db.session.commit()
  bot_name=os.getenv("TELEGRAM_BOT_USERNAME","").strip().lstrip("@")
- bot_link=("https://t.me/"+bot_name) if bot_name else "Открой своего Telegram-бота FlankVPN"
- return (f"<h1>Привязка Telegram — FlankVPN</h1><p>Твой одноразовый код: <strong style='font-size:28px'>{code}</strong></p><p>Код действует 10 минут. В Telegram отправь боту команду <code>/link {code}</code>.</p><p>Не пересылай код другим людям.</p><p><a href='{bot_link}'>Открыть Telegram-бота</a></p><p><a href='/dashboard'>Вернуться в кабинет</a></p>",200,{"Content-Type":"text/html; charset=utf-8"})
+ bot_link=("https://t.me/"+bot_name) if bot_name else "Открой своего Telegram-бота LumoVPN"
+ return (f"<h1>Привязка Telegram — LumoVPN</h1><p>Твой одноразовый код: <strong style='font-size:28px'>{code}</strong></p><p>Код действует 10 минут. В Telegram отправь боту команду <code>/link {code}</code>.</p><p>Не пересылай код другим людям.</p><p><a href='{bot_link}'>Открыть Telegram-бота</a></p><p><a href='/dashboard'>Вернуться в кабинет</a></p>",200,{"Content-Type":"text/html; charset=utf-8"})
 
 @app.route("/telegram/webhook/<secret>",methods=["POST"])
 @csrf.exempt
@@ -784,7 +784,7 @@ def telegram_webhook(secret):
   for key in ("1","3","12"):
    tariff=TARIFFS[key]
    rows.append([{"text":f"{tariff['title']} — {tariff['price']} ₽","callback_data":"tariff:"+key}])
-  send("Выбери тариф FlankVPN:",keyboard=False,inline=rows)
+  send("Выбери тариф LumoVPN:",keyboard=False,inline=rows)
  def show_payment_methods(key):
   tariff=TARIFFS.get(key)
   if not tariff or key not in ("1","3","12"):
@@ -822,18 +822,18 @@ def telegram_webhook(secret):
      trial_order=Order(user_id=trial_user.id,nickname=trial_user.nickname,email=trial_user.email,telegram_id=telegram_id,tariff_key="trial",amount=0,payment_method="trial",status="processing",requested_days=10)
      db.session.add(trial_order); db.session.commit()
      provision(trial_order)
-     send("🎉 Бесплатные 10 дней FlankVPN активированы!\n\nТвой доступ готов:\n"+str(trial_order.subscription_url)+"\n\nСсылка привязана к этому Telegram-аккаунту. Сохрани её и добавь в VPN-приложение.",keyboard=True)
+     send("🎉 Бесплатные 10 дней LumoVPN активированы!\n\nТвой доступ готов:\n"+str(trial_order.subscription_url)+"\n\nСсылка привязана к этому Telegram-аккаунту. Сохрани её и добавь в VPN-приложение.",keyboard=True)
     except Exception as e:
      db.session.rollback()
      app.logger.exception("Could not activate Telegram free trial for %s",telegram_id)
      failed=Order.query.filter_by(telegram_id=telegram_id,tariff_key="trial",status="processing").first()
      if failed:
       failed.status="error"; failed.error_message=str(e)[:400]; db.session.commit()
-     send("Не удалось автоматически выдать пробные 10 дней. Попробуй позже или напиши в поддержку FlankVPN.")
+     send("Не удалось автоматически выдать пробные 10 дней. Попробуй позже или напиши в поддержку LumoVPN.")
   elif callback_data=="show_tariffs":
    show_tariffs()
   elif callback_data=="support_info":
-   send("💬 Поддержка FlankVPN поможет с подключением, оплатой и настройкой. Напиши /support и свой вопрос.")
+   send("💬 Поддержка LumoVPN поможет с подключением, оплатой и настройкой. Напиши /support и свой вопрос.")
   elif callback_data.startswith("tariff:"):
    key=callback_data.split(":",1)[1]
    if key not in ("1","3","12"):
@@ -884,7 +884,7 @@ def telegram_webhook(secret):
         headers={"Idempotence-Key":f"flankvpn-telegram-order-{order.id}","Content-Type":"application/json"},
         json={"amount":{"value":f"{order.amount}.00","currency":"RUB"},"capture":True,
          "confirmation":{"type":"redirect","return_url":"https://flankvpn.ru/"},
-         "description":f"FlankVPN Telegram order #{order.id}",
+         "description":f"LumoVPN Telegram order #{order.id}",
          "metadata":{"order_id":str(order.id),"user_id":str(order.user_id),"tariff_key":order.tariff_key,"telegram_id":telegram_id}},
         timeout=20)
        response.raise_for_status()
@@ -894,7 +894,7 @@ def telegram_webhook(secret):
        if not payment_id or not confirmation_url: raise RuntimeError("ЮKassa не вернула ID платежа или ссылку оплаты.")
        order.yookassa_payment_id=payment_id
        db.session.commit()
-       send(f"🧾 Заказ FlankVPN #{order.id}\n\nТариф: {tariff['title']}\n"+f"К оплате: {order.amount} ₽\nСпособ оплаты: ЮKassa\n\nЗаверши оплату на защищённой странице ЮKassa. Не отправляй данные карты в чат. После подтверждения платежа подписка автоматически придёт сюда отдельным сообщением.",
+       send(f"🧾 Заказ LumoVPN #{order.id}\n\nТариф: {tariff['title']}\n"+f"К оплате: {order.amount} ₽\nСпособ оплаты: ЮKassa\n\nЗаверши оплату на защищённой странице ЮKassa. Не отправляй данные карты в чат. После подтверждения платежа подписка автоматически придёт сюда отдельным сообщением.",
         keyboard=False,inline=[[{"text":"💳 Перейти к оплате","url":confirmation_url}]])
       except Exception as exc:
        db.session.rollback()
@@ -937,17 +937,17 @@ def telegram_webhook(secret):
   return {"ok":True}
  draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
  if cmd=="/start" or text_in=="🏠 Главное меню":
-  welcome=("👋 Привет! Это FlankVPN — надёжный VPN для повседневного использования.\n\n"
+  welcome=("👋 Привет! Это LumoVPN — надёжный VPN для повседневного использования.\n\n"
    "💨 Высокая скорость и стабильное подключение\n"
    "🔐 Защита соединения и конфиденциальность\n"
    "💬 Быстрая поддержка — поможем с настройкой\n"
    "📱 До 3 устройств в одной подписке\n"
    "🌐 Удобное подключение к сайтам и приложениям\n\n"
-   "Попробуй FlankVPN и выбери подходящий тариф.")
+   "Попробуй LumoVPN и выбери подходящий тариф.")
   welcome_buttons=[[{"text":"🎁 Бесплатные 10 дней","callback_data":"claim_trial"}],
    [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],
    [{"text":"💬 Поддержка","callback_data":"support_info"}]]
-  image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
+  image_url=os.getenv("LUMOVPN_PROMO_IMAGE_URL","").strip()
   if image_url:
    try:
     photo=requests.post("https://api.telegram.org/bot"+token+"/sendPhoto",
@@ -955,7 +955,7 @@ def telegram_webhook(secret):
     photo.raise_for_status()
     if not photo.json().get("ok"): raise RuntimeError("Telegram sendPhoto returned ok=false")
    except Exception:
-    app.logger.exception("Could not send FlankVPN welcome image")
+    app.logger.exception("Could not send LumoVPN welcome image")
     send(welcome,keyboard=False,inline=welcome_buttons)
   else:
    send(welcome,keyboard=False,inline=welcome_buttons)
@@ -982,7 +982,7 @@ def telegram_webhook(secret):
    send("Активная подписка не найдена. Если ты только что оплатил, подожди подтверждения платежа или напиши в поддержку.")
   else:
    title=TARIFFS.get(active_order.tariff_key,{}).get("title",active_order.tariff_key)
-   send(f"🔐 Твоя подписка FlankVPN\nСтатус: активна\nТариф: {title}\nЗаказ: #{active_order.id}\n\nСсылка для подключения:\n{active_order.subscription_url}\n\nСрок действия управляется VPN-сервером. Здесь отображается последний успешно активированный заказ.",keyboard=False)
+   send(f"🔐 Твоя подписка LumoVPN\nСтатус: активна\nТариф: {title}\nЗаказ: #{active_order.id}\n\nСсылка для подключения:\n{active_order.subscription_url}\n\nСрок действия управляется VPN-сервером. Здесь отображается последний успешно активированный заказ.",keyboard=False)
  elif text_in in ("💬 Поддержка","/support"):
   send("Чтобы написать в поддержку, отправь сообщение командой:\n/support Твой вопрос")
  elif cmd=="/support" and len(arg)>=3:
@@ -996,7 +996,7 @@ def telegram_webhook(secret):
   try:
    db.session.commit()
    notify_admin_telegram(f"✉️ Обращение из Telegram #{item.id}\nОт: {nickname}\nEmail: {email or 'не привязан'}\nСообщение: {arg[:1000]}")
-   send("Сообщение отправлено в поддержку FlankVPN. Мы получили обращение.")
+   send("Сообщение отправлено в поддержку LumoVPN. Мы получили обращение.")
   except Exception:
    db.session.rollback()
    app.logger.exception("Could not save Telegram support message")
@@ -1076,7 +1076,7 @@ def payment(oid):
    confirmation_url=(data.get("confirmation") or {}).get("confirmation_url")
    if not confirmation_url: raise RuntimeError("ЮKassa не вернула ссылку оплаты.")
   else:
-   response=requests.post("https://api.yookassa.ru/v3/payments",auth=(shop_id,secret_key),headers={"Idempotence-Key":f"flankvpn-order-{o.id}","Content-Type":"application/json"},json={"amount":{"value":f"{o.amount}.00","currency":"RUB"},"capture":True,"confirmation":{"type":"redirect","return_url":url_for("payment_return",oid=oid,_external=True)},"description":f"FlankVPN order #{o.id}","metadata":{"order_id":str(o.id),"user_id":str(o.user_id),"tariff_key":o.tariff_key}},timeout=20); response.raise_for_status(); data=response.json()
+   response=requests.post("https://api.yookassa.ru/v3/payments",auth=(shop_id,secret_key),headers={"Idempotence-Key":f"flankvpn-order-{o.id}","Content-Type":"application/json"},json={"amount":{"value":f"{o.amount}.00","currency":"RUB"},"capture":True,"confirmation":{"type":"redirect","return_url":url_for("payment_return",oid=oid,_external=True)},"description":f"LumoVPN order #{o.id}","metadata":{"order_id":str(o.id),"user_id":str(o.user_id),"tariff_key":o.tariff_key}},timeout=20); response.raise_for_status(); data=response.json()
    payment_id=data.get("id"); confirmation_url=(data.get("confirmation") or {}).get("confirmation_url")
    if not payment_id or not confirmation_url: raise RuntimeError("ЮKassa не вернула ID платежа или ссылку оплаты.")
    o.yookassa_payment_id=payment_id; db.session.commit()
@@ -1190,7 +1190,7 @@ def yookassa_webhook():
   if o.telegram_id and o.subscription_url and os.getenv("TELEGRAM_BOT_TOKEN","").strip():
    bot_token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
    try:
-    tg_text=f"💚 Спасибо за оплату FlankVPN! Твой платёж подтверждён.\nТариф: {TARIFFS.get(o.tariff_key,{}).get('title',o.tariff_key)}\n\nСсылка для подключения:\n{o.subscription_url}\n\nОтсканируй QR-код или скопируй ссылку в совместимый VPN-клиент."
+    tg_text=f"💚 Спасибо за оплату LumoVPN! Твой платёж подтверждён.\nТариф: {TARIFFS.get(o.tariff_key,{}).get('title',o.tariff_key)}\n\nСсылка для подключения:\n{o.subscription_url}\n\nОтсканируй QR-код или скопируй ссылку в совместимый VPN-клиент."
     qr_image=qrcode.make(o.subscription_url)
     qr_buffer=io.BytesIO()
     qr_image.save(qr_buffer,format="PNG")
@@ -1205,7 +1205,7 @@ def yookassa_webhook():
     app.logger.exception("Could not send subscription QR to Telegram for order %s",o.id)
     try:
      fallback=requests.post("https://api.telegram.org/bot"+bot_token+"/sendMessage",
-      json={"chat_id":o.telegram_id,"text":f"💚 Спасибо за оплату FlankVPN! Оплата подтверждена.\nСсылка для подключения:\n{o.subscription_url}\n\nQR-код отправить не удалось; используй ссылку выше.","disable_web_page_preview":True},timeout=10)
+      json={"chat_id":o.telegram_id,"text":f"💚 Спасибо за оплату LumoVPN! Оплата подтверждена.\nСсылка для подключения:\n{o.subscription_url}\n\nQR-код отправить не удалось; используй ссылку выше.","disable_web_page_preview":True},timeout=10)
      fallback.raise_for_status()
     except Exception:
      app.logger.exception("Could not send subscription link fallback to Telegram for order %s",o.id)
@@ -1325,7 +1325,7 @@ def game_paid(pid):
   message=(f"💳 Клиент сообщил об оплате автокликера\nЗаявка #{purchase.id}\n"
            f"Никнейм: {purchase.nickname}\nEmail: {purchase.email}\n"
            f"Сумма: {purchase.amount} ₽\nСпособ: {PAYMENTS[purchase.payment_method]['title']}\n"
-           "Проверь поступление денег в панели FlankVPN → Заказы и оплаты → Заявки на автокликер.")
+           "Проверь поступление денег в панели LumoVPN → Заказы и оплаты → Заявки на автокликер.")
   # Telegram-уведомление о заказе отключено.
   app.logger.info("Autoclicker purchase %s submitted for review by user %s",purchase.id,current_user.id)
   flash("Заявка отправлена на проверку. Она должна появиться в админке в разделе «Заявки на автокликер».", "success")
@@ -1509,15 +1509,15 @@ def send_subscription_notice_email(user, expiry, days_left):
  if not api_key or not sender or not user.email or user.email.endswith("@telegram.flankvpn.local"):
   return False
  if days_left>0:
-  subject=f"FlankVPN: до окончания подписки осталось {days_left} дн."
+  subject=f"LumoVPN: до окончания подписки осталось {days_left} дн."
   headline=f"Осталось {days_left} дн." 
-  detail=f"Твоя подписка FlankVPN заканчивается {expiry.strftime('%d.%m.%Y')}."
+  detail=f"Твоя подписка LumoVPN заканчивается {expiry.strftime('%d.%m.%Y')}."
  else:
-  subject="FlankVPN: срок подписки закончился"
+  subject="LumoVPN: срок подписки закончился"
   headline="Подписка закончилась"
   detail=f"Срок действия подписки истёк {expiry.strftime('%d.%m.%Y')}."
  body=f"""<div style="font-family:Arial,sans-serif;color:#10203a;max-width:560px;margin:auto;padding:24px">
- <h2 style="color:#159f98">FLANKVPN</h2><h1>{headline}</h1>
+ <h2 style="color:#159f98">LUMOVPN</h2><h1>{headline}</h1>
  <p>Привет, {escape(user.nickname or "")}!</p><p>{detail}</p>
  <p>Чтобы сохранить доступ или снова подключиться, продли подписку на сайте.</p>
  <p><a href="https://flankvpn.ru" style="display:inline-block;background:#19bcae;color:#062b2a;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:bold">Продлить подписку</a></p>
@@ -1538,11 +1538,11 @@ def send_subscription_notice_telegram(chat_id, user, expiry, days_left):
  token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
  if not token or not chat_id: return False
  if days_left>0:
-  message=(f"⏰ FlankVPN — осталось {days_left} дн.\n\nПривет, {user.nickname}! "
+  message=(f"⏰ LumoVPN — осталось {days_left} дн.\n\nПривет, {user.nickname}! "
    f"Твоя подписка заканчивается {expiry.strftime('%d.%m.%Y')}. "
    "Продли её заранее, чтобы VPN не отключился.\n\nПродлить: https://flankvpn.ru")
  else:
-  message=(f"⛔ FlankVPN — подписка закончилась\n\nПривет, {user.nickname}! "
+  message=(f"⛔ LumoVPN — подписка закончилась\n\nПривет, {user.nickname}! "
    f"Срок действия подписки истёк {expiry.strftime('%d.%m.%Y')}. "
    "Чтобы снова пользоваться VPN, продли подписку.\n\nПродлить: https://flankvpn.ru")
  try:
@@ -1673,7 +1673,7 @@ def confirm(oid):
    if bot_token:
     try:
      tg_title=TARIFFS.get(o.tariff_key,{}).get("title",o.tariff_key)
-     tg_resp=requests.post("https://api.telegram.org/bot"+bot_token+"/sendMessage",json={"chat_id":o.telegram_id,"text":f"✅ Оплата заказа #{o.id} подтверждена! Твоя подписка FlankVPN готова.\n\nТариф: {tg_title}\nНик: {o.nickname}\nСсылка для подключения:\n{o.subscription_url}\n\nДобавь ссылку в совместимое VPN-приложение.","disable_web_page_preview":True},timeout=10)
+     tg_resp=requests.post("https://api.telegram.org/bot"+bot_token+"/sendMessage",json={"chat_id":o.telegram_id,"text":f"✅ Оплата заказа #{o.id} подтверждена! Твоя подписка LumoVPN готова.\n\nТариф: {tg_title}\nНик: {o.nickname}\nСсылка для подключения:\n{o.subscription_url}\n\nДобавь ссылку в совместимое VPN-приложение.","disable_web_page_preview":True},timeout=10)
      tg_resp.raise_for_status(); telegram_sent=bool(tg_resp.json().get("ok"))
     except Exception:
      app.logger.exception("Could not send subscription to Telegram for order %s",o.id)
