@@ -229,3 +229,15 @@ body{background-color:var(--paper)!important}
  .hero-copy h1{font-size:37px!important}
  .hero-visual{height:300px!important}
 }
+
+/* Hero artwork is already a single composed image: do not layer CSS shapes over it */
+.hero-visual{isolation:isolate;position:relative}
+.hero-visual .hero-teal-block,
+.hero-visual .hero-black-block,
+.hero-visual .visual-corner,
+.hero-visual .visual-cross{display:none!important}
+.hero-visual img{position:relative!important;z-index:1!important;display:block!important;mix-blend-mode:normal!important;object-fit:contain!important;object-position:center bottom!important}
+@media(max-width:800px){
+ .hero-visual{height:clamp(300px,88vw,440px)!important;min-height:0!important;overflow:visible!important;margin:0 0 20px!important;background:transparent!important}
+ .hero-visual img{width:100%!important;height:100%!important;max-height:none!important;object-fit:contain!important;object-position:center center!important}
+}
