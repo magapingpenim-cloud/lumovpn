@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Регистрация' if mode == 'register' else 'Вход' }} — FlankVPN{% endblock %}
+{% block title %}{{ 'Регистрация' if mode == 'register' else 'Вход' }} — LumoVPN{% endblock %}
 {% block content %}
 <section class="auth auth-modern">
   <div class="auth-card card">
     <div class="auth-brand-mark" aria-hidden="true">M</div>
-    <div class="eyebrow">FLANKVPN ACCOUNT</div>
+    <div class="eyebrow">LUMOVPN ACCOUNT</div>
     <h1>{{ 'Создать аккаунт' if mode == 'register' else 'С возвращением' }}</h1>
     <p class="muted auth-lead">{{ 'Зарегистрируйся по email, чтобы получить доступ к личному кабинету.' if mode == 'register' else 'Войди по email и паролю.' }}</p>
     <form method="post" class="stack auth-form">
