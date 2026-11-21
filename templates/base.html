@@ -45,7 +45,7 @@
         {% endif %}
       </nav>
     </header>
-    <main class="container reference-container">
+    <main class="container">
       {% with ms = get_flashed_messages(with_categories=true) %}
         {% for c, m in ms %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}
       {% endwith %}
