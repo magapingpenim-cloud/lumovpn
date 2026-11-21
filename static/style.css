@@ -961,3 +961,13 @@ img,svg,video { max-width:100%; }
   .nav>.brand{font-size:24px!important}
   .nav>.site-menu>summary{width:42px!important;height:42px!important}
 }
+
+/* Generated mobile hero image */
+.hero-mobile-art{display:none}
+@media(max-width:640px){
+  .hero-mobile-art{display:block!important;position:absolute!important;z-index:2!important;inset:0!important;
+    width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;
+    mix-blend-mode:multiply;pointer-events:none}
+  .hero-orbit:after{z-index:1}
+  .hero-orbit:before{z-index:0}
+}
