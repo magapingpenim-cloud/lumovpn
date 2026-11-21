@@ -32,18 +32,17 @@
         <img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt="">
         <span>Flank<small>VPN</small></span>
       </a>
-      <nav>
+      <nav class="editorial-nav">
         <a href="{{ url_for('index') }}">Главная</a>
         <a href="{{ url_for('index') }}#tariffs">Тарифы</a>
         <a href="{{ url_for('index') }}#connect">Подключение</a>
         <a href="{{ url_for('index') }}#support">Поддержка</a>
+        <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Переключить тему" title="Переключить тему"><span class="theme-icon" aria-hidden="true">☾</span></button>
         {% if current_user.is_authenticated %}
-          <a class="nav-orders-btn" href="{{ url_for('dashboard') }}">📦 Мои подписки</a>
+          <a class="navcta" href="{{ url_for('dashboard') }}">Кабинет ↗</a>
         {% else %}
-          <a href="{{ url_for('login') }}">🔐 Войти</a>
-          <a class="navcta" href="{{ url_for('register') }}">✨ Регистрация <span aria-hidden="true">↗</span></a>
+          <a class="navcta" href="{{ url_for('login') }}">Войти ↗</a>
         {% endif %}
-        <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Переключить тему" title="Переключить тему"><span class="theme-icon" aria-hidden="true">☀</span><span class="theme-label">Светлая</span></button>
       </nav>
     </header>
     <main class="container">
