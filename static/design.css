@@ -155,3 +155,18 @@ body{background-color:var(--paper)!important}
  .hero-copy h1{font-size:36px}
  .hero-visual{height:310px}
 }
+
+
+/* Mobile header: preserve the reference hierarchy without squeezing the menu */
+@media(max-width:650px){
+ .nav{display:grid!important;grid-template-columns:minmax(0,1fr) 42px auto!important;grid-template-rows:42px 34px;align-items:center;column-gap:10px!important;row-gap:12px!important}
+ .nav>.brand{grid-column:1;grid-row:1;justify-self:start}
+ .nav>.editorial-nav{display:contents!important}
+ .nav>.editorial-nav>a:nth-child(1){grid-column:1;grid-row:2;justify-self:start}
+ .nav>.editorial-nav>a:nth-child(2){grid-column:2;grid-row:2;justify-self:center}
+ .nav>.editorial-nav>a:nth-child(3){grid-column:3;grid-row:2;justify-self:end}
+ .nav>.editorial-nav>a:nth-child(4){display:none}
+ .nav>.editorial-nav>.theme-toggle{grid-column:2;grid-row:1;justify-self:center}
+ .nav>.editorial-nav>.navcta{grid-column:3;grid-row:1;justify-self:end}
+ .nav>.site-menu{display:none}
+}
