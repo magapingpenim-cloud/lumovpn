@@ -959,6 +959,7 @@ def telegram_webhook(secret):
     send(welcome,keyboard=False,inline=welcome_buttons)
   else:
    send(welcome,keyboard=False,inline=welcome_buttons)
+  send("Основное меню обновлено.",keyboard=True)
  elif text_in in ("🌐 Тарифы","/tariffs"):
   show_tariffs()
  elif text_in in ("📦 Мои заказы","/orders"):
@@ -1001,18 +1002,7 @@ def telegram_webhook(secret):
    app.logger.exception("Could not save Telegram support message")
    send("Не получилось сохранить обращение. Попробуй ещё раз позже.")
  else:
-  draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
-  if draft and draft.awaiting_promo:
-   code=text_in.strip().upper()
-   promo=PromoCode.query.filter_by(code=code,active=True).first()
-   if promo and (not promo.expires_at or promo.expires_at>=datetime.utcnow()) and (promo.usage_limit is None or PromoCodeRedemption.query.filter_by(promo_code_id=promo.id).count()<promo.usage_limit) and not PromoCodeRedemption.query.filter_by(promo_code_id=promo.id,user_id=(TelegramAccount.query.filter_by(telegram_id=telegram_id).first().user_id if TelegramAccount.query.filter_by(telegram_id=telegram_id).first() else -1)).first():
-    draft.promo_code=promo.code; draft.awaiting_promo=False; db.session.commit()
-    send("✅ Промокод "+promo.code+" применён! Скидка "+str(promo.discount_percent)+"%. Теперь выбери тариф.")
-    show_tariffs()
-   else:
-    draft.awaiting_promo=False; db.session.commit(); send("Промокод не найден, истёк или уже использован. Проверь написание и попробуй ещё раз.")
-  else:
-   send("Выбери пункт меню или используй /start.")
+  send("Выбери пункт меню или используй /start.")
  return {"ok":True}
 
 @app.route("/checkout",methods=["POST"])
