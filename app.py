@@ -706,7 +706,7 @@ def telegram_webhook(secret):
   if inline is not None:
    payload["reply_markup"]={"inline_keyboard":inline}
   elif keyboard:
-   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"🔐 Моя подписка"},{"text":"🎟 Промокод"}],[{"text":"💬 Поддержка"},{"text":"🔗 Привязать аккаунт"}]],"resize_keyboard":True}
+   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"🔐 Моя подписка"}],[{"text":"💬 Поддержка"}]],"resize_keyboard":True}
   try:
    resp=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",json=payload,timeout=8)
    resp.raise_for_status()
@@ -884,11 +884,9 @@ def telegram_webhook(secret):
    "💬 Быстрая поддержка — поможем с настройкой\n"
    "📱 До 3 устройств в одной подписке\n"
    "🌐 Удобное подключение к сайтам и приложениям\n\n"
-   "🎁 Подарок на первую покупку: промокод DUBAI — скидка 30%!\n\n"
    "Попробуй FlankVPN и выбери подходящий тариф.")
   welcome_buttons=[[{"text":"🎁 Бесплатные 10 дней","callback_data":"claim_trial"}],
    [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],
-   [{"text":"🌐 Выбрать тариф","callback_data":"show_tariffs"},{"text":"🎟 Промокод","callback_data":"enter_promo"}],
    [{"text":"💬 Поддержка","callback_data":"support_info"}]]
   image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
   if image_url:
