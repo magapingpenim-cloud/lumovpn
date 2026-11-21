@@ -66,3 +66,21 @@ body:has(.cc-home) .container{max-width:1260px;padding:0 28px}
 .cc-cta h2{font-size:clamp(30px,4vw,48px)}
 @media(max-width:900px){body:has(.cc-home) .nav{padding:16px 18px}body:has(.cc-home) .container{padding:0 18px}.cc-hero{grid-template-columns:1fr .85fr;padding:40px 34px 0;min-height:560px}.cc-hero h1{font-size:clamp(48px,6vw,68px)}.cc-hero-art{min-height:350px}.cc-strip{margin:0 -34px;padding:18px 34px;gap:15px}.cc-art img{width:115%}.cc-features article,.cc-plan{padding:20px}}
 @media(max-width:650px){body:has(.cc-home) .nav{padding:13px 14px;gap:12px}body:has(.cc-home) .nav nav{gap:9px;font-size:11px}body:has(.cc-home) .container{padding:0 14px}.cc-home{padding-top:0}.cc-hero{display:flex;flex-direction:column;gap:0;min-height:0;padding:30px 22px 0;border-radius:20px}.cc-copy{padding:0}.cc-kicker{font-size:8px;letter-spacing:1.3px}.cc-kicker b{width:28px}.cc-hero h1{font-size:clamp(43px,11vw,61px);margin:23px 0 16px}.cc-copy>p{font-size:14px;line-height:1.65}.cc-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:24px 0 15px}.cc-btn{min-height:48px;padding:0 11px;gap:7px;border-radius:10px;font-size:10px}.cc-proof{gap:7px;font-size:8px}.cc-proof i{width:2px;height:2px}.cc-art{min-height:280px;height:280px;margin:0 -10px}.cc-art img{width:95%;max-height:290px}.cc-grid{inset:9% 3%}.cc-label{top:7%;right:0;padding:8px 9px}.cc-label b{font-size:7px}.cc-label small{font-size:6px}.cc-art-index{bottom:3%;right:3%;font-size:18px}.cc-strip{grid-template-columns:1fr 1fr;margin:0 -22px;padding:15px 22px;gap:14px;border-radius:0 0 20px 20px}.cc-strip strong{font-size:20px}.cc-strip span{font-size:9px}.cc-wordmark{display:none}.cc-section{padding-top:62px}.cc-heading{display:block;margin-bottom:22px}.cc-heading h2,.cc-cta h2{font-size:38px}.cc-heading>p{margin-top:16px}.cc-features,.cc-plans,.cc-steps{grid-template-columns:1fr}.cc-features article{min-height:0;padding:20px}.cc-features h3{margin-top:15px}.cc-pricing,.cc-how{padding-top:68px}.cc-plan{min-height:0;padding:24px}.cc-plan ul{margin:17px 0}.cc-steps{gap:8px}.cc-steps article{padding:18px}.cc-steps b{margin-bottom:16px}.cc-cta{display:block;margin-top:70px;padding:27px 23px}.cc-cta .cc-btn{margin-top:22px;width:100%}}
+
+/* Optional light appearance, controlled by the existing header theme switch */
+:root[data-theme="light"] body:has(.cc-home),:root[data-theme="light"] body:has(.cc-home) .site-shell{background:#edf2ef;color:#10201d}
+:root[data-theme="light"] body:has(.cc-home) .nav nav>a:not(.navcta){color:#243b35}
+:root[data-theme="light"] body:has(.cc-home) .brand{color:#10201d}
+:root[data-theme="light"] body:has(.cc-home) .theme-toggle{color:#10201d}
+:root[data-theme="light"] .cc-hero{border-color:#bcd8cd;background:radial-gradient(ellipse at 78% 44%,#5bd5ae33,transparent 38%),linear-gradient(135deg,#fff,#f1f7f3);box-shadow:0 25px 65px #17372b12}
+:root[data-theme="light"] .cc-hero h1,:root[data-theme="light"] .cc-heading h2,:root[data-theme="light"] .cc-cta h2{color:#101c19}
+:root[data-theme="light"] .cc-copy>p,:root[data-theme="light"] .cc-proof,:root[data-theme="light"] .cc-heading>p,:root[data-theme="light"] .cc-features p,:root[data-theme="light"] .cc-plan>p,:root[data-theme="light"] .cc-plan ul,:root[data-theme="light"] .cc-steps p,:root[data-theme="light"] .cc-note{color:#56665f}
+:root[data-theme="light"] .cc-strip{background:#f8fffb;border-color:#c6d9d0}
+:root[data-theme="light"] .cc-strip strong,:root[data-theme="light"] .cc-strip span,:root[data-theme="light"] .cc-wordmark{color:#152b24}
+:root[data-theme="light"] .cc-features article{background:#fff;border-color:#d6e2db;box-shadow:0 12px 30px #163d2c0a}
+:root[data-theme="light"] .cc-features h3,:root[data-theme="light"] .cc-plan h3,:root[data-theme="light"] .cc-steps h3{color:#14251f}
+:root[data-theme="light"] .cc-plan{background:linear-gradient(160deg,#fff,#f5f9f6);border-color:#d4e0d9}
+:root[data-theme="light"] .cc-plan.featured{background:linear-gradient(160deg,#e3fff4,#f4fffa);border-color:#58c7a1}
+:root[data-theme="light"] .cc-plan-btn{background:#fff;color:#14251f;border-color:#b8c9c0}
+:root[data-theme="light"] .cc-steps article{background:linear-gradient(180deg,#e0f6ed,transparent);border-color:#9ccfba}
+:root[data-theme="light"] .cc-cta{background:radial-gradient(ellipse at 75% 50%,#5ce4be33,transparent 55%),#fff;border-color:#b5d9ca}
