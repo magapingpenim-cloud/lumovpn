@@ -858,3 +858,106 @@ img,svg,video { max-width:100%; }
  .nav>nav .theme-toggle{width:36px;height:36px;min-width:36px;min-height:36px}
  .nav>.site-menu>summary{width:36px;height:36px}
 }
+
+/* FlankVPN mobile art direction — matched to the approved vertical concept */
+@media(max-width:640px){
+  html,body{background:#f6f3ed;color:#080909}
+  body{font-family:Arial,Helvetica,sans-serif}
+  .site-shell{width:100%;max-width:none;background:#f6f3ed;color:#080909;overflow:hidden}
+  .container{width:auto;max-width:none;margin:0;padding:0 18px}
+  .nav{display:flex!important;position:relative;min-height:76px;padding:12px 18px!important;gap:12px!important;
+    background:#f6f3ed;border-bottom:0;justify-content:space-between!important}
+  .nav>.brand{order:1!important;margin:0 auto 0 0!important;font-size:clamp(25px,7vw,34px)!important;
+    font-weight:900;letter-spacing:-1.8px;color:#080909}
+  .nav>.brand img{display:none}
+  .nav>.brand span{display:inline}
+  .nav>.brand small{color:#00d7c4;font-size:.32em!important;letter-spacing:0!important}
+  .nav>nav{order:2!important;display:flex!important;flex:0 0 auto!important;width:auto!important;
+    margin:0!important;gap:8px!important;align-items:center!important}
+  .nav>nav>a:not(.navcta){display:none!important}
+  .nav>nav .navcta{display:none!important}
+  .nav>nav .theme-toggle{width:42px!important;height:42px!important;min-width:42px!important;
+    border:1px solid #111;border-radius:50%;background:transparent;color:#111;padding:0!important}
+  .nav>nav .theme-label{display:none!important}
+  .nav>.site-menu{order:3!important;display:block!important;margin:0!important}
+  .nav>.site-menu>summary{width:48px!important;height:48px!important;border-radius:5px;
+    background:#080909;color:#fff;padding:11px!important;display:flex;flex-direction:column;
+    justify-content:center;gap:6px;box-sizing:border-box}
+  .nav>.site-menu>summary span{display:block;width:100%;height:2px;background:#fff;border-radius:0}
+  .site-menu-panel{position:absolute!important;top:calc(100% - 2px)!important;right:14px!important;left:auto!important;
+    width:min(290px,calc(100vw - 28px))!important;padding:12px!important;border:1px solid #161616!important;
+    border-radius:0!important;background:#f6f3ed!important;color:#080909!important;box-shadow:0 18px 40px #0002!important}
+  .site-menu-panel a,.site-menu-panel button{display:block;width:100%;padding:13px 12px!important;
+    border:0!important;border-bottom:1px solid #d9d5ce!important;border-radius:0!important;
+    background:transparent!important;color:#080909!important;text-align:left;font-size:14px!important}
+  .hero-advanced{display:flex!important;flex-direction:column!important;align-items:stretch!important;
+    gap:0!important;min-height:0!important;margin:0!important;padding:26px 0 0!important;
+    border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+  .hero-copy{order:1!important;width:100%;padding:0!important}
+  .hero-copy .eyebrow{display:flex;align-items:center;gap:8px;margin:0 0 28px!important;
+    color:#111!important;font-size:11px!important;font-weight:700;letter-spacing:1px!important}
+  .hero-copy .eyebrow:after{content:"";height:1px;flex:1;background:#111}
+  .hero-copy h1{margin:0 0 22px!important;color:#080909!important;
+    font-size:clamp(39px,10.3vw,66px)!important;line-height:.91!important;
+    letter-spacing:-.065em!important;font-weight:950!important;text-transform:uppercase}
+  .hero-copy h1 span{display:block;margin-top:3px;color:#080909!important;
+    font-family:Georgia,"Times New Roman",serif;font-size:.83em!important;
+    font-style:italic;font-weight:400;letter-spacing:-.075em!important;white-space:nowrap}
+  .hero-copy>p{margin:0 0 24px!important;color:#484848!important;font-size:16px!important;line-height:1.38!important}
+  .hero-copy .actions{display:grid!important;grid-template-columns:1.2fr .8fr;gap:10px!important;margin:0!important}
+  .hero-copy .actions .btn{min-height:54px!important;display:flex;align-items:center;justify-content:center;
+    padding:10px 12px!important;border-radius:0!important;font-size:14px!important;font-weight:800!important}
+  .hero-copy .actions .btn.primary{background:#080909!important;color:#fff!important;border:1px solid #080909!important}
+  .hero-copy .actions .btn.glass{background:transparent!important;color:#080909!important;border:1px solid #080909!important}
+  .hero-copy .checks{display:none!important}
+  .hero-orbit{order:2!important;position:relative!important;display:block!important;width:100%!important;
+    height:auto!important;min-height:0!important;aspect-ratio:1/1!important;margin:16px 0 18px!important;
+    overflow:hidden!important;background:#f6f3ed!important}
+  .hero-orbit:before{content:"";position:absolute;z-index:0;left:10%;top:18%;width:78%;height:74%;
+    background:#050606;transform:skew(-8deg)}
+  .hero-orbit:after{content:"";position:absolute;z-index:1;left:4%;top:25%;width:20%;height:27%;background:#00d7c4}
+  .orbit-ring,.orbit-chip{display:none!important}
+  .orbit-core{position:absolute!important;z-index:2!important;left:13%!important;top:2%!important;
+    width:84%!important;height:96%!important;border:0!important;border-radius:0!important;
+    background:transparent!important;box-shadow:none!important;transform:none!important}
+  .orbit-core img{display:none!important}
+  .orbit-core span,.orbit-core small{display:none!important}
+  .trust-strip{display:grid!important;grid-template-columns:1fr!important;gap:0!important;
+    margin:0 0 46px!important;padding:15px 0 0!important;border:0!important;border-top:1px solid #111!important;
+    border-radius:0!important;background:transparent!important;box-shadow:none!important}
+  .trust-strip div{display:grid!important;grid-template-columns:32px 1fr;gap:2px 12px!important;
+    padding:12px 0!important;border:0!important;border-bottom:1px solid #d8d3cb!important}
+  .trust-strip div:before{grid-row:span 2;align-self:center;font-size:25px;font-weight:900;color:#080909}
+  .trust-strip div:nth-child(1):before{content:"ϟ"}
+  .trust-strip div:nth-child(2):before{content:"♙"}
+  .trust-strip div:nth-child(3):before{content:"▣"}
+  .trust-strip strong{font-size:16px!important;color:#080909!important}
+  .trust-strip span{font-size:13px!important;color:#454545!important}
+  .feature-section,.steps-section,.faq-section,.pricing-section{padding:0 0 44px!important}
+  .section-heading{margin:0 0 20px!important;text-align:left!important}
+  .section-heading .eyebrow{color:#00a998!important;font-size:10px!important;letter-spacing:2px!important}
+  .section-heading h2{font-size:32px!important;line-height:1.02!important;letter-spacing:-1.5px!important;color:#080909!important}
+  .section-heading p{font-size:14px!important;line-height:1.5!important;color:#555!important}
+  .feature-grid,.plans-advanced,.steps-grid{grid-template-columns:1fr!important;gap:12px!important}
+  .feature-card,.plan-advanced,.step{min-height:0!important;padding:20px!important;border:1px solid #bdb8b0!important;
+    border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#080909!important}
+  .feature-card h3,.plan-advanced h3,.step h3{color:#080909!important}
+  .feature-card p,.step p{color:#555!important}
+  .plan-advanced{padding:22px!important}
+  .plan-best{background:#00d7c4!important;border-color:#00d7c4!important}
+  .plan-advanced .btn{width:100%;min-height:48px!important;border-radius:0!important}
+  .faq-item{border-radius:0!important}
+  .callout-advanced{display:flex;flex-direction:column;align-items:flex-start;gap:16px;padding:22px!important;border-radius:0!important}
+  .callout-advanced .btn{width:100%}
+  .site-footer{margin-top:12px;padding:20px 18px!important;border-top:1px solid #111!important;
+    border-radius:0!important;color:#222!important}
+}
+@media(max-width:380px){
+  .container{padding-left:14px;padding-right:14px}
+  .hero-copy h1{font-size:clamp(35px,10vw,42px)!important}
+  .hero-copy .actions{grid-template-columns:1fr 1fr}
+  .hero-copy .actions .btn{font-size:12px!important;padding:9px 7px!important}
+  .nav{padding-left:14px!important;padding-right:14px!important}
+  .nav>.brand{font-size:24px!important}
+  .nav>.site-menu>summary{width:42px!important;height:42px!important}
+}
