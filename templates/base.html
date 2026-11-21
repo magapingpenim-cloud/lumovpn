@@ -10,6 +10,7 @@
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
   <title>{% block title %}FlankVPN — интернет по твоим правилам{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261112') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='design.css', v='20261122') }}">
 </head>
 <body>
   <div class="site-shell">
@@ -32,6 +33,10 @@
         <span>Flank<small>VPN</small></span>
       </a>
       <nav>
+        <a href="{{ url_for('index') }}">Главная</a>
+        <a href="{{ url_for('index') }}#tariffs">Тарифы</a>
+        <a href="{{ url_for('index') }}#connect">Подключение</a>
+        <a href="{{ url_for('index') }}#support">Поддержка</a>
         {% if current_user.is_authenticated %}
           <a class="nav-orders-btn" href="{{ url_for('dashboard') }}">📦 Мои подписки</a>
         {% else %}
