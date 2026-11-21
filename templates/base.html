@@ -33,6 +33,10 @@
         <span>Flank<small>VPN</small></span>
       </a>
       <nav>
+        <a href="{{ url_for('index') }}">Главная</a>
+        <a href="{{ url_for('index') }}#tariffs">Тарифы</a>
+        <a href="{{ url_for('index') }}#connect">Подключение</a>
+        <a href="{{ url_for('index') }}#support">Поддержка</a>
         {% if current_user.is_authenticated %}
           <a class="nav-orders-btn" href="{{ url_for('dashboard') }}">📦 Мои подписки</a>
         {% else %}
