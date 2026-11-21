@@ -241,3 +241,13 @@ body{background-color:var(--paper)!important}
  .hero-visual{height:clamp(300px,88vw,440px)!important;min-height:0!important;overflow:visible!important;margin:0 0 20px!important;background:transparent!important}
  .hero-visual img{width:100%!important;height:100%!important;max-height:none!important;object-fit:contain!important;object-position:center center!important}
 }
+
+/* Clean, single-line brand wordmark */
+.brand{display:inline-flex!important;align-items:center!important;gap:0!important;font-size:clamp(28px,3.1vw,46px)!important;font-weight:900!important;letter-spacing:-2.2px!important;line-height:1!important;color:#080909!important;white-space:nowrap!important}
+.brand img{display:none!important}
+.brand-word{display:inline-flex!important;align-items:center!important;gap:5px!important}
+.brand-dot{display:inline-block!important;width:11px!important;height:11px!important;margin:13px 0 0 2px!important;border-radius:50%!important;background:#00d8c2!important}
+:root[data-theme="dark"] .brand{color:#f7f3ed!important}
+@media(max-width:800px){.brand{font-size:clamp(26px,7vw,34px)!important;letter-spacing:-1.5px!important}.brand-dot{width:9px!important;height:9px!important;margin-top:10px!important}}
+/* Blend the source artwork's near-white canvas into the site's warm paper background */
+.hero-visual img{mix-blend-mode:multiply!important;background:transparent!important}
