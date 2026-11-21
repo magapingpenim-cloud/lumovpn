@@ -706,7 +706,7 @@ def telegram_webhook(secret):
   if inline is not None:
    payload["reply_markup"]={"inline_keyboard":inline}
   elif keyboard:
-   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"🔐 Моя подписка"}],[{"text":"💬 Поддержка"}]],"resize_keyboard":True}
+   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"🔐 Моя подписка"},{"text":"🎟 Промокод"}],[{"text":"💬 Поддержка"},{"text":"🔗 Привязать аккаунт"}]],"resize_keyboard":True}
   try:
    resp=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",json=payload,timeout=8)
    resp.raise_for_status()
@@ -766,6 +766,11 @@ def telegram_webhook(secret):
      send("Не удалось автоматически выдать пробные 10 дней. Попробуй позже или напиши в поддержку FlankVPN.")
   elif callback_data=="show_tariffs":
    show_tariffs()
+  elif callback_data=="enter_promo":
+   draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
+   if not draft: draft=TelegramCheckoutDraft(telegram_id=telegram_id); db.session.add(draft)
+   draft.awaiting_promo=True; draft.updated_at=datetime.utcnow(); db.session.commit()
+   send("Отправь промокод одним сообщением. Например: BANYA")
   elif callback_data=="support_info":
    send("💬 Поддержка FlankVPN поможет с подключением, оплатой и настройкой. Напиши /support и свой вопрос.")
   elif callback_data.startswith("tariff:"):
@@ -809,8 +814,10 @@ def telegram_webhook(secret):
          if User.query.filter_by(nickname=internal_nick).first(): internal_nick=("tg_"+telegram_id[-20:]+"_"+secrets.token_hex(3))[:40]
          shadow=User(nickname=internal_nick,email=shadow_email,password_hash=generate_password_hash(secrets.token_urlsafe(32)))
          db.session.add(shadow); db.session.flush()
-       amount=int(tariff["price"])
-       order=Order(user_id=shadow.id,nickname=shadow.nickname,email=(shadow.email if linked else ""),telegram_id=telegram_id,tariff_key=key,amount=amount,payment_method="yookassa",status="awaiting_payment")
+       promo=PromoCode.query.filter_by(code=(draft.promo_code or "").upper(),active=True).first() if draft.promo_code else None
+       discount=int(promo.discount_percent) if promo and (not promo.expires_at or promo.expires_at>=datetime.utcnow()) else 0
+       amount=int(round(tariff["price"]*(100-discount)/100))
+       order=Order(user_id=shadow.id,nickname=shadow.nickname,email=(shadow.email if linked else ""),telegram_id=telegram_id,tariff_key=key,amount=amount,payment_method="yookassa",status="awaiting_payment",promo_code=promo.code if promo and discount else None,discount_percent=discount)
        db.session.add(order)
        db.session.flush()
        response=requests.post("https://api.yookassa.ru/v3/payments",
@@ -877,9 +884,11 @@ def telegram_webhook(secret):
    "💬 Быстрая поддержка — поможем с настройкой\n"
    "📱 До 3 устройств в одной подписке\n"
    "🌐 Удобное подключение к сайтам и приложениям\n\n"
+   "🎁 Подарок на первую покупку: промокод DUBAI — скидка 30%!\n\n"
    "Попробуй FlankVPN и выбери подходящий тариф.")
   welcome_buttons=[[{"text":"🎁 Бесплатные 10 дней","callback_data":"claim_trial"}],
    [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],
+   [{"text":"🌐 Выбрать тариф","callback_data":"show_tariffs"},{"text":"🎟 Промокод","callback_data":"enter_promo"}],
    [{"text":"💬 Поддержка","callback_data":"support_info"}]]
   image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
   if image_url:
@@ -893,6 +902,11 @@ def telegram_webhook(secret):
     send(welcome,keyboard=False,inline=welcome_buttons)
   else:
    send(welcome,keyboard=False,inline=welcome_buttons)
+ elif text_in in ("🎟 Промокод","/promo"):
+  draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
+  if not draft: draft=TelegramCheckoutDraft(telegram_id=telegram_id); db.session.add(draft)
+  draft.awaiting_promo=True; draft.updated_at=datetime.utcnow(); db.session.commit()
+  send("Отправь промокод одним сообщением. Например: BANYA")
  elif text_in in ("🌐 Тарифы","/tariffs"):
   show_tariffs()
  elif text_in in ("📦 Мои заказы","/orders"):
@@ -916,6 +930,29 @@ def telegram_webhook(secret):
   else:
    title=TARIFFS.get(active_order.tariff_key,{}).get("title",active_order.tariff_key)
    send(f"🔐 Твоя подписка FlankVPN\nСтатус: активна\nТариф: {title}\nЗаказ: #{active_order.id}\n\nСсылка для подключения:\n{active_order.subscription_url}\n\nСрок действия управляется VPN-сервером. Здесь отображается последний успешно активированный заказ.",keyboard=False)
+ elif cmd=="/link" and arg:
+  link=TelegramLinkCode.query.filter_by(code=arg.upper(),used=False).first()
+  if not link or link.expires_at<datetime.utcnow():
+   send("Код не найден или истёк. Войди на flankvpn.ru и создай новый код привязки.")
+  else:
+   existing=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+   account_for_user=TelegramAccount.query.filter_by(user_id=link.user_id).first()
+   if account_for_user and account_for_user.telegram_id!=telegram_id:
+    send("К этому аккаунту FlankVPN уже привязан другой Telegram. Обратись в поддержку для смены привязки.")
+   elif existing and existing.user_id!=link.user_id:
+    send("Этот Telegram уже привязан к другому аккаунту FlankVPN. Сначала отвяжи его через поддержку.")
+   else:
+    if not existing: db.session.add(TelegramAccount(telegram_id=telegram_id,user_id=link.user_id))
+    link.used=True
+    try:
+     db.session.commit()
+     send("Готово! Telegram привязан к аккаунту FlankVPN. Теперь можешь выбрать тариф и оформить заказ.")
+    except Exception:
+     db.session.rollback()
+     app.logger.exception("Could not link Telegram account")
+     send("Не удалось привязать аккаунт. Попробуй ещё раз.")
+ elif text_in in ("🔗 Привязать аккаунт","/link"):
+  send("Войди на https://flankvpn.ru, затем открой https://flankvpn.ru/telegram/link-code и отправь боту команду /link КОД.")
  elif text_in in ("💬 Поддержка","/support"):
   send("Чтобы написать в поддержку, отправь сообщение командой:\n/support Твой вопрос")
  elif cmd=="/support" and len(arg)>=3:
@@ -935,8 +972,231 @@ def telegram_webhook(secret):
    app.logger.exception("Could not save Telegram support message")
    send("Не получилось сохранить обращение. Попробуй ещё раз позже.")
  else:
-  send("Выбери пункт меню или используй /start.")
+  draft=TelegramCheckoutDraft.query.filter_by(telegram_id=telegram_id).first()
+  if draft and draft.awaiting_promo:
+   code=text_in.strip().upper()
+   promo=PromoCode.query.filter_by(code=code,active=True).first()
+   if promo and (not promo.expires_at or promo.expires_at>=datetime.utcnow()) and (promo.usage_limit is None or PromoCodeRedemption.query.filter_by(promo_code_id=promo.id).count()<promo.usage_limit) and not PromoCodeRedemption.query.filter_by(promo_code_id=promo.id,user_id=(TelegramAccount.query.filter_by(telegram_id=telegram_id).first().user_id if TelegramAccount.query.filter_by(telegram_id=telegram_id).first() else -1)).first():
+    draft.promo_code=promo.code; draft.awaiting_promo=False; db.session.commit()
+    send("✅ Промокод "+promo.code+" применён! Скидка "+str(promo.discount_percent)+"%. Теперь выбери тариф.")
+    show_tariffs()
+   else:
+    draft.awaiting_promo=False; db.session.commit(); send("Промокод не найден, истёк или уже использован. Проверь написание и попробуй ещё раз.")
+  else:
+   send("Выбери пункт меню или используй /start.")
  return {"ok":True}
+
+@app.route("/checkout",methods=["POST"])
+@login_required
+def checkout():
+ k=(request.form.get("tariff") or "").strip()
+ if k not in TARIFFS or k in ("trial","game"):
+  flash("Выбери платный тариф.","error")
+  return redirect(url_for("dashboard"))
+ shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip()
+ secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
+ if not shop_id or not secret_key:
+  flash("Онлайн-оплата ЮKassa временно не настроена. Попробуй позже.","error")
+  return redirect(url_for("dashboard"))
+ t=TARIFFS[k]
+ entered_code=(request.form.get("promo_code") or "").strip().upper()
+ promo=None; discount=0; amount=t["price"]
+ if entered_code:
+  promo=PromoCode.query.filter_by(code=entered_code,active=True).first()
+  if not promo or (promo.expires_at and promo.expires_at<datetime.utcnow()) or (promo.usage_limit is not None and PromoCodeRedemption.query.filter_by(promo_code_id=promo.id).count()>=promo.usage_limit):
+   flash("Промокод недействителен или срок его действия истёк.","error"); return redirect(url_for("dashboard")+"#buy")
+  if PromoCodeRedemption.query.filter_by(promo_code_id=promo.id,user_id=current_user.id).first():
+   flash("Ты уже использовал этот промокод.","error"); return redirect(url_for("dashboard")+"#buy")
+  discount=int(promo.discount_percent)
+  if discount<1 or discount>90: flash("Некорректная скидка по промокоду.","error"); return redirect(url_for("dashboard")+"#buy")
+  amount=int(round(t["price"]*(100-discount)/100))
+ o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=amount,payment_method="yookassa",status="awaiting_payment",promo_code=promo.code if promo else None,discount_percent=discount)
+ db.session.add(o)
+ db.session.commit()
+ return redirect(url_for("payment",oid=o.id))
+
+@app.route("/promo/preview",methods=["POST"])
+@login_required
+def promo_preview():
+ data=request.get_json(silent=True) or {}
+ code=str(data.get("code") or "").strip().upper()
+ tariff=str(data.get("tariff") or "1").strip()
+ if tariff not in TARIFFS or tariff in ("trial","game"):
+  return {"ok":False,"message":"Сначала выбери тариф."},400
+ if not code:
+  return {"ok":False,"message":"Введи промокод."},400
+ promo=PromoCode.query.filter_by(code=code,active=True).first()
+ if not promo or (promo.expires_at and promo.expires_at<datetime.utcnow()):
+  return {"ok":False,"message":"Промокод не найден или срок его действия истёк."},400
+ if promo.usage_limit is not None and PromoCodeRedemption.query.filter_by(promo_code_id=promo.id).count()>=promo.usage_limit:
+  return {"ok":False,"message":"Лимит использований промокода исчерпан."},400
+ if PromoCodeRedemption.query.filter_by(promo_code_id=promo.id,user_id=current_user.id).first():
+  return {"ok":False,"message":"Ты уже использовал этот промокод."},400
+ discount=int(promo.discount_percent)
+ if discount<1 or discount>90:
+  return {"ok":False,"message":"Для промокода настроена некорректная скидка."},400
+ base=int(TARIFFS[tariff]["price"])
+ amount=int(round(base*(100-discount)/100))
+ return {"ok":True,"code":promo.code,"discount":discount,"base":base,"amount":amount,"saving":base-amount}
+
+@app.route("/payment/<int:oid>")
+@login_required
+def payment(oid):
+ o=db.session.get(Order,oid)
+ if not o or o.user_id!=current_user.id: abort(404)
+ if o.status=="active" and o.subscription_url: return redirect(url_for("payment_return",oid=oid))
+ if o.status!="awaiting_payment":
+  flash("Платёж требует проверки. Если деньги уже списались, не создавай новый заказ.","error" if o.status=="error" else "info")
+  return redirect(url_for("dashboard"))
+ shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip(); secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
+ if not shop_id or not secret_key: flash("Онлайн-оплата ЮKassa временно не настроена.","error"); return redirect(url_for("dashboard"))
+ try:
+  if o.yookassa_payment_id:
+   response=requests.get("https://api.yookassa.ru/v3/payments/"+urllib.parse.quote(o.yookassa_payment_id,safe=""),auth=(shop_id,secret_key),timeout=15); response.raise_for_status(); data=response.json()
+   if data.get("status")=="succeeded" and data.get("paid") is True: return redirect(url_for("payment_return",oid=oid))
+   confirmation_url=(data.get("confirmation") or {}).get("confirmation_url")
+   if not confirmation_url: raise RuntimeError("ЮKassa не вернула ссылку оплаты.")
+  else:
+   response=requests.post("https://api.yookassa.ru/v3/payments",auth=(shop_id,secret_key),headers={"Idempotence-Key":f"flankvpn-order-{o.id}","Content-Type":"application/json"},json={"amount":{"value":f"{o.amount}.00","currency":"RUB"},"capture":True,"confirmation":{"type":"redirect","return_url":url_for("payment_return",oid=oid,_external=True)},"description":f"FlankVPN order #{o.id}","metadata":{"order_id":str(o.id),"user_id":str(o.user_id),"tariff_key":o.tariff_key}},timeout=20); response.raise_for_status(); data=response.json()
+   payment_id=data.get("id"); confirmation_url=(data.get("confirmation") or {}).get("confirmation_url")
+   if not payment_id or not confirmation_url: raise RuntimeError("ЮKassa не вернула ID платежа или ссылку оплаты.")
+   o.yookassa_payment_id=payment_id; db.session.commit()
+  return render_template("payment.html",order=o,tariff=TARIFFS[o.tariff_key],payment={"title":"ЮKassa"},confirmation_url=confirmation_url)
+ except Exception:
+  db.session.rollback(); app.logger.exception("Could not create or resume YooKassa payment for order %s",o.id)
+  flash("Не удалось подготовить оплату. Если деньги уже списались, не создавай новый заказ.","error"); return redirect(url_for("dashboard"))
+@app.route("/payment/return/<int:oid>")
+@login_required
+def payment_return(oid):
+ o=db.session.get(Order,oid)
+ if not o or o.user_id!=current_user.id: abort(404)
+ if o.yookassa_payment_id and o.status!="active":
+  shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip()
+  secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
+  if shop_id and secret_key:
+   try:
+    response=requests.get("https://api.yookassa.ru/v3/payments/"+urllib.parse.quote(o.yookassa_payment_id,safe=""),auth=(shop_id,secret_key),timeout=12)
+    response.raise_for_status()
+    paid_data=response.json()
+    amount=paid_data.get("amount") or {}
+    metadata=paid_data.get("metadata") or {}
+    valid=(paid_data.get("status")=="succeeded" and paid_data.get("paid") is True and amount.get("currency")=="RUB" and round(float(amount.get("value",0)),2)==float(o.amount) and str(metadata.get("order_id",""))==str(o.id))
+    if valid and o.status in ("awaiting_payment","awaiting_review","error"):
+     o.status="processing"; db.session.commit()
+     try:
+      provision(o)
+      record_promo_redemption(o)
+      award_referral_reward(o)
+      if o.email: send_subscription_email(o)
+     except Exception:
+      db.session.rollback(); o=db.session.get(Order,oid)
+      if o: o.status="error"; o.error_message="Оплата подтверждена, но выдача подписки не удалась."; db.session.commit()
+      app.logger.exception("Return-page provisioning failed for order %s",oid)
+   except Exception: app.logger.exception("Could not verify payment on return for order %s",oid)
+ # Once payment and provisioning are complete, send the customer to the
+ # dedicated subscription page (QR code + copyable personal URL), never home.
+ o=db.session.get(Order,oid)
+ if o and o.status=="active" and o.subscription_url:
+  session["show_connect_guide"]=True
+  return redirect(url_for("dashboard"))
+ return render_template("payment_return.html",order=o)
+@app.route("/subscription/<int:oid>")
+@login_required
+def subscription_page(oid):
+ o=db.session.get(Order,oid)
+ if not o or o.user_id!=current_user.id: abort(404)
+ if o.status!="active" or not o.subscription_url:
+  return redirect(url_for("payment_return",oid=oid))
+ return render_template("payment_return.html",order=o)
+@app.route("/payment/<int:oid>/paid",methods=["POST"])
+@login_required
+def paid(oid):
+ o=db.session.get(Order,oid)
+ if not o or o.user_id!=current_user.id: abort(404)
+ if o.status=="awaiting_payment":
+  o.status="awaiting_review"; db.session.commit()
+  # Telegram-уведомление о заказе отключено.
+  flash("Заявка отправлена. Администратор проверит поступление денег.","success")
+ return redirect(url_for("dashboard"))
+@app.route("/yookassa/webhook",methods=["POST"])
+@csrf.exempt
+def yookassa_webhook():
+ payload=request.get_json(silent=True) or {}
+ if payload.get("event")!="payment.succeeded": return {"ok":True,"ignored":True},200
+ obj=payload.get("object") or {}
+ payment_id=str(obj.get("id") or "").strip()
+ if not payment_id: return {"error":"missing payment id"},400
+ shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip()
+ secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
+ if not shop_id or not secret_key: return {"error":"payment verification unavailable"},503
+ try:
+  response=requests.get("https://api.yookassa.ru/v3/payments/"+urllib.parse.quote(payment_id,safe=""),auth=(shop_id,secret_key),timeout=15)
+  response.raise_for_status()
+  paid=response.json()
+ except Exception:
+  app.logger.exception("Could not verify YooKassa payment %s",payment_id)
+  return {"error":"could not verify payment"},503
+ if paid.get("status")!="succeeded" or paid.get("paid") is not True: return {"ok":True,"ignored":True},200
+ meta=paid.get("metadata") or {}
+ try: order_id=int(meta.get("order_id",""))
+ except (TypeError,ValueError): return {"error":"missing order metadata"},400
+ o=db.session.get(Order,order_id)
+ if not o: return {"error":"order not found"},404
+ if o.yookassa_payment_id!=payment_id: return {"error":"payment/order mismatch"},409
+ amount=paid.get("amount") or {}
+ try: amount_value=round(float(amount.get("value")),2)
+ except (TypeError,ValueError): return {"error":"invalid amount"},400
+ if amount.get("currency")!="RUB" or amount_value!=float(o.amount): return {"error":"amount mismatch"},409
+ if o.status=="active": return {"ok":True,"already_processed":True},200
+ # Atomically claim the order so duplicate YooKassa notifications cannot
+ # provision the same order concurrently and add the paid days twice.
+ claimable=("awaiting_payment","awaiting_review","error")
+ claimed=Order.query.filter(
+  Order.id==order_id,
+  Order.yookassa_payment_id==payment_id,
+  Order.status.in_(claimable)
+ ).update({Order.status:"processing"},synchronize_session=False)
+ db.session.commit()
+ if claimed!=1:
+  latest=db.session.get(Order,order_id)
+  if latest and latest.status in ("processing","active"):
+   return {"ok":True,"already_processing":True},200
+  return {"ok":True,"ignored":True},200
+ try:
+  o=db.session.get(Order,order_id)
+  provision(o)
+  record_promo_redemption(o)
+  award_referral_reward(o)
+  if o.email: send_subscription_email(o)
+  if o.telegram_id and o.subscription_url and os.getenv("TELEGRAM_BOT_TOKEN","").strip():
+   bot_token=os.getenv("TELEGRAM_BOT_TOKEN","").strip()
+   try:
+    tg_text=f"💚 Спасибо за оплату FlankVPN! Твой платёж подтверждён.\nТариф: {TARIFFS.get(o.tariff_key,{}).get('title',o.tariff_key)}\n\nСсылка для подключения:\n{o.subscription_url}\n\nОтсканируй QR-код или скопируй ссылку в совместимый VPN-клиент."
+    qr_image=qrcode.make(o.subscription_url)
+    qr_buffer=io.BytesIO()
+    qr_image.save(qr_buffer,format="PNG")
+    qr_buffer.seek(0)
+    photo_response=requests.post("https://api.telegram.org/bot"+bot_token+"/sendPhoto",
+     data={"chat_id":o.telegram_id,"caption":tg_text[:1000]},
+     files={"photo":("flankvpn-subscription.png",qr_buffer.getvalue(),"image/png")},timeout=20)
+    photo_response.raise_for_status()
+    if not photo_response.json().get("ok"):
+     raise RuntimeError("Telegram sendPhoto returned ok=false")
+   except Exception:
+    app.logger.exception("Could not send subscription QR to Telegram for order %s",o.id)
+    try:
+     fallback=requests.post("https://api.telegram.org/bot"+bot_token+"/sendMessage",
+      json={"chat_id":o.telegram_id,"text":f"💚 Спасибо за оплату FlankVPN! Оплата подтверждена.\nСсылка для подключения:\n{o.subscription_url}\n\nQR-код отправить не удалось; используй ссылку выше.","disable_web_page_preview":True},timeout=10)
+     fallback.raise_for_status()
+    except Exception:
+     app.logger.exception("Could not send subscription link fallback to Telegram for order %s",o.id)
+  return {"ok":True},200
+ except Exception:
+  db.session.rollback()
+  o=db.session.get(Order,order_id)
+  if o: o.status="error"; o.error_message="Оплата подтверждена, но выдача подписки не удалась; проверь админку." ; db.session.commit()
+  app.logger.exception("Paid order %s could not be provisioned",order_id)
+  return {"error":"subscription provisioning failed"},500
 @app.route("/payment-sbp-qr.png")
 def payment_sbp_qr():
  payment_url="https://www.tbank-online.com/rm/r_vAnkhgISyw.ZkhuMWpXtK/UbHFv58761"
