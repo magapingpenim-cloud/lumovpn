@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 780">
+<defs>
+ <linearGradient id="marble" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".38" stop-color="#bdbbb7"/><stop offset=".65" stop-color="#f3f1ed"/><stop offset="1" stop-color="#858481"/></linearGradient>
+ <linearGradient id="shade" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#393a39"/><stop offset=".45" stop-color="#aaa9a5"/><stop offset="1" stop-color="#454645"/></linearGradient>
+ <linearGradient id="visor" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#00e8d0" stop-opacity=".92"/><stop offset=".48" stop-color="#004e4a" stop-opacity=".96"/><stop offset="1" stop-color="#001b1b"/></linearGradient>
+ <filter id="shadow"><feGaussianBlur stdDeviation="18"/></filter>
+</defs>
+<rect x="88" y="110" width="610" height="575" fill="#050606"/>
+<rect x="20" y="160" width="160" height="205" fill="#0cd8c2"/>
+<rect x="170" y="650" width="95" height="130" fill="#0cd8c2"/>
+<ellipse cx="405" cy="700" rx="280" ry="34" fill="#000" opacity=".18" filter="url(#shadow)"/>
+<!-- marble bust and shoulders -->
+<path d="M160 780 Q185 690 280 650 L335 560 L510 545 L565 620 Q650 650 760 730 L760 780Z" fill="url(#marble)" stroke="#777" stroke-width="3"/>
+<path d="M270 675 Q325 600 340 520 L520 500 Q535 605 625 672 L540 780 L230 780Z" fill="url(#shade)" opacity=".32"/>
+<!-- neck -->
+<path d="M310 540 Q345 490 340 420 L510 395 Q500 500 560 585 L480 660 L330 620Z" fill="url(#marble)" stroke="#777" stroke-width="3"/>
+<!-- head silhouette -->
+<path d="M255 235 Q245 125 360 70 Q500 15 605 130 Q665 205 640 340 L620 450 Q600 535 520 565 Q430 610 345 555 Q275 510 255 420 Q230 350 255 235Z" fill="url(#marble)" stroke="#777" stroke-width="4"/>
+<!-- hair curls -->
+<g fill="url(#marble)" stroke="#777" stroke-width="5">
+ <path d="M258 240 Q185 190 235 130 Q205 60 285 70 Q295 0 370 40 Q425 -10 465 45 Q540 0 570 75 Q650 55 670 135 Q720 185 655 245 Q610 200 570 190 Q515 125 450 150 Q370 115 325 185Z"/>
+ <path d="M252 175 Q195 150 225 105 Q270 70 302 115 Q322 165 280 205Z"/>
+ <path d="M330 102 Q300 35 360 25 Q420 35 402 100 Q380 145 330 102Z"/>
+ <path d="M430 105 Q420 30 490 35 Q545 70 500 130 Q465 155 430 105Z"/>
+ <path d="M535 150 Q535 65 600 85 Q660 135 600 190 Q560 205 535 150Z"/>
+ <path d="M260 270 Q205 235 235 190 Q285 170 310 220 Q300 270 260 270Z"/>
+ <path d="M600 265 Q650 210 680 265 Q690 325 630 340Z"/>
+</g>
+<!-- face planes -->
+<path d="M320 245 Q390 180 490 220 Q570 255 570 355 L545 460 Q520 530 450 540 Q365 530 330 455 Q300 375 320 245Z" fill="url(#marble)" stroke="#777" stroke-width="2"/>
+<path d="M465 235 Q530 265 550 335 L520 475 Q500 520 455 540 Q505 440 490 365Z" fill="#777" opacity=".2"/>
+<!-- visor frame -->
+<path d="M270 290 Q410 215 600 270 L660 335 Q640 410 575 430 L455 390 L350 430 Q285 405 250 345Z" fill="#071413" stroke="#00d9c3" stroke-width="8"/>
+<path d="M270 300 Q405 238 590 280 L640 338 Q600 390 560 395 L455 365 L350 400 Q290 385 270 335Z" fill="url(#visor)" stroke="#7bfff0" stroke-width="3"/>
+<path d="M360 280 L340 390 M475 260 L465 380 M560 275 L580 390" stroke="#6ffff1" stroke-width="9" opacity=".65"/>
+<path d="M280 312 Q400 255 600 290" stroke="#fff" stroke-width="5" opacity=".55" fill="none"/>
+<!-- nose, lips and chin details -->
+<path d="M455 345 Q440 400 420 430 Q440 450 470 442" fill="none" stroke="#777" stroke-width="7" opacity=".55"/>
+<path d="M405 478 Q450 495 485 475" fill="none" stroke="#555" stroke-width="7" opacity=".5"/>
+<path d="M385 505 Q450 535 505 500" fill="none" stroke="#fff" stroke-width="6" opacity=".5"/>
+<path d="M285 560 Q210 650 150 700" stroke="#fff" stroke-width="8" opacity=".2" fill="none"/>
+<path d="M560 620 Q650 660 735 720" stroke="#555" stroke-width="10" opacity=".3" fill="none"/>
+</svg>
