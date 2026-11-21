@@ -1,7 +1,57 @@
 {% extends "base.html" %}
-{% block title %}FlankVPN{% endblock %}
+{% block title %}FlankVPN — свободный интернет без ограничений{% endblock %}
 {% block content %}
-<div class="homepage-art-only">
-  <img src="{{ url_for('static', filename='flankvpn-homepage.jpeg') }}" alt="FlankVPN">
-</div>
+<section class="editorial-hero" id="home">
+  <div class="hero-copy">
+    <div class="hero-kicker">VPN-СЕРВИС НОВОГО ПОКОЛЕНИЯ <span></span></div>
+    <h1>СВОБОДНЫЙ<br>ИНТЕРНЕТ.<br><em>БЕЗ ОГРАНИЧЕНИЙ.</em></h1>
+    <p>Быстрый, безопасный и стабильный VPN<br>для работы, игр и путешествий.</p>
+    <div class="hero-actions">
+      {% if not current_user.is_authenticated %}
+        <a class="editorial-btn editorial-btn-dark" href="{{ url_for('register') }}">Начать бесплатно ↗</a>
+      {% elif current_user.orders|selectattr('tariff_key','equalto','trial')|selectattr('status','equalto','active')|list %}
+        <a class="editorial-btn editorial-btn-dark" href="{{ url_for('referrals') }}">Пригласить друга ↗</a>
+      {% else %}
+        <a class="editorial-btn editorial-btn-dark" href="#tariffs">Выбрать тариф ↗</a>
+      {% endif %}
+      <a class="editorial-btn editorial-btn-outline" href="#tariffs">Тарифы</a>
+    </div>
+    <div class="hero-side-note">FLANKVPN®<br>EST. 2026<span>↗</span></div>
+  </div>
+  <div class="hero-visual" aria-label="Мраморная статуя в бирюзовых очках">
+    <div class="hero-teal-block"></div><div class="hero-black-block"></div>
+    <img src="{{ url_for('static', filename='flankvpn-hero-art.webp') }}" alt="Мраморная статуя в бирюзовых очках">
+    <span class="visual-corner visual-corner-a"></span><span class="visual-corner visual-corner-b"></span><span class="visual-cross">＋</span>
+  </div>
+  <div class="hero-benefits">
+    <div class="benefit-item"><span class="benefit-symbol">ϟ</span><div><strong>Высокая скорость</strong><p>Стабильное соединение<br>без лагов</p></div></div>
+    <div class="benefit-item"><span class="benefit-symbol">♙</span><div><strong>Полная приватность</strong><p>Шифрование трафика<br>и защита данных</p></div></div>
+    <div class="benefit-item"><span class="benefit-symbol">▣</span><div><strong>На всех устройствах</strong><p>Windows, macOS, iOS,<br>Android и другие</p></div></div>
+    <div class="benefit-index">↗ <em>/01</em></div>
+  </div>
+</section>
+<section class="editorial-section" id="tariffs">
+  <div class="editorial-section-head"><span>02 / ТАРИФЫ</span><h2>ТАРИФЫ.<br><em>ВЫБЕРИ СВОЙ.</em></h2><p>Выбери подходящий срок подписки.</p></div>
+  <div class="editorial-plans">
+    {% for k,t in tariffs.items() if k != 'trial' %}
+    <article class="editorial-plan {% if k=='3' %}featured{% endif %}">
+      {% if k=='3' %}<span class="plan-tag">Выгодно</span>{% endif %}
+      <span class="plan-duration">{{'01' if k=='1' else ('03' if k=='3' else '12')}} / МЕСЯЦ{{' ' if k=='1' else 'ЕВ'}}</span>
+      <h3>{{t.title}}</h3><div class="plan-price">{{t.price}} ₽</div>
+      <ul><li>Все серверы</li><li>Высокая скорость</li><li>Поддержка 24/7</li></ul>
+      {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('checkout') }}"><input type="hidden" name="tariff" value="{{ k }}"><button class="editorial-btn editorial-btn-dark" type="submit">Выбрать ↗</button></form>
+      {% else %}<a class="editorial-btn editorial-btn-dark" href="{{ url_for('register') }}">Выбрать ↗</a>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+<section class="editorial-section connect-section" id="connect">
+  <span class="section-index">03 / ПОДКЛЮЧЕНИЕ</span><h2>ПОДКЛЮЧЕНИЕ.<br><em>ПРОСТО И БЫСТРО.</em></h2>
+  <div class="connect-steps"><div><b>01</b><strong>Выбери платформу</strong><p>Windows, macOS, iOS, Android</p></div><div><b>02</b><strong>Скачай и установи</strong><p>Совместимый VPN-клиент</p></div><div><b>03</b><strong>Войди в аккаунт</strong><p>Подключись по QR или ссылке</p></div></div>
+</section>
+<section class="editorial-section support-section" id="support">
+  <span class="section-index">04 / ПОДДЕРЖКА</span><h2>МЫ НА СВЯЗИ.</h2><p>Ответим на любой вопрос и поможем с подключением.</p>
+  {% if current_user.is_authenticated %}<a class="editorial-btn editorial-btn-dark" href="{{ url_for('my_support') }}">Открыть поддержку ↗</a>{% else %}<a class="editorial-btn editorial-btn-dark" href="{{ url_for('login') }}">Войти и написать ↗</a>{% endif %}
+</section>
 {% endblock %}
