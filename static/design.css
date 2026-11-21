@@ -1,7 +1,7 @@
 :root{color-scheme:light;--ink:#101010;--muted:#66635f;--line:#d6d0c7;--surface:#f8f4ed;--surface-soft:#eee9e0;--accent:#13d8bd;--shadow:none;--radius:3px}
 body{background:#e9e5de;color:#101010;font-family:Arial,Helvetica,sans-serif}.site-shell{max-width:1600px;margin:auto;background:#e9e5de}
 .nav{max-width:1500px;min-height:70px;padding:14px 30px;gap:24px}.brand{font-size:19px;font-weight:900;letter-spacing:-1px;gap:2px}.brand img{display:none}.brand small{font-size:9px;letter-spacing:1px;color:#00a994;margin-left:1px}
-.nav>nav{gap:clamp(10px,1.8vw,24px);font-size:11px;font-weight:700}.nav>nav:before{content:"Главная   Тарифы   Подключение   Поддержка";white-space:pre;display:block;margin-right:clamp(8px,2vw,30px);color:#161616}
+.nav>nav{gap:clamp(10px,1.8vw,24px);font-size:11px;font-weight:700}.nav>nav>a:not(.navcta){font-size:11px;color:#161616}.nav>nav>a:not(.navcta):hover{color:#009b88}
 .navcta{background:#111;color:white;border:0;border-radius:0;padding:10px 16px;box-shadow:none;font-size:10px}.theme-toggle{width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;padding:0!important;border:1px solid #aaa;border-radius:50%;background:transparent;color:#111}.theme-label{display:none}
 .container{max-width:1500px;padding:0 30px}
 .hero{margin:4px 0 36px;padding:clamp(34px,5vw,72px) clamp(26px,4vw,58px);min-height:470px;border-radius:3px;border:1px solid #d6d0c7;background:#f8f4ed;color:#101010;box-shadow:none}
