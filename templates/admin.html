@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Заказы — панель LumoVPN{% endblock %}
+{% block title %}Заказы — панель FlankVPN{% endblock %}
 {% block content %}
 <section class="pagetitle">
-  <div class="eyebrow">LUMOVPN ADMIN</div>
+  <div class="eyebrow">FLANKVPN ADMIN</div>
   <h1>Заказы и оплаты</h1>
   <p class="muted">Всего заказов: <strong>{{ total_orders }}</strong> · Сумма заявок на проверке: <strong>{{ total_pending }} ₽</strong></p>
   <div class="actions" style="margin-top:16px"><a class="btn secondary" href="{{ url_for('admin_orders') }}">Заказы и оплаты</a><a class="btn secondary" href="{{ url_for('admin_support') }}">Чат с клиентами{% if support_new_count %} · {{ support_new_count }} новых{% endif %}</a></div>
