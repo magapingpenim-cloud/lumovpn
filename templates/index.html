@@ -1,46 +1,29 @@
 {% extends "base.html" %}
 {% block title %}FlankVPN — свободный интернет без ограничений{% endblock %}
 {% block content %}
-<section class="editorial-hero" id="home">
-  <div class="editorial-copy">
-    <div class="editorial-kicker">VPN-СЕРВИС НОВОГО ПОКОЛЕНИЯ <span></span></div>
-    <h1>СВОБОДНЫЙ<br>ИНТЕРНЕТ.<br><em>БЕЗ ОГРАНИЧЕНИЙ.</em></h1>
-    <p>Быстрый, безопасный и стабильный VPN<br class="desktop-break"> для работы, игр и путешествий.</p>
-    <div class="editorial-actions">
-      {% if not current_user.is_authenticated %}
-        <a class="editorial-button dark" href="{{ url_for('register') }}">Начать бесплатно ↗</a>
-      {% elif current_user.orders|selectattr('tariff_key','equalto','trial')|selectattr('status','equalto','active')|list %}
-        <a class="editorial-button dark" href="{{ url_for('referrals') }}">Пригласить друга ↗</a>
-      {% else %}
-        <a class="editorial-button dark" href="#tariffs">Выбрать тариф ↗</a>
-      {% endif %}
-      <a class="editorial-button outline" href="#tariffs">Тарифы</a>
-    </div>
-  </div>
-  <div class="editorial-art">
-    <img src="{{ url_for('static', filename='hero-statue.svg') }}" alt="Мраморная статуя в бирюзовых очках">
-    <div class="art-note">FLANKVPN®<br>EST. 2026<br><span>↗</span></div>
-  </div>
-  <div class="editorial-benefits">
-    <div class="benefit"><span class="benefit-icon">ϟ</span><div><strong>Высокая скорость</strong><p>Стабильное соединение<br>без лагов</p></div></div>
-    <div class="benefit"><span class="benefit-icon">♙</span><div><strong>Полная приватность</strong><p>Шифрование трафика<br>и защита данных</p></div></div>
-    <div class="benefit"><span class="benefit-icon">▣</span><div><strong>На всех устройствах</strong><p>Windows, macOS, iOS,<br>Android и другие</p></div></div>
-    <div class="benefit-index">↗ <i>/01</i></div>
-  </div>
-</section>
-<section class="editorial-tariffs" id="tariffs">
-  <div class="editorial-section-head"><span>02 / ТАРИФЫ</span><h2>ТАРИФЫ.<br><em>ВЫБЕРИ СВОЙ.</em></h2></div>
-  <div class="plans plans-advanced">
-    {% for k,t in tariffs.items() if k != 'trial' %}
-    <article class="plan plan-advanced {% if k=='3' %}plan-best{% endif %}">
-      {% if k=='3' %}<b class="popular">Выгодно</b>{% endif %}
-      <div class="plan-period">{{'01' if k=='1' else ('03' if k=='3' else '12')}} МЕСЯЦ{{' ' if k=='1' else 'ЕВ'}}</div>
-      <h3>{{t.title}}</h3><div class="price">{{t.price}} ₽</div>
-      <ul><li>Все серверы</li><li>Высокая скорость</li><li>Поддержка 24/7</li></ul>
-      {% if current_user.is_authenticated %}<form method="post" action="{{ url_for('checkout') }}"><input type="hidden" name="tariff" value="{{ k }}"><button class="editorial-button dark" type="submit">Выбрать ↗</button></form>{% else %}<a class="editorial-button dark" href="{{url_for('register')}}">Выбрать ↗</a>{% endif %}
-    </article>{% endfor %}
-  </div>
-</section>
-<section class="editorial-lower" id="connect"><span>03 / ПОДКЛЮЧЕНИЕ</span><h2>ПОДКЛЮЧЕНИЕ.<br><em>ПРОСТО И БЫСТРО.</em></h2><div class="editorial-steps"><p><b>01</b> Выбери платформу — Windows, macOS, iOS, Android</p><p><b>02</b> Скачай и установи совместимый VPN-клиент</p><p><b>03</b> Войди в аккаунт и подключись</p></div></section>
-<section class="editorial-lower" id="support"><span>04 / ПОДДЕРЖКА</span><h2>МЫ НА СВЯЗИ.</h2><p>Ответим на любой вопрос и поможем с подключением.</p><a class="editorial-button dark" href="{{ url_for('my_support') if current_user.is_authenticated else url_for('login') }}">Открыть поддержку ↗</a></section>
+<div class="reference-stage" aria-label="FlankVPN — главная страница">
+  <img class="reference-image" src="{{ url_for('static', filename='reference-home.webp') }}" alt="Главная страница FlankVPN">
+  <a class="hotspot home-link" href="{{ url_for('index') }}" aria-label="Главная"></a>
+  <a class="hotspot tariffs-link" href="#tariffs" aria-label="Тарифы"></a>
+  <a class="hotspot connect-link" href="#connect" aria-label="Подключение"></a>
+  <a class="hotspot support-link" href="{{ url_for('my_support') if current_user.is_authenticated else url_for('login') }}" aria-label="Поддержка"></a>
+  <button class="hotspot theme-link" type="button" id="reference-theme" aria-label="Переключить тему"></button>
+  <a class="hotspot login-link" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('login') }}" aria-label="Войти"></a>
+  <a class="hotspot trial-link" href="{{ url_for('register') if not current_user.is_authenticated else url_for('dashboard') }}" aria-label="Начать бесплатно"></a>
+  <a class="hotspot tariff-button-link" href="#tariffs" aria-label="Посмотреть тарифы"></a>
+</div>
+<div class="reference-destinations" aria-hidden="true">
+  <section id="tariffs"><h2>Тарифы</h2><a href="{{ url_for('index') }}">На главную</a></section>
+  <section id="connect"><h2>Подключение</h2><a href="{{ url_for('index') }}">На главную</a></section>
+</div>
+<script>
+(function(){
+ const b=document.getElementById('reference-theme');
+ if(!b)return;
+ b.addEventListener('click',function(){
+   const root=document.documentElement;
+   root.dataset.theme=root.dataset.theme==='light'?'dark':'light';
+ });
+})();
+</script>
 {% endblock %}
