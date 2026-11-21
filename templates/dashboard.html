@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Мои подписки — FlankVPN{% endblock %}
+{% block title %}Мои подписки — LumoVPN{% endblock %}
 {% block content %}
 <section class="dashboard-welcome">
   <div>
@@ -7,7 +7,7 @@
     <h1>Мои подписки 📦</h1>
     <p>Здесь хранятся твои активные VPN-подписки, ссылки и QR-коды.</p>
   </div>
-  <div class="welcome-mark"><img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt=""><span>Flank<small>VPN</small></span></div>
+  <div class="welcome-mark"><img src="{{ url_for('static', filename='lumovpn-logo.svg') }}" alt=""><span>Lumo<small>VPN</small></span></div>
 </section>
 <div class="account-quickline"><span class="account-dot"></span><span>Аккаунт активен</span><span class="account-email">{{ current_user.email }}</span></div>
 {% if trial_activated %}
@@ -19,13 +19,13 @@
 <div class="connect-guide-backdrop" id="connect-guide" role="dialog" aria-modal="true" aria-labelledby="connect-guide-title">
  <section class="connect-guide-card">
   <button class="connect-guide-close" type="button" aria-label="Закрыть" id="connect-guide-close">×</button>
-  <div class="eyebrow">FLANKVPN · БЫСТРЫЙ СТАРТ</div>
+  <div class="eyebrow">LUMOVPN · БЫСТРЫЙ СТАРТ</div>
   <h2 id="connect-guide-title">🎉 Подписка готова!</h2>
   <p class="muted">Осталось добавить её в приложение — это займёт пару минут.</p>
   <div class="connect-guide-step"><span>1</span><div><strong>📲 Скачай INCY</strong><p>Установи приложение из App Store на iPhone или iPad.</p><a class="btn secondary full" href="https://apps.apple.com/app/incy/id6756943388" target="_blank" rel="noopener">Скачать INCY в App Store ↗</a>
   <a class="btn secondary full" href="https://apps.apple.com/ae/app/happ-proxy-utility/id6504287215" target="_blank" rel="noopener">Скачать HAPP в App Store ↗</a></div></div>
   <div class="connect-guide-step"><span>2</span><div><strong>📋 Скопируй ссылку подписки</strong><p>Нажми кнопку — скопируется твоя личная ссылка.</p><button type="button" class="btn primary full copy-subscription" data-copy-subscription="{{ current_subscription.subscription_url }}">Скопировать ссылку</button></div></div>
-  <div class="connect-guide-step"><span>3</span><div><strong>🚀 Добавь ссылку в INCY</strong><p>Открой INCY или HAPP → нажми «+» / «Добавить подписку» → вставь скопированную ссылку или отсканируй QR-код. После импорта появятся серверы FlankVPN.</p></div></div>
+  <div class="connect-guide-step"><span>3</span><div><strong>🚀 Добавь ссылку в INCY</strong><p>Открой INCY или HAPP → нажми «+» / «Добавить подписку» → вставь скопированную ссылку или отсканируй QR-код. После импорта появятся серверы LumoVPN.</p></div></div>
   <button type="button" class="btn secondary full" id="connect-guide-done">Понятно, начать пользоваться</button>
  </section>
 </div>
@@ -80,7 +80,7 @@
       </div>
       <div class="ready-card-body">
         <div class="expired-subscription-notice">
-          <strong>⏳ Подписка FlankVPN закончилась</strong>
+          <strong>⏳ Подписка LumoVPN закончилась</strong>
           <p>Серверы временно недоступны. Продли подписку, чтобы восстановить доступ.</p>
           <a class="btn primary full" href="{{ url_for('index') }}#tariffs">💳 Продлить подписку</a>
           <a class="btn secondary full" href="https://t.me/flankvpn_bot" target="_blank" rel="noopener">Открыть Telegram-бота ↗</a>
