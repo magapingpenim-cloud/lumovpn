@@ -14,6 +14,14 @@
 </head>
 <body>
   <div class="site-shell">
+    {% if request.endpoint == 'index' %}
+    <section class="first-entry-overlay" id="first-entry-overlay" aria-label="Добро пожаловать в FlankVPN" hidden>
+      <div class="first-entry-card">
+        <img src="{{ url_for('static', filename='flankvpn-first-entry.webp') }}" alt="FlankVPN — свободный интернет без ограничений">
+        <button type="button" id="first-entry-close">Перейти на сайт ↗</button>
+      </div>
+    </section>
+    {% endif %}
     <header class="nav">
       {% if current_user.is_authenticated %}
       <details class="site-menu">
