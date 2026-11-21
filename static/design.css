@@ -44,3 +44,18 @@ html,body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,He
 :root[data-theme="dark"] .site-footer{color:#ddd;border-color:#eee}
 body:has(.editorial-hero) .site-menu,body:has(.editorial-hero) .support-launch{display:none}
 @media(max-width:650px){.hero-visual img{max-width:100%;object-fit:contain}}
+
+/* First-visit FlankVPN welcome artwork */
+.first-entry-overlay[hidden]{display:none!important}
+.first-entry-overlay{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:18px;background:rgba(8,10,10,.88);backdrop-filter:blur(8px)}
+.first-entry-card{display:flex;flex-direction:column;align-items:center;gap:14px;max-height:calc(100dvh - 36px);width:min(92vw,520px)}
+.first-entry-card img{display:block;width:auto;max-width:100%;height:auto;max-height:calc(100dvh - 112px);object-fit:contain;border-radius:2px;box-shadow:0 24px 80px rgba(0,0,0,.35)}
+.first-entry-card button{min-height:48px;padding:0 28px;border:0;border-radius:0;background:#050606;color:#fff;font:700 15px/1 Arial,sans-serif;cursor:pointer}
+.first-entry-card button:focus-visible{outline:2px solid #00d8c2;outline-offset:4px}
+body.first-entry-open{overflow:hidden}
+@media(max-width:600px){
+ .first-entry-overlay{padding:10px}
+ .first-entry-card{width:min(94vw,420px);max-height:calc(100dvh - 20px);gap:10px}
+ .first-entry-card img{max-height:calc(100dvh - 82px);max-width:100%;width:auto}
+ .first-entry-card button{width:100%;min-height:46px;font-size:14px}
+}
