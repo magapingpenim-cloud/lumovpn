@@ -10,7 +10,7 @@
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
   <title>{% block title %}FlankVPN — интернет по твоим правилам{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261112') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='design.css', v='20261122') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='design.css', v='20261122-firstentry1') }}">
 </head>
 <body>
   <div class="site-shell">
@@ -129,7 +129,25 @@
       })();
     </script>
 
-    <footer class="site-footer">
+    <script>
+      (function(){
+        const screen=document.getElementById('first-entry-overlay');
+        const close=document.getElementById('first-entry-close');
+        if(!screen||!close)return;
+        let seen=false;
+        try{seen=localStorage.getItem('flankvpn-first-entry-seen')==='1';}catch(e){}
+        if(!seen){screen.hidden=false;document.body.classList.add('first-entry-open');}
+        function dismiss(){
+          screen.hidden=true;
+          document.body.classList.remove('first-entry-open');
+          try{localStorage.setItem('flankvpn-first-entry-seen','1');}catch(e){}
+        }
+        close.addEventListener('click',dismiss);
+        screen.addEventListener('click',e=>{if(e.target===screen)dismiss();});
+        document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!screen.hidden)dismiss();});
+      })();
+    </script>
+\n    <footer class="site-footer">
       <span class="footer-brand">FLANKVPN</span><span>·</span><span>Просто подключиться.</span><span class="footer-year">© 2026</span>
     </footer>
   </div>
