@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}FlankVPN — подключение без лишних сложностей{% endblock %}
+{% block title %}LumoVPN — подключение без лишних сложностей{% endblock %}
 {% block content %}
 <section class="hero hero-advanced">
   <div class="hero-copy">
-    <div class="eyebrow"><span class="live-dot"></span> 🌐 FLANKVPN · ТВОЁ ПОДКЛЮЧЕНИЕ</div>
+    <div class="eyebrow"><span class="live-dot"></span> 🌐 LUMOVPN · ТВОЁ ПОДКЛЮЧЕНИЕ</div>
     <h1>Интернет —<br><span>по твоим правилам.</span></h1>
     <p>Понятная подписка, личный кабинет и быстрый старт через совместимый VPN-клиент. Без запутанных инструкций и лишних экранов.</p>
     <div class="actions">{% if not current_user.is_authenticated %}<a class="btn primary" href="{{ url_for('register') }}">Начать бесплатно ↗</a>{% elif current_user.orders|selectattr('tariff_key','equalto','trial')|selectattr('status','equalto','active')|list %}<a class="btn primary" href="{{ url_for('referrals') }}">Пригласить друга 🎁</a>{% else %}<a class="btn primary" href="#tariffs">Выбрать тариф ↗</a>{% endif %}<a class="btn glass" href="#tariffs">Сравнить тарифы</a></div>
@@ -11,7 +11,7 @@
   </div>
   <div class="hero-orbit" aria-hidden="true">
     <div class="orbit-ring orbit-ring-one"></div><div class="orbit-ring orbit-ring-two"></div>
-    <div class="orbit-core"><img src="{{url_for('static', filename='flankvpn-logo.svg')}}" alt=""><span>Flank<small>VPN</small></span><small>CONNECTED BY DESIGN</small></div>
+    <div class="orbit-core"><img src="{{url_for('static', filename='lumovpn-logo.svg')}}" alt=""><span>Flank<small>VPN</small></span><small>CONNECTED BY DESIGN</small></div>
     <div class="orbit-chip chip-top">● Просто</div><div class="orbit-chip chip-bottom">VPN-подключение</div>
   </div>
 </section>
@@ -62,5 +62,5 @@
   <details class="faq-item"><summary>Как подключиться к VPN?</summary><p>После подтверждения оплаты сайт покажет QR-код и ссылку подписки. Их можно открыть или скопировать. Следуй инструкции для своего устройства.</p></details>
   <details class="faq-item"><summary>Почему выгоднее тариф на 12 месяцев?</summary><p>Стоимость годового тарифа ниже, чем оплата 12 месяцев по отдельности. Экономия отображается на карточке до оформления заказа.</p></details>
 </section>
-{% if not current_user.is_authenticated %}<section class="callout callout-advanced"><div><div class="eyebrow">ГОТОВ НАЧАТЬ?</div><h2>Начни с пробного доступа</h2><p>Зарегистрируйся и посмотри, как устроен FlankVPN.</p></div><a class="btn primary" href="{{url_for('register')}}">Создать аккаунт ↗</a></section>{% endif %}
+{% if not current_user.is_authenticated %}<section class="callout callout-advanced"><div><div class="eyebrow">ГОТОВ НАЧАТЬ?</div><h2>Начни с пробного доступа</h2><p>Зарегистрируйся и посмотри, как устроен LumoVPN.</p></div><a class="btn primary" href="{{url_for('register')}}">Создать аккаунт ↗</a></section>{% endif %}
 {% endblock %}
