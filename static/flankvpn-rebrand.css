@@ -325,3 +325,20 @@ button:disabled,.btn:disabled{opacity:.55;cursor:not-allowed}
   .brand-wordmark{font-size:23px;letter-spacing:-1.1px}
   .nav-login{min-width:82px;padding-left:15px;padding-right:15px}
 }
+
+
+/* November 22 polish: visible 10-day trial and reliable mobile menu dismissal */
+.hero-trial-offer{display:flex;align-items:center;flex-wrap:wrap;gap:11px;margin:20px 0 2px}
+.hero-trial-badge{display:inline-flex;align-items:center;min-height:32px;padding:0 13px;border:1px solid rgba(6,61,53,.3);border-radius:999px;background:rgba(255,251,246,.76);color:#06483e;font-size:10px;font-weight:900;letter-spacing:1.35px;box-shadow:0 5px 16px rgba(18,62,50,.07)}
+.hero-trial-note{color:#33433d;font-size:11px;font-weight:600}
+.mobile-menu[open] summary{background:#e6f5ef;border-color:rgba(9,61,53,.32)}
+.mobile-menu[open] summary span:first-child{transform:translateY(3.25px) rotate(45deg)}
+.mobile-menu[open] summary span:nth-child(2){opacity:0}
+.mobile-menu[open] summary span:last-child{transform:translateY(-3.25px) rotate(-45deg)}
+.mobile-menu summary span{transition:transform .18s ease,opacity .18s ease}
+.mobile-menu-panel{z-index:100;max-height:min(70vh,560px);overflow-y:auto}
+@media(max-width:680px){
+ .hero-trial-offer{gap:6px;margin:12px 0 0}
+ .hero-trial-badge{min-height:27px;padding:0 10px;font-size:9px;letter-spacing:1px}
+ .hero-trial-note{max-width:245px;font-size:9px;line-height:1.3}
+}
