@@ -3,7 +3,7 @@
 {% block content %}
 <section class="payment-flow">
   <div class="payment-flow-card">
-    <a class="back-link" href="{{ url_for('index') }}">← Назад к тарифам</a>
+    <a class="back-link" href="{{ url_for('tariffs') }}">← Назад к тарифам</a>
     <div class="eyebrow">FLANKVPN · ОФОРМЛЕНИЕ ПОДПИСКИ</div>
     <h1>Твоя подписка</h1>
     <div class="selected-plan"><span class="selected-plan-label">Выбранный срок</span><strong>{{ tariff.title }}</strong>{% if order.discount_percent %}<span class="tiny muted">Промокод {{ order.promo_code }} · скидка {{ order.discount_percent }}%</span>{% endif %}<span class="selected-plan-price">{{ order.amount }} ₽</span></div>

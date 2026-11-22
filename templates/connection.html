@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Подключение — FlankVPN{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="eyebrow">FLANKVPN / ПОДКЛЮЧЕНИЕ</div>
+  <h1>Подключиться просто<span class="heading-dot">.</span></h1>
+  <p>Три шага — и подписка FlankVPN добавлена в совместимый VPN-клиент.</p>
+</section>
+<section class="connection-layout">
+  <div class="connection-steps">
+    <article class="connection-step"><span>01</span><div><h2>Создайте аккаунт</h2><p>Зарегистрируйтесь по email и подтвердите адрес. Новым пользователям доступен пробный период на 10 дней.</p><a href="{{ url_for('register') if not current_user.is_authenticated else url_for('dashboard') }}" class="text-link">{{ 'Перейти в кабинет' if current_user.is_authenticated else 'Создать аккаунт' }} ↗</a></div></article>
+    <article class="connection-step"><span>02</span><div><h2>Получите ссылку подписки</h2><p>После активации подписки откройте личный кабинет. Там доступны персональная ссылка и QR-код.</p><a href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('login') }}" class="text-link">Открыть личный кабинет ↗</a></div></article>
+    <article class="connection-step"><span>03</span><div><h2>Добавьте подписку в приложение</h2><p>Откройте совместимый VPN-клиент, выберите добавление подписки по ссылке или QR-коду и импортируйте данные.</p></div></article>
+  </div>
+  <aside class="connection-note"><div class="connection-note-icon">⌘</div><h2>На любом устройстве</h2><p>Windows · macOS · iOS · Android</p><p class="muted">Названия пунктов меню зависят от выбранного приложения. Используйте только вашу персональную ссылку подписки и не передавайте её другим людям.</p><a class="btn-main btn-main-small" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('register') }}">Продолжить <span>↗</span></a></aside>
+</section>
+{% endblock %}

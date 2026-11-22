@@ -82,7 +82,7 @@
         <div class="expired-subscription-notice">
           <strong>⏳ Подписка FlankVPN закончилась</strong>
           <p>Серверы временно недоступны. Продли подписку, чтобы восстановить доступ.</p>
-          <a class="btn primary full" href="{{ url_for('index') }}#tariffs">💳 Продлить подписку</a>
+          <a class="btn primary full" href="{{ url_for('tariffs') }}">💳 Продлить подписку</a>
           <a class="btn secondary full" href="https://t.me/flankvpn_bot" target="_blank" rel="noopener">Открыть Telegram-бота ↗</a>
         </div>
       </div>
@@ -92,7 +92,7 @@
       <div class="eyebrow">ПОКА ПУСТО</div>
       <h2>У тебя ещё нет активных подписок</h2>
       <p class="muted">Выбери тариф на главной странице. После оплаты подписка автоматически появится здесь.</p>
-      <a class="btn primary" href="{{ url_for('index') }}#tariffs">Перейти к тарифам ↗</a>
+      <a class="btn primary" href="{{ url_for('tariffs') }}">Перейти к тарифам ↗</a>
     </div>
   {% endif %}
 </section>

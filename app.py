@@ -375,6 +375,12 @@ def apply_security_headers(response):
 
 @app.route("/")
 def index(): return render_template("index.html")
+@app.route("/tariffs")
+def tariffs(): return render_template("tariffs.html")
+@app.route("/connection")
+def connection(): return render_template("connection.html")
+@app.route("/support")
+def support(): return render_template("support.html")
 @app.route("/register",methods=["GET","POST"])
 @limiter.limit("3 per hour",methods=["POST"])
 def register():
