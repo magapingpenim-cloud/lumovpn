@@ -226,3 +226,27 @@ body.home-layout .approved-feature p{
   overflow-y:auto!important;background:#fffdf8!important;
  }
 }
+
+
+/* Critical correction: rebrand stylesheet centered the home header with translateX(-50%).
+   Reset that transform so the full-width header and left menu are actually on-screen. */
+@media(max-width:680px){
+ html body.home-layout .site-shell>header.site-nav-home{
+  position:relative!important;left:auto!important;right:auto!important;top:auto!important;
+  transform:none!important;translate:none!important;
+  width:100%!important;min-width:100%!important;max-width:100%!important;
+  margin:0!important;box-sizing:border-box!important;
+  grid-template-columns:44px minmax(0,1fr) auto!important;
+  grid-template-rows:76px!important;
+ }
+ html body.home-layout .site-shell>header.site-nav-home>.mobile-menu{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  transform:none!important;grid-column:1!important;grid-row:1!important;
+ }
+ html body.home-layout .site-shell>header.site-nav-home>.mobile-menu>summary{
+  display:flex!important;visibility:visible!important;opacity:1!important;
+ }
+ html body.home-layout .site-shell>header.site-nav-home>.nav-actions{
+  grid-column:3!important;grid-row:1!important;justify-self:end!important;
+ }
+}
