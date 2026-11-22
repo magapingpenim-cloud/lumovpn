@@ -181,3 +181,93 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .ready-qr{width:220px;height:220px;max-width:68vw;max-height:68vw;object-fit:contain;padding:8px;border-radius:14px;border:1px solid rgba(6,61,53,.12);background:#fff;image-rendering:pixelated}
 .ready-qr-link{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
 @media(max-width:680px){.ready-qr{width:240px;height:240px;max-width:72vw;max-height:72vw}.ready-card-body{gap:20px}}
+
+
+/* FlankVPN site-wide quality pass — consistent type, spacing, states and mobile behavior */
+:root{
+  --paper:#f6e7dc;
+  --ink:#111a18;
+  --muted:#66716b;
+  --green:#063d35;
+  --green-2:#0a594c;
+  --tiffany:#2dd4c2;
+  --line:rgba(9,61,53,.16);
+  --panel:rgba(255,251,246,.9);
+  --shadow:0 18px 48px rgba(22,55,44,.09);
+}
+html{scroll-padding-top:90px;text-rendering:optimizeLegibility}
+body{font-family:Inter,"Avenir Next",Avenir,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.012em}
+::selection{background:rgba(45,212,194,.28);color:#062e28}
+button,input,textarea,select{font-family:inherit}
+button:disabled,.btn:disabled{opacity:.55;cursor:not-allowed}
+.brand{gap:9px}
+.brand img{width:31px;height:31px;flex:0 0 31px}
+.brand-wordmark{font-size:25px;font-weight:900;letter-spacing:-1.25px;color:#101a17;line-height:1}
+.nav-actions{gap:14px}
+.nav-login{min-height:46px;display:inline-flex;align-items:center;justify-content:center}
+.hero-home{background-color:#f6e7dc;background-blend-mode:normal}
+.hero-home-copy{max-width:760px}
+.hero-kicker{font-size:10px;letter-spacing:3.5px}
+.hero-title-main{letter-spacing:-.078em}
+.hero-title-script{font-family:"URW Chancery L","Segoe Script","Brush Script MT",cursive;font-weight:500}
+.hero-description{letter-spacing:-.015em}
+.btn-main,.btn-outline,.plan-select,.nav-login,.btn{transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease,border-color .2s ease}
+.btn-main:active,.btn-outline:active,.plan-select:active,.nav-login:active,.btn:active{transform:translateY(1px)}
+.pricing-card,.connection-step,.support-form,.auth-card,.settings-card,.ready-card,.order,.panel,.faq-item{transition:box-shadow .22s ease,border-color .22s ease,transform .22s ease}
+.pricing-card:hover,.connection-step:hover{box-shadow:0 22px 52px rgba(29,63,51,.11)}
+.support-form input:focus,.support-form textarea:focus,.auth-card input:focus,.settings-page input:focus,.payment-flow-card input:focus,.payment-flow-card select:focus{border-color:#27bca9;box-shadow:0 0 0 4px rgba(45,212,194,.13);outline:none}
+.ready-card-body{gap:28px}
+.ready-qr{display:block;width:240px;height:240px;max-width:min(72vw,280px);max-height:min(72vw,280px);object-fit:contain;padding:8px;border:1px solid rgba(6,61,53,.12);border-radius:16px;background:#fff;image-rendering:pixelated}
+.ready-qr-link{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.ready-actions{display:grid;gap:12px;min-width:0}
+.ready-actions .full{width:100%;min-height:54px}
+.dashboard-welcome,.ready-card,.order,.panel,.referral-hero,.referral-link-card,.referral-how,.dashboard-help,.admin-help,.stat-card{padding:clamp(20px,3vw,28px)!important}
+.page-main{padding-top:clamp(22px,3vw,36px)}
+.page-hero{padding-top:clamp(22px,3vw,34px)}
+.page-hero h1{letter-spacing:-.06em}
+.site-footer{padding-top:25px}
+@media(min-width:681px){
+  .site-nav{height:82px}
+  .hero-home{background-size:cover;background-position:center}
+  .hero-home-copy{left:clamp(38px,5.2vw,84px)}
+}
+@media(max-width:900px){
+  .hero-home-copy{width:56%}
+  .hero-kicker{letter-spacing:2.6px;margin-bottom:32px}
+  .hero-description{max-width:440px}
+}
+@media(max-width:680px){
+  .site-nav{height:76px;padding-left:15px;padding-right:15px}
+  .brand{font-size:20px;gap:7px}
+  .brand img{width:29px;height:29px;flex-basis:29px}
+  .brand-wordmark{font-size:21px;letter-spacing:-1.1px}
+  .nav-actions{gap:8px}
+  .nav-login{min-width:82px;min-height:42px;padding:0 13px;border-radius:13px;font-size:12px}
+  .hero-home{background-size:cover;background-position:center 42%}
+  .hero-home-copy{top:calc(76px + env(safe-area-inset-top) + 22px);left:20px;right:20px}
+  .hero-kicker{font-size:8px;letter-spacing:2px;margin-bottom:19px}
+  .hero-title-main{font-size:clamp(42px,11.3vw,60px)}
+  .hero-title-script{font-size:clamp(35px,9.4vw,50px)}
+  .hero-description{font-size:14px;line-height:1.42;max-width:330px;margin:14px 0 17px}
+  .hero-actions{gap:10px}
+  .btn-main,.btn-outline{min-height:48px;padding:0 16px;font-size:12px}
+  .ready-card-body{display:grid;grid-template-columns:1fr;justify-items:stretch;gap:20px}
+  .ready-qr{width:260px;height:260px;max-width:76vw;max-height:76vw}
+  .ready-qr-link{justify-self:center}
+  .ready-actions{width:100%}
+  .ready-actions .full{min-height:56px}
+  .account-quickline{padding:13px 14px}
+  .pricing-card{border-radius:19px}
+  .page-main{padding-top:18px}
+  .page-hero{padding-top:15px}
+  .support-form,.auth-card,.settings-card,.payment-flow-card,.payment-return-card{border-radius:19px!important}
+}
+@media(max-width:380px){
+  .brand-wordmark{font-size:19px}
+  .nav-login{min-width:74px}
+  .hero-title-main{font-size:39px}
+  .hero-title-script{font-size:33px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
