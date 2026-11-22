@@ -9,7 +9,7 @@
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
   <title>{% block title %}FlankVPN — интернет без ограничений{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261122') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-rebrand.css', v='20261122-quality-4') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-rebrand.css', v='20261122-quality-5') }}">
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else 'inner-layout' }}">
   <div class="site-shell">
@@ -87,6 +87,22 @@
           form.appendChild(input);
         }
       }, true);
+    })();
+  </script>
+
+  <script>
+    (() => {
+      const menu = document.querySelector('.mobile-menu');
+      if (!menu) return;
+      document.addEventListener('pointerdown', event => {
+        if (menu.open && !menu.contains(event.target)) menu.removeAttribute('open');
+      });
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && menu.open) {
+          menu.removeAttribute('open');
+          menu.querySelector('summary')?.focus();
+        }
+      });
     })();
   </script>
 </body>
