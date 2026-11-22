@@ -49,3 +49,22 @@ html,body{height:auto!important;min-height:100%!important;overflow-x:clip!import
  .approved-features{padding-top:0;padding-bottom:42px}
  .approved-bottom-cta{margin-bottom:36px}
 }
+
+
+/* Final mobile scroll/layout override: keep every homepage section in normal document flow. */
+html,body{width:100%;height:auto!important;min-height:100%!important;max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:auto!important;scroll-snap-type:none!important}
+body.home-layout{display:block!important;position:static!important;inset:auto!important}
+body.home-layout .site-shell{display:block!important;position:relative!important;width:100%!important;height:auto!important;min-height:100vh!important;max-height:none!important;margin:0!important;overflow:visible!important}
+body.home-layout .site-nav-home{position:relative!important;top:auto!important;left:auto!important;right:auto!important;flex:none!important}
+body.home-layout main.home-main{display:block!important;position:relative!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0 0 1px!important;overflow:visible!important;transform:none!important}
+body.home-layout main.home-main>section{position:relative!important;float:none!important;clear:both!important;transform:none!important;scroll-snap-align:none!important}
+body.home-layout .approved-hero{display:flex!important;height:auto!important;min-height:clamp(500px,68svh,720px)!important;max-height:none!important;overflow:visible!important}
+body.home-layout .approved-features{display:grid!important;height:auto!important;min-height:0!important;overflow:visible!important}
+body.home-layout .approved-bottom-cta{display:flex!important;height:auto!important;min-height:0!important;overflow:visible!important}
+@media(max-width:680px){
+ body.home-layout .site-shell{min-height:100svh!important}
+ body.home-layout .approved-hero{min-height:0!important;padding:58px 22px 46px!important}
+ body.home-layout .approved-features{grid-template-columns:1fr 1fr!important;padding:0 15px 42px!important}
+ body.home-layout .approved-feature{min-height:145px!important}
+ body.home-layout .approved-bottom-cta{margin:0 15px 36px!important;padding:23px 19px!important}
+}
