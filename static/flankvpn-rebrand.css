@@ -176,3 +176,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
 /* The home route is deliberately a single-screen hero; inner routes remain scrollable. */
+/* Header, QR and hero cleanup requested */
+.brand-wordmark{font-size:1em;font-weight:900;letter-spacing:-1.15px;color:#101a17;line-height:1}
+.ready-qr{width:220px;height:220px;max-width:68vw;max-height:68vw;object-fit:contain;padding:8px;border-radius:14px;border:1px solid rgba(6,61,53,.12);background:#fff;image-rendering:pixelated}
+.ready-qr-link{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+@media(max-width:680px){.ready-qr{width:240px;height:240px;max-width:72vw;max-height:72vw}.ready-card-body{gap:20px}}
