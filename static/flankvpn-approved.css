@@ -35,3 +35,17 @@
 @media(max-width:900px){.site-nav-home{height:76px;padding:0 24px;gap:15px}.site-nav-home .desktop-nav{gap:18px;font-size:12px}.site-nav-home .brand{font-size:23px}.approved-hero{min-height:490px;padding:70px 7vw}.approved-features{grid-template-columns:repeat(2,minmax(0,1fr));padding-left:24px;padding-right:24px}}
 @media(max-width:680px){.site-nav-home{height:70px;padding:0 17px;display:flex;justify-content:space-between;gap:10px}.site-nav-home .mobile-menu{display:block;order:0}.site-nav-home .brand{order:1;margin:0 auto 0 0;font-size:23px;gap:7px}.site-nav-home .brand img{width:28px;height:28px}.site-nav-home .desktop-nav{display:none}.site-nav-home .nav-actions{order:2}.site-nav-home .nav-login{min-width:82px;padding:9px 13px;font-size:12px;border-radius:10px}.approved-hero{min-height:510px;padding:62px 22px 45px;background:radial-gradient(ellipse at 90% 12%,rgba(85,207,194,.22),transparent 40%),linear-gradient(145deg,#f8f3eb,#eee7dc)}.approved-eyebrow{font-size:9px;letter-spacing:1.5px;margin-bottom:23px}.approved-title{font-size:clamp(40px,10vw,58px)}.approved-description{font-size:15px;margin:20px 0 24px}.approved-cta,.approved-secondary{min-height:50px;padding:0 18px;font-size:11px;border-radius:10px}.approved-benefits{gap:12px 18px;margin-top:28px}.approved-benefits>div{font-size:11px}.approved-features{grid-template-columns:1fr 1fr;gap:10px;padding:0 15px 44px}.approved-feature{min-height:160px;padding:17px 14px;border-radius:13px}.approved-feature h2{font-size:14px}.approved-feature p{font-size:12px}.approved-bottom-cta{align-items:flex-start;flex-direction:column;margin:0 15px 42px;padding:24px 20px}.approved-bottom-cta .approved-cta{width:100%}}
 @media(max-width:380px){.site-nav-home .brand{font-size:21px}.approved-title{font-size:39px}.approved-features{grid-template-columns:1fr}}
+
+/* Fix: the landing page must be a normal scrollable document on every device. */
+html,body{height:auto!important;min-height:100%!important;overflow-x:clip!important;overflow-y:auto!important}
+.home-layout,.home-layout .site-shell{height:auto!important;min-height:100vh!important;min-height:100svh!important;overflow:visible!important}
+.home-main{height:auto!important;min-height:0!important;overflow:visible!important}
+.approved-hero{min-height:clamp(500px,68vh,720px);overflow:visible}
+.approved-features,.approved-bottom-cta{position:relative;visibility:visible;opacity:1}
+@media(max-width:680px){
+ .home-layout,.home-layout .site-shell{height:auto!important;min-height:100svh!important;overflow:visible!important}
+ .home-main{height:auto!important;min-height:0!important;padding-bottom:1px!important}
+ .approved-hero{min-height:0;padding-top:64px;padding-bottom:54px}
+ .approved-features{padding-top:0;padding-bottom:42px}
+ .approved-bottom-cta{margin-bottom:36px}
+}
