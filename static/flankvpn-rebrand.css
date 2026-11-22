@@ -32,7 +32,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .flash-stack{position:relative;z-index:80;display:grid;gap:8px;margin:8px 0 16px}
 .flash{padding:11px 15px;border-radius:12px;background:#fff7e9;border:1px solid #e8cba8;color:#5a3e19;font-size:13px}
 .flash.success{background:#e6f5ed;border-color:#b4d8c2;color:#145b3f}.flash.error{background:#fff0ec;border-color:#ecc1b8;color:#8d3028}
-.hero-home{position:relative;width:100%;height:100%;min-height:620px;background-color:var(--paper);background-image:url("/static/hero-stage.webp");background-size:cover;background-position:center center;background-repeat:no-repeat;overflow:hidden}
+.hero-home{position:relative;width:100%;height:100%;min-height:620px;background-color:var(--paper);background-image:url("/static/hero-stage-hq.avif");background-size:cover;background-position:center center;background-repeat:no-repeat;overflow:hidden}
 .hero-home-copy{position:absolute;left:clamp(28px,5.2vw,84px);top:50%;transform:translateY(-43%);width:min(51%,760px);z-index:2}
 .hero-kicker{display:flex;align-items:center;gap:18px;margin:0 0 46px;font-size:11px;letter-spacing:4px;font-weight:650;color:#20322e}
 .kicker-line{width:78px;height:1px;background:#345b51;opacity:.65}
@@ -147,7 +147,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  .page-main{width:calc(100% - 32px);padding:20px 0 48px;min-height:calc(100vh - 120px)}
  .home-layout,.home-layout .site-shell{height:100vh;height:100svh;overflow:hidden}
  .home-main{height:100vh;height:100svh;min-height:0}
- .hero-home{min-height:0;background-image:url("/static/hero-stage-mobile.webp");background-size:cover;background-position:center center;background-repeat:no-repeat}
+ .hero-home{min-height:0;background-image:url("/static/hero-stage-mobile-hq.avif");background-size:cover;background-position:center center;background-repeat:no-repeat}
  .hero-home-copy{left:20px;right:20px;top:93px;transform:none;width:auto}
  .hero-kicker{font-size:8px;letter-spacing:2px;margin-bottom:18px;gap:9px}.kicker-line{width:25px}
  .hero-home h1{gap:0}.hero-title-main{font-size:clamp(40px,11vw,58px);letter-spacing:-.075em}.hero-title-script{font-size:clamp(34px,9.2vw,48px);line-height:1.12}
