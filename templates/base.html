@@ -2,30 +2,29 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#09172b" id="theme-color-meta">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6e3d5">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <script>try{const t=localStorage.getItem('flankvpn-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
-  <meta name="description" content="FlankVPN — простой личный кабинет, удобная подписка и быстрое подключение.">
+  <meta name="description" content="FlankVPN — быстрый и понятный VPN-доступ с удобным управлением подпиской.">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
-  <title>{% block title %}FlankVPN — свобода подключений{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261112') }}">
+  <title>{% block title %}FlankVPN — интернет без ограничений{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261122') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-rebrand.css', v='20261122-1') }}">
 </head>
-<body>
+<body class="{{ 'home-layout' if request.endpoint == 'index' else 'inner-layout' }}">
   <div class="site-shell">
-    <header class="nav">
-      <details class="site-menu">
-
+    <header class="site-nav {{ 'site-nav-home' if request.endpoint == 'index' else '' }}">
+      <details class="mobile-menu">
         <summary aria-label="Открыть меню"><span></span><span></span><span></span></summary>
-        <div class="site-menu-panel">
+        <div class="mobile-menu-panel">
           <a href="{{ url_for('index') }}">Главная</a>
-          <a href="{{ url_for('index') }}#tariffs">Тарифы</a>
-          <a href="{{ url_for('index') }}#steps">Подключение</a>
-          <a href="{{ url_for('my_support') if current_user.is_authenticated else url_for('login') }}">Поддержка</a>
+          <a href="{{ url_for('tariffs') }}">Тарифы</a>
+          <a href="{{ url_for('connection') }}">Подключение</a>
+          <a href="{{ url_for('support') }}">Поддержка</a>
           {% if current_user.is_authenticated %}
-            <a href="{{ url_for('dashboard') }}">Мои подписки</a>
-            <a href="{{ url_for('referrals') }}">Пригласить друга</a>
-            <a href="{{ url_for('settings') }}">Настройки аккаунта</a>
+            <a href="{{ url_for('dashboard') }}">Моя подписка</a>
+            <a href="{{ url_for('settings') }}">Настройки</a>
+            <a href="{{ url_for('my_support') }}">Мои обращения</a>
             <form method="post" action="{{ url_for('logout') }}"><button type="submit">Выйти</button></form>
           {% else %}
             <a href="{{ url_for('login') }}">Войти</a>
@@ -35,105 +34,61 @@
       </details>
       <a class="brand" href="{{ url_for('index') }}" aria-label="FlankVPN — главная">
         <img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt="">
-        <span>Flank<small>VPN</small></span>
+        <span>Flank<small>VPN</small><span class="brand-dot">.</span></span>
       </a>
-      <nav>
-        {% if current_user.is_authenticated %}
-          <a class="nav-orders-btn" href="{{ url_for('dashboard') }}">📦 Мои подписки</a>
-        {% else %}
-          <a href="{{ url_for('login') }}">🔐 Войти</a>
-          <a class="navcta" href="{{ url_for('register') }}">✨ Регистрация <span aria-hidden="true">↗</span></a>
-        {% endif %}
-        <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Переключить тему" title="Переключить тему"><span class="theme-icon" aria-hidden="true">☀</span><span class="theme-label">Светлая</span></button>
+      <nav class="desktop-nav" aria-label="Основная навигация">
+        <a class="{{ 'active' if request.endpoint == 'index' else '' }}" href="{{ url_for('index') }}">Главная</a>
+        <a class="{{ 'active' if request.endpoint == 'tariffs' else '' }}" href="{{ url_for('tariffs') }}">Тарифы</a>
+        <a class="{{ 'active' if request.endpoint == 'connection' else '' }}" href="{{ url_for('connection') }}">Подключение</a>
+        <a class="{{ 'active' if request.endpoint in ['support','my_support'] else '' }}" href="{{ url_for('support') }}">Поддержка</a>
       </nav>
+      <div class="nav-actions">
+        <span class="language-label" aria-label="Язык интерфейса">RU <span aria-hidden="true">⌄</span></span>
+        {% if current_user.is_authenticated %}
+          <a class="nav-login" href="{{ url_for('dashboard') }}">Кабинет</a>
+        {% else %}
+          <a class="nav-login" href="{{ url_for('login') }}">Войти</a>
+        {% endif %}
+      </div>
     </header>
-    <main class="container">
-      {% with ms = get_flashed_messages(with_categories=true) %}
-        {% for c, m in ms %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}
+    <main class="{{ 'home-main' if request.endpoint == 'index' else 'page-main' }}">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-stack" role="status">
+            {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+          </div>
+        {% endif %}
       {% endwith %}
       {% block content %}{% endblock %}
     </main>
-
-    <style>
-      .support-launch{position:fixed;right:22px;bottom:22px;z-index:1000;border:0;border-radius:999px;padding:14px 19px;background:linear-gradient(135deg,#a1f6e9,#48cdb9);color:#062321;font-weight:800;box-shadow:0 12px 34px #3dd6c033;cursor:pointer}
-      .support-panel{display:none;position:fixed;right:22px;bottom:84px;z-index:1001;width:min(360px,calc(100vw - 28px));padding:18px;border:1px solid #2b5553;border-radius:20px;background:#102526;color:#e9f8f7;box-shadow:0 20px 60px #0008}
-      .support-panel.open{display:block}.support-panel h3{margin:0 0 6px}.support-panel p{font-size:13px;color:#9bb8bb;margin:0 0 12px}
-      .support-panel input,.support-panel textarea{box-sizing:border-box;width:100%;padding:11px 12px;margin:0 0 10px;border:1px solid #2a504f;border-radius:10px;background:#142c2d;color:#e8f8f5;font:inherit}
-      .support-panel textarea{min-height:110px;resize:vertical}.support-panel .support-actions{display:flex;gap:8px}
-      .support-panel button{border:0;border-radius:10px;padding:11px 13px;font-weight:700;cursor:pointer}
-      .support-send{background:#72e4d2;color:#062321;flex:1}.support-close{background:#1b3737;color:#dff8f4}
-      .site-footer{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
-      .developer-details{flex-basis:100%;margin-top:8px;font-size:12px;color:#718096}
-      .developer-details summary{cursor:pointer;list-style:none;display:inline-block;opacity:.8}
-      .developer-details summary::-webkit-details-marker{display:none}
-      .developer-details summary:hover{opacity:1}
-      .developer-details p{margin:8px 0 0}
-      @media(max-width:480px){.support-launch{right:14px;bottom:14px}.support-panel{right:14px;bottom:76px}}
-    </style>
-    <button type="button" class="support-launch" id="support-launch" aria-expanded="false" aria-controls="support-panel">💬 Поддержка</button>
-    <section class="support-panel" id="support-panel" aria-label="Чат поддержки">
-      <h3>Поддержка FlankVPN</h3>
-      <p>Напиши нам — обращение появится в панели администратора.</p>
-      <form method="post" action="{{ url_for('support_send') }}">
-        {% if not current_user.is_authenticated %}
-          <input name="nickname" maxlength="80" placeholder="Твоё имя" required>
-          <input name="email" type="email" maxlength="160" placeholder="Email для ответа" required>
-        {% endif %}
-        <textarea name="message" minlength="3" maxlength="2000" placeholder="Чем можем помочь?" required></textarea>
-        <div class="support-actions"><button class="support-send" type="submit">Отправить</button><button class="support-close" type="button" id="support-close">Закрыть</button></div>
-      </form>
-    </section>
-    <script>
-      (function(){
-        const token=document.querySelector('meta[name="csrf-token"]')?.content;
-        if(!token)return;
-        document.querySelectorAll('form[method="post" i],form:not([method])').forEach(form=>{
-          if(!form.querySelector('input[name="csrf_token"]')){const input=document.createElement('input');input.type='hidden';input.name='csrf_token';input.value=token;form.appendChild(input);}
-        });
-        document.addEventListener('submit',event=>{const form=event.target;if(form instanceof HTMLFormElement&&!form.querySelector('input[name="csrf_token"]')){const input=document.createElement('input');input.type='hidden';input.name='csrf_token';input.value=token;form.appendChild(input);}},true);
-        const nativeFetch=window.fetch.bind(window);
-        window.fetch=function(input,init){
-          init=init||{};
-          const method=(init.method||(typeof Request!=="undefined"&&input instanceof Request?input.method:"GET")).toUpperCase();
-          if(!["GET","HEAD","OPTIONS"].includes(method)){
-            const headers=new Headers(init.headers||(typeof Request!=="undefined"&&input instanceof Request?input.headers:undefined));
-            if(!headers.has("X-CSRFToken"))headers.set("X-CSRFToken",token);
-            init={...init,headers,credentials:init.credentials||"same-origin"};
-          }
-          return nativeFetch(input,init);
-        };
-        window.flankCsrfToken=token;
-      })();
-    </script>
-    <script>
-      (function(){
-        const button=document.getElementById('theme-toggle');
-        const meta=document.getElementById('theme-color-meta');
-        function applyTheme(theme){
-          document.documentElement.dataset.theme=theme;
-          const light=theme==='light';
-          if(button){const icon=button.querySelector('.theme-icon');const label=button.querySelector('.theme-label');if(icon)icon.textContent=light?'☾':'☀';if(label)label.textContent=light?'Тёмная':'Светлая';button.setAttribute('aria-label',light?'Включить тёмную тему':'Включить светлую тему');}
-          if(meta)meta.setAttribute('content',light?'#f4f8fb':'#071516');
-          try{localStorage.setItem('flankvpn-theme',theme);}catch(e){}
-        }
-        applyTheme(document.documentElement.dataset.theme==='light'?'light':'dark');
-        if(button)button.addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light'));
-      })();
-    </script>
-    <script>
-      (function(){
-        const launch=document.getElementById('support-launch');
-        const panel=document.getElementById('support-panel');
-        const close=document.getElementById('support-close');
-        function toggle(open){panel.classList.toggle('open',open);launch.setAttribute('aria-expanded',String(open));if(open){const field=panel.querySelector('textarea');if(field)field.focus();}}
-        launch.addEventListener('click',()=>toggle(!panel.classList.contains('open')));
-        close.addEventListener('click',()=>toggle(false));
-      })();
-    </script>
-
+    {% if request.endpoint != 'index' %}
     <footer class="site-footer">
-      <span class="footer-brand">FLANKVPN</span><span>·</span><span>Просто подключиться.</span><span class="footer-year">© 2026</span>
+      <a href="{{ url_for('index') }}" class="footer-brand">FlankVPN<span>.</span></a>
+      <span>Быстрый доступ. Понятное управление.</span>
+      <span>© 2026 FlankVPN</span>
     </footer>
+    {% endif %}
   </div>
+  <script>
+    (() => {
+      const token = document.querySelector('meta[name="csrf-token"]')?.content;
+      if (!token) return;
+      document.querySelectorAll('form[method="post" i], form:not([method])').forEach(form => {
+        if (!form.querySelector('input[name="csrf_token"]')) {
+          const input = document.createElement('input');
+          input.type = 'hidden'; input.name = 'csrf_token'; input.value = token;
+          form.appendChild(input);
+        }
+      });
+      document.addEventListener('submit', event => {
+        const form = event.target;
+        if (form instanceof HTMLFormElement && !form.querySelector('input[name="csrf_token"]')) {
+          const input = document.createElement('input');
+          input.type = 'hidden'; input.name = 'csrf_token'; input.value = token;
+          form.appendChild(input);
+        }
+      }, true);
+    })();
+  </script>
 </body>
 </html>
