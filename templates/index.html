@@ -1,12 +1,11 @@
 {% extends "base.html" %}
-{% block title %}FlankVPN — Интернет без границ{% endblock %}
+{% block title %}FlankVPN — свобода в интернете{% endblock %}
 {% block content %}
-<section class="approved-hero hero-ribbon-layout">
-  <div class="hero-ribbon-bg" aria-hidden="true"></div>
+<section class="approved-hero">
   <div class="approved-copy">
-    <p class="approved-eyebrow"><span></span> НАДЁЖНЫЙ VPN ДЛЯ СВОБОДЫ В СЕТИ</p>
-    <h1><span class="approved-title">Интернет</span><span class="approved-title approved-accent handwritten-title">без границ</span></h1>
-    <p class="approved-description">Стабильный, быстрый и безопасный доступ к любимым сервисам по всему миру.</p>
+    <p class="approved-eyebrow"><span></span> НАДЁЖНЫЙ VPN-СЕРВИС</p>
+    <h1><span class="approved-title">FlankVPN —</span><span class="approved-title approved-accent">свобода в интернете</span></h1>
+    <p class="approved-description">Быстрый, безопасный и стабильный доступ к любимым сервисам из любой точки мира.</p>
     <div class="approved-cta-row">
       {% if current_user.is_authenticated %}
         <a class="approved-cta" href="{{ url_for('dashboard') }}">МОЯ ПОДПИСКА <span>→</span></a>
@@ -16,22 +15,17 @@
       <a class="approved-secondary" href="{{ url_for('tariffs') }}">ТАРИФЫ</a>
     </div>
     <div class="approved-benefits" aria-label="Преимущества">
-      <div><span class="benefit-check">↗</span><strong>Высокая скорость</strong></div>
-      <div><span class="benefit-check">◇</span><strong>Полная защита</strong></div>
-      <div><span class="benefit-check">∞</span><strong>Доступ по всему миру</strong></div>
+      <div><span class="benefit-check">✓</span><strong>10 дней бесплатно</strong></div>
+      <div><span class="benefit-check">✓</span><strong>Защита соединения</strong></div>
+      <div><span class="benefit-check">✓</span><strong>Высокая скорость</strong></div>
     </div>
-  </div>
-  <div class="hero-statue-wrap" aria-hidden="true">
-    <div class="hero-ribbon hero-ribbon-one"></div>
-    <div class="hero-ribbon hero-ribbon-two"></div>
-    <img class="hero-statue" src="{{ url_for('static', filename='flankvpn-mobile-statue.webp') }}" alt="">
   </div>
 </section>
 <section class="approved-features">
-  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">↗</span><h2>Высокая скорость</h2><p>Стабильное соединение для повседневных задач и просмотра видео.</p></article>
-  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">◇</span><h2>Безопасность</h2><p>Защита интернет-трафика и конфиденциальности подключения.</p></article>
-  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">◎</span><h2>Свобода доступа</h2><p>Пользуйтесь привычными сервисами без лишних ограничений.</p></article>
-  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">▣</span><h2>Все устройства</h2><p>Подключайте телефон, планшет и компьютер.</p></article>
+  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">🚀</span><h2>Высокая скорость</h2><p>Стабильное соединение для повседневных задач и просмотра видео.</p></article>
+  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">🛡️</span><h2>Безопасность</h2><p>Защита интернет-трафика и конфиденциальности подключения.</p></article>
+  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">🌍</span><h2>Свобода доступа</h2><p>Пользуйтесь привычными сервисами без лишних ограничений.</p></article>
+  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">📱</span><h2>Все устройства</h2><p>Подключайте телефон, планшет и компьютер.</p></article>
 </section>
 <section class="approved-bottom-cta">
   <div><p class="approved-eyebrow">ПОДКЛЮЧЕНИЕ ЗА ПАРУ МИНУТ</p><h2>Попробуйте FlankVPN бесплатно</h2><p>Начните с пробного периода и выберите подходящий тариф.</p></div>
