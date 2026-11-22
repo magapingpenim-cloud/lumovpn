@@ -9,7 +9,7 @@
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
   <title>{% block title %}FlankVPN — интернет без ограничений{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261122') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-rebrand.css', v='20261122-hq-2') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-rebrand.css', v='20261122-header-qr-3') }}">
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else 'inner-layout' }}">
   <div class="site-shell">
@@ -34,7 +34,7 @@
       </details>
       <a class="brand" href="{{ url_for('index') }}" aria-label="FlankVPN — главная">
         <img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt="">
-        <span>Flank<small>VPN</small><span class="brand-dot">.</span></span>
+        <span class="brand-wordmark">FlankVPN</span>
       </a>
       <nav class="desktop-nav" aria-label="Основная навигация">
         <a class="{{ 'active' if request.endpoint == 'index' else '' }}" href="{{ url_for('index') }}">Главная</a>
@@ -43,7 +43,6 @@
         <a class="{{ 'active' if request.endpoint in ['support','my_support'] else '' }}" href="{{ url_for('support') }}">Поддержка</a>
       </nav>
       <div class="nav-actions">
-        <span class="language-label" aria-label="Язык интерфейса">RU <span aria-hidden="true">⌄</span></span>
         {% if current_user.is_authenticated %}
           <a class="nav-login" href="{{ url_for('dashboard') }}">Кабинет</a>
         {% else %}
