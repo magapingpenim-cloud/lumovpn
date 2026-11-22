@@ -6,6 +6,10 @@
     <div class="hero-kicker"><span class="kicker-line"></span> VPN-СЕРВИС НОВОГО ПОКОЛЕНИЯ</div>
     <h1><span class="hero-title-main">ИНТЕРНЕТ</span><span class="hero-title-script">Без ограничений</span></h1>
     <p class="hero-description">Быстрый, безопасный и стабильный доступ<br class="desktop-break"> к любимым сервисам по всему миру.</p>
+    <div class="hero-trial-offer">
+      <span class="hero-trial-badge">10 ДНЕЙ БЕСПЛАТНО</span>
+      <span class="hero-trial-note">Пробный доступ после подтверждения электронной почты</span>
+    </div>
     <div class="hero-actions">
       {% if current_user.is_authenticated %}
         <a class="btn-main" href="{{ url_for('dashboard') }}">Моя подписка <span aria-hidden="true">↗</span></a>
