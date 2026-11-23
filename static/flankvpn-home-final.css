@@ -733,3 +733,41 @@ html body.inner-layout .dashboard-welcome * {
 html body.inner-layout .dashboard-welcome .welcome-mark {
   display: none !important;
 }
+
+
+/* Homepage: increase the poster's rendered height by 20% while keeping
+   its visible width at 100%. CSS zoom scales the image and its clickable
+   hotspots together and contributes the enlarged height to document flow. */
+html body.home-layout .home-visual {
+  width: 83.333333% !important;
+  max-width: none !important;
+  zoom: 1.2 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+html body.home-layout .home-visual .home-artwork {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+@media (max-width: 900px) {
+  html body.home-layout .home-visual {
+    width: 83.333333% !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    zoom: 1.2 !important;
+  }
+  html body.home-layout .home-visual .home-artwork {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    object-fit: contain !important;
+  }
+}
