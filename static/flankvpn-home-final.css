@@ -603,3 +603,52 @@ html body.home-layout .home-visual .home-artwork {
     object-position: center center !important;
   }
 }
+
+
+/* Universal responsive poster: preserve the complete artwork on every phone.
+   Let its natural aspect ratio determine height; never force a device-specific
+   height, stretch the image, or crop its built-in buttons. */
+@media (max-width: 900px) {
+  html body.home-layout,
+  html body.home-layout .site-shell {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+  html body.home-layout main.home-main {
+    display: block !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  html body.home-layout .home-page,
+  html body.home-layout .home-visual {
+    display: block !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+  }
+  html body.home-layout .home-visual .home-artwork {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    margin: 0 !important;
+    object-fit: contain !important;
+    object-position: center top !important;
+  }
+}
