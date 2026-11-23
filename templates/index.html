@@ -1,22 +1,16 @@
 {% extends "base.html" %}
-{% block title %}FlankVPN — интернет без границ<script>
-(()=>{const img=document.querySelector(".home-artwork"),toggle=document.getElementById("home-theme-toggle");if(!img||!toggle)return;
- const apply=theme=>{const cream=theme==="cream";img.style.opacity=".25";window.setTimeout(()=>{img.src=cream?img.dataset.cream:img.dataset.dark;img.style.opacity="1";},140);document.documentElement.dataset.homeTheme=theme;toggle.textContent=cream?"Переключить на тёмную тему":"Переключить на кремовую тему";try{localStorage.setItem("flankvpn-home-theme",theme)}catch(e){}};
- let theme="dark";try{theme=localStorage.getItem("flankvpn-home-theme")||"dark"}catch(e){};img.style.transition="opacity .28s ease";if(theme==="cream"){img.src=img.dataset.cream;document.documentElement.dataset.homeTheme="cream";toggle.textContent="Переключить на тёмную тему";}
- toggle.addEventListener("click",()=>apply(document.documentElement.dataset.homeTheme==="cream"?"dark":"cream"));
-})();
-</script>
-{% endblock %}
+{% block title %}FlankVPN — интернет без границ{% endblock %}
 {% block content %}
 <section class="home-artboard" aria-label="FlankVPN — интернет без границ">
-  <img class="home-artwork" src="{{ url_for('static', filename='home-dark.png') }}" data-dark="{{ url_for('static', filename='home-dark.png') }}" data-cream="{{ url_for('static', filename='home-cream.png') }}" alt="FlankVPN: Интернет без границ. Давид в футуристических очках на чёрном фоне с Tiffany-свечением." fetchpriority="high" decoding="async">
+  <img class="home-artwork" src="{{ url_for('static', filename='home-dark.png') }}" data-dark="{{ url_for('static', filename='home-dark.png') }}" data-cream="{{ url_for('static', filename='home-cream.png') }}" alt="FlankVPN — интернет без границ" fetchpriority="high" decoding="async">
   <details class="home-menu-hotspot">
     <summary aria-label="Открыть меню"><span class="sr-only">Меню</span></summary>
     <nav class="home-hotspot-menu" aria-label="Меню сайта">
       <a href="{{ url_for('index') }}">Главная</a>
       <a href="{{ url_for('tariffs') }}">Тарифы</a>
       <a href="{{ url_for('connection') }}">Подключение</a>
-      <a href="{{ url_for('support') }}">Поддержка</a>\n      <button type="button" class="home-theme-toggle" id="home-theme-toggle">Переключить на кремовую тему</button>
+      <a href="{{ url_for('support') }}">Поддержка</a>
+      <button type="button" class="home-theme-toggle" id="home-theme-toggle">Переключить на кремовую тему</button>
       {% if current_user.is_authenticated %}
         <a href="{{ url_for('dashboard') }}">Моя подписка</a>
         <a href="{{ url_for('settings') }}">Настройки</a>
@@ -35,4 +29,15 @@
   {% endif %}
   <a class="home-hotspot home-hotspot-tariffs" href="{{ url_for('tariffs') }}" aria-label="Тарифы"></a>
 </section>
+<style>
+.home-theme-toggle{display:block;width:100%;margin:8px 0 0;padding:12px 14px;border:1px solid rgba(0,210,195,.45);border-radius:12px;background:rgba(0,25,25,.9);color:#bafff7;font:inherit;font-weight:700;text-align:left;cursor:pointer}
+.home-artwork{transition:opacity .28s ease}
+</style>
+<script>
+(()=>{const img=document.querySelector(".home-artwork"),toggle=document.getElementById("home-theme-toggle");if(!img||!toggle)return;
+ const apply=theme=>{const cream=theme==="cream";img.style.opacity=".2";window.setTimeout(()=>{img.src=cream?img.dataset.cream:img.dataset.dark;img.style.opacity="1";},130);document.documentElement.dataset.homeTheme=theme;toggle.textContent=cream?"Переключить на тёмную тему":"Переключить на кремовую тему";try{localStorage.setItem("flankvpn-home-theme",theme)}catch(e){}};
+ let theme="dark";try{theme=localStorage.getItem("flankvpn-home-theme")||"dark"}catch(e){};if(theme==="cream"){img.src=img.dataset.cream;document.documentElement.dataset.homeTheme="cream";toggle.textContent="Переключить на тёмную тему";}
+ toggle.addEventListener("click",()=>apply(document.documentElement.dataset.homeTheme==="cream"?"dark":"cream"));
+})();
+</script>
 {% endblock %}
