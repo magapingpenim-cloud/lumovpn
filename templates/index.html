@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}FlankVPN — свобода в интернете{% endblock %}
+{% block title %}FlankVPN — интернет без ограничений{% endblock %}
 {% block content %}
 <section class="approved-hero">
   <div class="approved-copy">
-    <p class="approved-eyebrow"><span></span> НАДЁЖНЫЙ VPN-СЕРВИС</p>
-    <h1><span class="approved-title">FlankVPN —</span><span class="approved-title approved-accent">свобода в интернете</span></h1>
-    <p class="approved-description">Быстрый, безопасный и стабильный доступ к любимым сервисам из любой точки мира.</p>
+    <p class="approved-eyebrow"><span></span> СВОБОДА В ИНТЕРНЕТЕ</p>
+    <h1><span class="approved-title">Интернет.</span><span class="approved-title approved-accent">Без ограничений</span></h1>
+    <p class="approved-description">Свободный доступ к привычным сервисам, стабильное соединение и защита в сети — где бы ты ни находился.</p>
     <div class="approved-cta-row">
       {% if current_user.is_authenticated %}
         <a class="approved-cta" href="{{ url_for('dashboard') }}">МОЯ ПОДПИСКА <span>→</span></a>
@@ -19,16 +19,11 @@
       <div><span class="benefit-check">✓</span><strong>Защита соединения</strong></div>
       <div><span class="benefit-check">✓</span><strong>Высокая скорость</strong></div>
     </div>
+    <a class="approved-referral-promo" href="{{ url_for('referrals') if current_user.is_authenticated else url_for('register') }}">
+      <span class="approved-referral-icon" aria-hidden="true">↗</span>
+      <span class="approved-referral-copy"><strong>Приглашай друзей — получай 30 дней бесплатно</strong><span>Поделись FlankVPN и забирай бонус за каждого друга</span></span>
+      <span class="approved-referral-link">УЗНАТЬ →</span>
+    </a>
   </div>
-</section>
-<section class="approved-features">
-  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">🚀</span><h2>Высокая скорость</h2><p>Стабильное соединение для повседневных задач и просмотра видео.</p></article>
-  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">🛡️</span><h2>Безопасность</h2><p>Защита интернет-трафика и конфиденциальности подключения.</p></article>
-  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">🌍</span><h2>Свобода доступа</h2><p>Пользуйтесь привычными сервисами без лишних ограничений.</p></article>
-  <article class="approved-feature"><span class="feature-icon" aria-hidden="true">📱</span><h2>Все устройства</h2><p>Подключайте телефон, планшет и компьютер.</p></article>
-</section>
-<section class="approved-bottom-cta">
-  <div><p class="approved-eyebrow">ПОДКЛЮЧЕНИЕ ЗА ПАРУ МИНУТ</p><h2>Попробуйте FlankVPN бесплатно</h2><p>Начните с пробного периода и выберите подходящий тариф.</p></div>
-  <a class="approved-cta" href="{{ url_for('tariffs') }}">ВЫБРАТЬ ТАРИФ <span>→</span></a>
 </section>
 {% endblock %}
