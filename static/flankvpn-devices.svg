@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" fill="none">
+<defs>
+ <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#06100f"/><stop offset="1" stop-color="#020505"/></linearGradient>
+ <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#164b48"/><stop offset=".48" stop-color="#061514"/><stop offset="1" stop-color="#010505"/></linearGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d4e0dd"/><stop offset=".35" stop-color="#536663"/><stop offset="1" stop-color="#111c1b"/></linearGradient>
+ <linearGradient id="teal" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#0a6d65"/><stop offset=".5" stop-color="#38f5dc"/><stop offset="1" stop-color="#087d75"/></linearGradient>
+ <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="22"/></filter>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%"><feGaussianBlur stdDeviation="24"/></filter>
+</defs>
+<rect width="1600" height="1000" fill="url(#bg)"/>
+<ellipse cx="800" cy="850" rx="690" ry="85" fill="#00d9c2" opacity=".24" filter="url(#glow)"/>
+<ellipse cx="800" cy="850" rx="690" ry="82" stroke="#3fffe5" stroke-width="5" opacity=".9"/>
+<!-- television -->
+<path d="M555 135 1370 45 1370 635 555 675Z" fill="#020707" stroke="#8baba8" stroke-width="8"/>
+<path d="M570 151 1355 65 1355 615 570 653Z" fill="url(#screen)"/>
+<path d="M570 470 Q790 575 1010 405 T1355 270" stroke="#00e9d2" stroke-width="95" opacity=".18" filter="url(#glow)"/>
+<path d="M570 470 Q790 575 1010 405 T1355 270" stroke="url(#teal)" stroke-width="4"/>
+<path d="M935 675 915 765M1260 644 1300 754" stroke="#6f8985" stroke-width="13" stroke-linecap="round"/>
+<!-- laptop -->
+<path d="M270 405 725 365 705 760 185 760Z" fill="#050b0b" stroke="#9aafac" stroke-width="8"/>
+<path d="M286 422 707 386 690 714 205 733Z" fill="url(#screen)"/>
+<path d="M205 600 Q390 700 530 555 T700 510" stroke="#00f0d9" stroke-width="64" opacity=".18" filter="url(#glow)"/>
+<path d="M205 600 Q390 700 530 555 T700 510" stroke="url(#teal)" stroke-width="4"/>
+<path d="M185 760 705 760 800 810 Q810 820 785 824 L130 824 Q112 820 130 807Z" fill="url(#metal)" stroke="#8ba19d" stroke-width="5"/>
+<path d="M350 777 570 777 590 790 335 790Z" fill="#182624" stroke="#738a85" stroke-width="2"/>
+<!-- tablet -->
+<path d="M945 515 Q945 495 967 495 L1275 495 Q1295 495 1295 517 L1260 790 Q1258 810 1237 810 L915 810 Q895 808 899 788Z" fill="#020606" stroke="#a6bfba" stroke-width="8"/>
+<path d="M963 517 1277 517 1244 777 925 777Z" fill="url(#screen)"/>
+<path d="M925 680 Q1060 745 1160 635 T1270 600" stroke="#00f0d9" stroke-width="58" opacity=".17" filter="url(#glow)"/>
+<path d="M925 680 Q1060 745 1160 635 T1270 600" stroke="url(#teal)" stroke-width="4"/>
+<!-- phone -->
+<rect x="720" y="565" width="170" height="330" rx="29" fill="#020606" stroke="#a8c1bd" stroke-width="8"/>
+<rect x="733" y="579" width="144" height="300" rx="20" fill="url(#screen)"/>
+<rect x="785" y="590" width="40" height="7" rx="4" fill="#07100f"/>
+<path d="M733 770 Q790 800 825 735 T877 710" stroke="#00f0d9" stroke-width="36" opacity=".18" filter="url(#glow)"/>
+<path d="M733 770 Q790 800 825 735 T877 710" stroke="url(#teal)" stroke-width="3"/>
+<ellipse cx="800" cy="920" rx="630" ry="22" fill="#00d8c5" opacity=".22" filter="url(#shadow)"/>
+</svg>
