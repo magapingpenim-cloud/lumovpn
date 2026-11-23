@@ -903,3 +903,62 @@ html body.inner-layout .ready-subscriptions .ready-card .ready-card-head h3 {
   -webkit-text-fill-color: #f5f8f7 !important;
   text-shadow: none !important;
 }
+
+
+/* Black-and-white support surfaces: no white/Tiffany-filled cards. */
+html body.inner-layout .dashboard-help,
+html body.inner-layout .support-intro,
+html body.inner-layout .support-form,
+html body.inner-layout .order,
+html body.inner-layout .order .admin-help,
+html body.inner-layout .empty {
+  background: #070b0a !important;
+  color: #f5f8f7 !important;
+  border: 1px solid rgba(235,245,242,.18) !important;
+  box-shadow: none !important;
+}
+html body.inner-layout .dashboard-help h2,
+html body.inner-layout .dashboard-help p,
+html body.inner-layout .dashboard-help .eyebrow,
+html body.inner-layout .dashboard-help a,
+html body.inner-layout .support-intro h2,
+html body.inner-layout .support-intro p,
+html body.inner-layout .support-intro a,
+html body.inner-layout .support-form label,
+html body.inner-layout .support-form strong,
+html body.inner-layout .order h3,
+html body.inner-layout .order b,
+html body.inner-layout .order p,
+html body.inner-layout .empty strong,
+html body.inner-layout .empty p {
+  color: #f5f8f7 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #f5f8f7 !important;
+}
+html body.inner-layout .support-intro .support-round-icon,
+html body.inner-layout .support-signed-in {
+  background: #0d1715 !important;
+  color: #f5f8f7 !important;
+  border: 1px solid rgba(235,245,242,.16) !important;
+}
+html body.inner-layout .support-form textarea,
+html body.inner-layout .support-form input {
+  background: #050807 !important;
+  color: #f5f8f7 !important;
+  border: 1px solid rgba(235,245,242,.24) !important;
+}
+html body.inner-layout .support-form textarea::placeholder,
+html body.inner-layout .support-form input::placeholder {
+  color: #9aa9a4 !important;
+}
+html body.inner-layout .support-form .btn-main {
+  background: #72e4d2 !important;
+  color: #062b28 !important;
+  border: 1px solid #72e4d2 !important;
+}
+html body.inner-layout .order .status,
+html body.inner-layout .order .admin-help {
+  background: #0d1715 !important;
+  color: #f5f8f7 !important;
+  border-color: rgba(235,245,242,.18) !important;
+}
