@@ -715,3 +715,21 @@ html body.inner-layout .dashboard-welcome .eyebrow {
 html body.inner-layout .ready-card h3 {
   color: #f4f8f6 !important;
 }
+
+
+/* Requested plain black-and-white treatment for the “Мои подписки” header card. */
+html body.inner-layout .dashboard-welcome {
+  background: #000 !important;
+  background-image: none !important;
+  color: #fff !important;
+  border: 1px solid #242424 !important;
+  box-shadow: none !important;
+}
+html body.inner-layout .dashboard-welcome,
+html body.inner-layout .dashboard-welcome * {
+  color: #fff !important;
+  text-shadow: none !important;
+}
+html body.inner-layout .dashboard-welcome .welcome-mark {
+  display: none !important;
+}
