@@ -831,3 +831,66 @@ html body.inner-layout .ready-card .ready-card-head h3 {
   opacity: 1 !important;
   text-shadow: 0 0 16px rgba(114,228,210,.12) !important;
 }
+
+
+/* Tiffany surfaces for support and support history; remove legacy white cards. */
+html body.inner-layout .support-intro,
+html body.inner-layout .support-form,
+html body.inner-layout article.order {
+  background: linear-gradient(145deg, #79e6d5 0%, #58ddcb 100%) !important;
+  color: #062b28 !important;
+  border: 1px solid rgba(114,228,210,.95) !important;
+  box-shadow: 0 14px 38px rgba(0,220,200,.10) !important;
+}
+html body.inner-layout .support-intro h2,
+html body.inner-layout .support-intro p,
+html body.inner-layout .support-intro .text-link,
+html body.inner-layout .support-form label,
+html body.inner-layout .support-form strong,
+html body.inner-layout article.order,
+html body.inner-layout article.order h3,
+html body.inner-layout article.order b,
+html body.inner-layout article.order p,
+html body.inner-layout article.order .muted,
+html body.inner-layout article.order .tiny {
+  color: #062b28 !important;
+}
+html body.inner-layout .support-intro .support-round-icon {
+  background: rgba(0,65,59,.12) !important;
+  color: #062b28 !important;
+}
+html body.inner-layout .support-form textarea,
+html body.inner-layout .support-form input {
+  background: #061311 !important;
+  color: #f4fffc !important;
+  border: 1px solid rgba(0,54,49,.65) !important;
+}
+html body.inner-layout .support-form textarea::placeholder,
+html body.inner-layout .support-form input::placeholder {
+  color: #91aaa5 !important;
+}
+html body.inner-layout .support-form .btn-main {
+  background: #062b28 !important;
+  color: #eafffa !important;
+  border: 1px solid #062b28 !important;
+}
+html body.inner-layout .support-signed-in,
+html body.inner-layout article.order .admin-help {
+  background: rgba(255,255,255,.24) !important;
+  color: #062b28 !important;
+  border: 1px solid rgba(0,54,49,.16) !important;
+}
+html body.inner-layout article.order .status {
+  background: rgba(0,54,49,.10) !important;
+  color: #062b28 !important;
+  border-color: rgba(0,54,49,.35) !important;
+}
+html body.inner-layout .trial-banner strong {
+  color: #72e4d2 !important;
+  opacity: 1 !important;
+  text-shadow: 0 0 14px rgba(114,228,210,.18) !important;
+}
+html body.inner-layout .trial-banner small {
+  color: #c1d8d3 !important;
+  opacity: 1 !important;
+}
