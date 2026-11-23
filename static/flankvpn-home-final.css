@@ -47,8 +47,8 @@ body.home-layout main.home-main {
 body.home-layout .home-artboard {
   position: relative !important;
   display: block !important;
-  width: min(100%, 864px) !important;
-  max-width: 864px !important;
+  width: 100% !important;
+  max-width: none !important;
   height: auto !important;
   margin: 0 auto !important;
   padding: 0 !important;
@@ -60,7 +60,7 @@ body.home-layout .home-artboard {
 body.home-layout .home-artwork {
   display: block !important;
   width: 100% !important;
-  max-width: none !important;
+  max-width: 100% !important;
   height: auto !important;
   min-height: 0 !important;
   margin: 0 !important;
@@ -180,9 +180,20 @@ body.home-layout .flash-stack {
 @media (max-width: 600px) {
   body.home-layout .home-artboard {
     width: 100% !important;
-    max-width: 864px !important;
+    max-width: none !important;
   }
   body.home-layout .home-hotspot-menu {
     width: min(240px, 82vw) !important;
   }
+}
+
+/* Mobile Safari: keep the full artwork in normal document flow without cropping. */
+html { margin: 0 !important; padding: 0 !important; }
+body.home-layout .home-artboard,
+body.home-layout .home-artwork {
+  box-sizing: border-box !important;
+}
+body.home-layout .home-artwork {
+  object-fit: contain !important;
+  object-position: top center !important;
 }
