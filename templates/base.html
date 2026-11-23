@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-approved.css', v='20261123-olympus') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-olympus.css', v='20261123-2') }}">
   {% if request.endpoint == 'index' %}
-  <link rel="preload" as="image" href="{{ url_for('static', filename='64CCD41B-17D6-4147-B773-F6617872FDE1.png') }}" fetchpriority="high">
+  <link rel="preload" as="image" href="{{ url_for('static', filename='home-dark.png') }}" fetchpriority="high">
   {% endif %}
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else 'inner-layout' }}">
