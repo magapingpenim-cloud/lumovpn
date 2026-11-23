@@ -48,13 +48,13 @@ input::placeholder,textarea::placeholder{color:#74827c!important}
 @media(max-width:850px){.pricing-grid{grid-template-columns:1fr 1fr!important}.page-main{width:min(calc(100% - 32px),700px)!important;padding-top:38px!important}}
 @media(max-width:600px){.page-main{width:calc(100% - 28px)!important;padding:30px 0 48px!important}.pricing-grid{grid-template-columns:1fr!important;gap:14px!important}.pricing-card{padding:24px!important}.site-nav:not(.site-nav-home){min-height:70px;padding:0 14px!important}.brand img{width:36px;height:36px}.dashboard-welcome{padding-top:12px!important}}
 
-/* Homepage art direction: one continuous black stage, statue and type are integrated */
+/* Homepage art direction: one continuous black stage with a multi-device hero */
 body.home-layout{background:#070909!important;color:#f4f7f5!important}
 body.home-layout .site-shell{background:#070909!important;overflow:clip!important}
 body.home-layout .site-nav-home{position:relative!important;inset:auto!important;width:100%!important;min-height:82px!important;padding:0 clamp(20px,6vw,88px)!important;background:rgba(7,10,10,.72)!important}
 body.home-layout .desktop-nav a{color:#c4d0cb!important}
 body.home-layout main.home-main{display:block!important;width:100%!important;max-width:none!important;padding:0!important;margin:0!important}
-body.home-layout .approved-hero{position:relative!important;display:flex!important;align-items:center!important;min-height:min(790px,calc(100svh - 82px))!important;padding:clamp(54px,8vw,110px) max(7vw,calc((100vw - 1200px)/2))!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:#070909 url('/static/hero-stage-hq.avif') center right/cover no-repeat!important}
+body.home-layout .approved-hero{position:relative!important;display:flex!important;align-items:center!important;min-height:min(790px,calc(100svh - 82px))!important;padding:clamp(54px,8vw,110px) max(7vw,calc((100vw - 1200px)/2))!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:#070909 url('/static/flankvpn-devices.svg') center right/cover no-repeat!important}
 body.home-layout .approved-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#070909 0%,rgba(7,9,9,.96) 28%,rgba(7,9,9,.62) 52%,rgba(7,9,9,.08) 100%);pointer-events:none}
 body.home-layout .approved-copy{position:relative!important;z-index:2!important;width:min(650px,58%)!important}
 body.home-layout .approved-eyebrow{display:flex;align-items:center;gap:10px;color:var(--fv-tiffany)!important;font-size:10px!important;letter-spacing:.22em!important;font-weight:800!important}
@@ -86,7 +86,7 @@ body.home-layout .approved-bottom-cta p:not(.approved-eyebrow){color:#9ba9a2!imp
  body.home-layout .site-nav-home .nav-actions{margin-left:auto!important}
  body.home-layout .site-nav-home .nav-login{min-width:78px!important;min-height:42px!important;padding:0 16px!important}
  body.home-layout .site-nav-home .desktop-nav{display:none!important}
- body.home-layout .approved-hero{min-height:0!important;padding:52px 22px 36px!important;background:#070909 url('/static/hero-stage-mobile-hq.avif') center bottom/100% auto no-repeat!important;align-items:flex-start!important}
+ body.home-layout .approved-hero{min-height:0!important;padding:52px 22px 36px!important;background:#070909 url('/static/flankvpn-devices.svg') center bottom/auto 330px no-repeat!important;align-items:flex-start!important}
  body.home-layout .approved-hero:before{background:linear-gradient(180deg,#070909 0%,rgba(7,9,9,.96) 34%,rgba(7,9,9,.3) 70%,rgba(7,9,9,.06) 100%)}
  body.home-layout .approved-copy{width:100%!important}
  body.home-layout .approved-copy h1{font-size:clamp(48px,13vw,76px)!important;margin:22px 0 18px!important}
