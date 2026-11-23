@@ -16,35 +16,59 @@
 {% set ready_orders = orders|selectattr('status','equalto','active')|selectattr('subscription_url')|list %}
 {% set current_subscription = latest_subscription if subscription_active else none %}
 {% if show_connect_guide and current_subscription %}
-<div class="connect-guide-backdrop" id="connect-guide" role="dialog" aria-modal="true" aria-labelledby="connect-guide-title">
- <section class="connect-guide-card">
-  <button class="connect-guide-close" type="button" aria-label="Закрыть" id="connect-guide-close">×</button>
-  <div class="eyebrow">FLANKVPN · БЫСТРЫЙ СТАРТ</div>
-  <h2 id="connect-guide-title">🎉 Подписка готова!</h2>
-  <p class="muted">Осталось добавить её в приложение — это займёт пару минут.</p>
-  <div class="connect-guide-step"><span>1</span><div><strong>📲 Скачай INCY</strong><p>Установи приложение из App Store на iPhone или iPad.</p><a class="btn secondary full" href="https://apps.apple.com/app/incy/id6756943388" target="_blank" rel="noopener">Скачать INCY в App Store ↗</a>
-  <a class="btn secondary full" href="https://apps.apple.com/ae/app/happ-proxy-utility/id6504287215" target="_blank" rel="noopener">Скачать HAPP в App Store ↗</a></div></div>
-  <div class="connect-guide-step"><span>2</span><div><strong>📋 Скопируй ссылку подписки</strong><p>Нажми кнопку — скопируется твоя личная ссылка.</p><button type="button" class="btn primary full copy-subscription" data-copy-subscription="{{ current_subscription.subscription_url }}">Скопировать ссылку</button></div></div>
-  <div class="connect-guide-step"><span>3</span><div><strong>🚀 Добавь ссылку в INCY</strong><p>Открой INCY или HAPP → нажми «+» / «Добавить подписку» → вставь скопированную ссылку или отсканируй QR-код. После импорта появятся серверы FlankVPN.</p></div></div>
-  <button type="button" class="btn secondary full" id="connect-guide-done">Понятно, начать пользоваться</button>
+<div class="onboarding-backdrop" id="flank-onboarding" role="dialog" aria-modal="true" aria-label="Инструкция по подключению FlankVPN">
+ <section class="onboarding-shell">
+  <button class="onboarding-close" type="button" id="onboarding-close" aria-label="Закрыть инструкцию">×</button>
+  <div class="onboarding-visual" id="onboarding-visual">
+   <img class="onboarding-slide is-active" data-step="0" src="{{ url_for('static', filename='onboarding-step-1.png') }}" alt="Шаг 1. Установи HAPP или INCY">
+   <img class="onboarding-slide" data-step="1" src="{{ url_for('static', filename='onboarding-step-2.png') }}" alt="Шаг 2. Скопируй персональную ссылку или QR-код">
+   <img class="onboarding-slide" data-step="2" src="{{ url_for('static', filename='onboarding-step-3.png') }}" alt="Шаг 3. Вставь ссылку или отсканируй QR-код">
+   <img class="onboarding-slide" data-step="3" src="{{ url_for('static', filename='onboarding-step-4.png') }}" alt="Шаг 4. Подключение к телевизору">
+   <img class="onboarding-slide" data-step="4" src="{{ url_for('static', filename='onboarding-step-5.svg') }}" alt="Шаг 5. Всё готово">
+  </div>
+  <div class="onboarding-controls">
+   <div class="onboarding-progress"><span id="onboarding-progress-fill"></span></div>
+   <div class="onboarding-control-row">
+    <button class="onboarding-prev" type="button" id="onboarding-prev" disabled>Назад</button>
+    <span id="onboarding-count">1 / 5</span>
+    <button class="onboarding-next" type="button" id="onboarding-next">Далее →</button>
+   </div>
+  </div>
  </section>
 </div>
 <style>
-.connect-guide-backdrop{position:fixed;inset:0;z-index:2000;background:rgba(1,12,13,.78);backdrop-filter:blur(9px);display:grid;place-items:center;padding:16px}
-.connect-guide-card{position:relative;width:min(100%,520px);max-height:min(90vh,850px);overflow:auto;padding:clamp(22px,5vw,34px);border:1px solid rgba(114,228,210,.42);border-radius:26px;background:linear-gradient(145deg,#123b38,#0b2425 72%);color:#edfffc;box-shadow:0 28px 90px #0009}
-.connect-guide-card h2{font-size:clamp(25px,6vw,34px);margin:10px 36px 8px 0}
-.connect-guide-card>p{margin:0 0 20px;color:#a8c9c5}
-.connect-guide-close{position:absolute;right:16px;top:14px;border:1px solid #47716c;background:#1a4641;color:#eafffb;border-radius:50%;width:38px;height:38px;font-size:25px;cursor:pointer}
-.connect-guide-step{display:flex;gap:14px;padding:15px 0;border-top:1px solid #ffffff20}
-.connect-guide-step>span{flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#72e4d2;color:#082b29;font-weight:900}
-.connect-guide-step>div{min-width:0;flex:1}
-.connect-guide-step strong{font-size:16px}
-.connect-guide-step p{margin:5px 0 12px;color:#aac8c4;font-size:14px}
-.connect-guide-card .btn{margin-top:4px}
-@media(max-width:480px){.connect-guide-backdrop{padding:10px}.connect-guide-card{padding:22px 18px;border-radius:22px;max-height:88vh}.connect-guide-step{gap:10px}}
+.onboarding-backdrop{position:fixed;inset:0;z-index:2500;display:grid;place-items:center;padding:10px;background:rgba(0,5,6,.88);backdrop-filter:blur(14px)}
+.onboarding-shell{position:relative;width:min(100%,520px);max-height:96dvh;display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(0,230,213,.42);border-radius:24px;background:#020909;box-shadow:0 24px 90px #000b,0 0 35px #00d9c533}
+.onboarding-close{position:absolute;z-index:5;right:12px;top:12px;width:40px;height:40px;border-radius:50%;border:1px solid #6deadd88;background:#001b1b;color:#fff;font-size:27px;cursor:pointer}
+.onboarding-visual{position:relative;min-height:0;overflow:hidden;display:grid;place-items:center}
+.onboarding-slide{display:block;width:100%;height:auto;max-height:calc(96dvh - 94px);object-fit:contain;grid-area:1/1;opacity:0;transform:translateX(34px) scale(.985);transition:opacity .34s ease,transform .42s cubic-bezier(.2,.75,.25,1);pointer-events:none}
+.onboarding-slide.is-active{opacity:1;transform:translateX(0) scale(1);pointer-events:auto}
+.onboarding-slide.is-leaving{opacity:0;transform:translateX(-34px) scale(.985)}
+.onboarding-controls{padding:12px 16px 15px;background:linear-gradient(180deg,#031211,#020909);border-top:1px solid #00d9c533}
+.onboarding-progress{height:4px;border-radius:99px;background:#ffffff20;overflow:hidden;margin-bottom:12px}
+.onboarding-progress span{display:block;width:20%;height:100%;border-radius:99px;background:#00e4d2;box-shadow:0 0 12px #00e4d2;transition:width .35s ease}
+.onboarding-control-row{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#a8c9c5;font-size:13px}
+.onboarding-control-row button{min-height:42px;padding:0 18px;border-radius:999px;font-weight:800;cursor:pointer}
+.onboarding-prev{border:1px solid #66817e;background:transparent;color:#eafffb}
+.onboarding-prev:disabled{opacity:.35;cursor:default}
+.onboarding-next{border:0;background:#00e4d2;color:#00201e}
+@media(prefers-reduced-motion:reduce){.onboarding-slide,.onboarding-progress span{transition:none}}
+@media(max-width:520px){.onboarding-backdrop{padding:6px}.onboarding-shell{width:100%;max-height:97dvh;border-radius:18px}.onboarding-slide{max-height:calc(97dvh - 90px)}.onboarding-controls{padding:9px 12px 11px}}
 </style>
 <script>
-(()=>{const modal=document.getElementById("connect-guide");if(!modal)return;const close=()=>modal.remove();document.getElementById("connect-guide-close")?.addEventListener("click",close);document.getElementById("connect-guide-done")?.addEventListener("click",close);modal.addEventListener("click",e=>{if(e.target===modal)close()});document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("connect-guide"))close()});})();
+(()=>{const modal=document.getElementById("flank-onboarding");if(!modal)return;
+ const slides=[...modal.querySelectorAll(".onboarding-slide")],prev=document.getElementById("onboarding-prev"),next=document.getElementById("onboarding-next"),count=document.getElementById("onboarding-count"),fill=document.getElementById("onboarding-progress-fill");
+ let current=0,busy=false;
+ const render=(target)=>{if(busy||target===current||target<0||target>=slides.length)return;busy=true;const old=slides[current],fresh=slides[target];old.classList.add("is-leaving");old.classList.remove("is-active");fresh.classList.add("is-active");current=target;count.textContent=(current+1)+" / "+slides.length;fill.style.width=((current+1)/slides.length*100)+"%";prev.disabled=current===0;next.textContent=current===slides.length-1?"Готово ✓":"Далее →";window.setTimeout(()=>{old.classList.remove("is-leaving");busy=false;},430);};
+ const close=()=>modal.remove();
+ prev.addEventListener("click",()=>render(current-1));
+ next.addEventListener("click",()=>{if(current===slides.length-1)close();else render(current+1);});
+ document.getElementById("onboarding-close").addEventListener("click",close);
+ modal.addEventListener("click",e=>{if(e.target===modal)close();});
+ document.addEventListener("keydown",e=>{if(!document.getElementById("flank-onboarding"))return;if(e.key==="ArrowRight")render(current+1);if(e.key==="ArrowLeft")render(current-1);if(e.key==="Escape")close();});
+ let touchX=0;const visual=document.getElementById("onboarding-visual");visual.addEventListener("touchstart",e=>{touchX=e.changedTouches[0].clientX;},{passive:true});visual.addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>55)render(current+(dx<0?1:-1));},{passive:true});
+ fill.style.width="20%";
+})();
 </script>
 {% endif %}
 <style>
