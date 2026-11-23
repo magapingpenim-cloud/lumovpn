@@ -129,3 +129,9 @@ body.home-layout .flash-stack{position:fixed!important;top:12px!important;left:1
 .home-hotspot-menu a:hover,.home-hotspot-menu a:focus-visible{background:rgba(114,228,210,.14)!important;color:#72e4d2!important}
 @media(prefers-reduced-motion:no-preference){.home-hotspot,.home-menu-hotspot>summary{transition:background-color .16s ease,outline-color .16s ease}}
 @media(max-width:600px){.home-artboard{width:100%!important}.home-hotspot-menu{width:min(240px,82vw)!important}}
+
+
+/* Keep the FlankVPN wordmark white on inner/auth pages, including registration. */
+body.inner-layout .site-nav .brand .brand-wordmark {
+  color: #ffffff !important;
+}
