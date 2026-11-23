@@ -15,6 +15,7 @@
   <link rel="preload" as="image" href="{{ url_for('static', filename='hero-stage-hq.avif') }}" media="(min-width: 681px)" fetchpriority="high">
   <link rel="preload" as="image" href="{{ url_for('static', filename='hero-stage-mobile-hq.avif') }}" media="(max-width: 680px)" fetchpriority="high">
   {% endif %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-live-dark.css', v='20261123-live-1') }}">
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else 'inner-layout' }}">
   <div class="site-shell">
