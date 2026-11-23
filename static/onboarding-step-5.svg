@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="941" height="1672" viewBox="0 0 941 1672">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#020707"/><stop offset=".55" stop-color="#001b1a"/><stop offset="1" stop-color="#020707"/></linearGradient>
+ <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#76fff0"/><stop offset=".48" stop-color="#00e4d2"/><stop offset="1" stop-color="#00a9a8"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="12" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="941" height="1672" fill="url(#bg)"/>
+<path d="M690 0 C760 150 820 100 941 12" fill="none" stroke="#00e8d4" stroke-width="5" opacity=".7" filter="url(#glow)"/>
+<path d="M0 1500 C170 1400 110 1590 0 1640" fill="none" stroke="#00e8d4" stroke-width="5" opacity=".6" filter="url(#glow)"/>
+<text x="470" y="112" text-anchor="middle" font-family="Arial,sans-serif" font-size="62" font-weight="700" fill="#fff">Flank<tspan fill="#00e5d2">VPN</tspan></text>
+<g fill="none" stroke="#00e6d5" stroke-width="6"><path d="M170 205 H770"/><circle cx="170" cy="205" r="31"/><circle cx="320" cy="205" r="31"/><circle cx="470" cy="205" r="31"/><circle cx="620" cy="205" r="31"/><circle cx="770" cy="205" r="39" filter="url(#glow)"/></g>
+<g font-family="Arial,sans-serif" font-size="31" font-weight="700" text-anchor="middle" fill="#00e6d5"><text x="170" y="216">✓</text><text x="320" y="216">✓</text><text x="470" y="216">✓</text><text x="620" y="216">✓</text><text x="770" y="216" fill="#fff">5</text></g>
+<text x="470" y="278" text-anchor="middle" font-family="Arial,sans-serif" font-size="28" fill="#d6e7e6">Шаг 5 из 5</text>
+<text x="470" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-size="76" font-weight="800" fill="#fff">ВСЁ ГОТОВО! <tspan fill="#00e6d5">♡</tspan></text>
+<text x="470" y="500" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" fill="#d8e7e6">Ты успешно настроил FlankVPN</text>
+<text x="470" y="548" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" fill="#d8e7e6">и можешь пользоваться</text>
+<text x="470" y="596" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" fill="#d8e7e6">без ограничений</text>
+<rect x="225" y="680" width="491" height="390" rx="54" fill="#001b1a" stroke="url(#cyan)" stroke-width="5" filter="url(#glow)"/>
+<circle cx="470" cy="850" r="102" fill="#00110f" stroke="#00e6d5" stroke-width="7" filter="url(#glow)"/>
+<path d="M420 850 l36 38 78 -92" fill="none" stroke="#fff" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="470" y="1000" text-anchor="middle" font-family="Arial,sans-serif" font-size="62" font-weight="700" fill="#fff">Flank<tspan fill="#00e5d2">VPN</tspan></text>
+<g fill="none" stroke="#00e6d5" stroke-width="5"><rect x="120" y="1140" width="150" height="150" rx="30"/><rect x="395" y="1140" width="150" height="150" rx="30"/><rect x="670" y="1140" width="150" height="150" rx="30"/></g>
+<g fill="#00e6d5" font-family="Arial,sans-serif" font-size="78" text-anchor="middle"><text x="195" y="1240">ϟ</text><text x="470" y="1240">♢</text><text x="745" y="1240">∞</text></g>
+<g fill="#fff" font-family="Arial,sans-serif" font-size="25" text-anchor="middle"><text x="195" y="1340">Быстрый</text><text x="195" y="1372">и стабильный</text><text x="470" y="1340">Безопасное</text><text x="470" y="1372">подключение</text><text x="745" y="1340">Доступ</text><text x="745" y="1372">без ограничений</text></g>
+<rect x="105" y="1450" width="731" height="112" rx="56" fill="url(#cyan)"/>
+<text x="470" y="1523" text-anchor="middle" font-family="Arial,sans-serif" font-size="48" font-weight="700" fill="#00201f">Далее →</text>
+</svg>
