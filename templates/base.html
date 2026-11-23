@@ -3,17 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f6e3d5">
+  <meta name="theme-color" content="#070909">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <meta name="description" content="FlankVPN — быстрый и понятный VPN-доступ с удобным управлением подпиской.">
+  <meta name="description" content="FlankVPN — быстрый и безопасный VPN. Свобода в интернете, удобная подписка и подключение за пару минут.">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
   <title>{% block title %}FlankVPN — интернет без ограничений{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261122') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-rebrand.css', v='20261122-quality-6') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-approved.css', v='20261122-mobile-nav-6') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261123-olympus') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-rebrand.css', v='20261123-olympus') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-approved.css', v='20261123-olympus') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-olympus.css', v='20261123-1') }}">
   {% if request.endpoint == 'index' %}
-  <link rel="preload" as="image" href="{{ url_for('static', filename='hero-stage-hq.avif') }}" media="(min-width: 681px)" fetchpriority="high">
-  <link rel="preload" as="image" href="{{ url_for('static', filename='hero-stage-mobile-hq.avif') }}" media="(max-width: 680px)" fetchpriority="high">
+  <link rel="preload" as="image" href="{{ url_for('static', filename='hero-stage-hq.avif') }}" media="(min-width: 761px)" fetchpriority="high">
+  <link rel="preload" as="image" href="{{ url_for('static', filename='hero-stage-mobile-hq.avif') }}" media="(max-width: 760px)" fetchpriority="high">
   {% endif %}
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else 'inner-layout' }}">
@@ -68,7 +69,7 @@
     {% if request.endpoint != 'index' %}
     <footer class="site-footer">
       <a href="{{ url_for('index') }}" class="footer-brand">FlankVPN<span>.</span></a>
-      <span>Быстрый доступ. Понятное управление.</span>
+      <span>Свобода. Скорость. Защита.</span>
       <span>© 2026 FlankVPN</span>
     </footer>
     {% endif %}
@@ -94,7 +95,6 @@
       }, true);
     })();
   </script>
-
   <script>
     (() => {
       const menu = document.querySelector('.mobile-menu');
