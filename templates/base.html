@@ -13,8 +13,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-approved.css', v='20261123-olympus') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-olympus.css', v='20261123-1') }}">
   {% if request.endpoint == 'index' %}
-  <link rel="preload" as="image" href="{{ url_for('static', filename='hero-stage-hq.avif') }}" media="(min-width: 761px)" fetchpriority="high">
-  <link rel="preload" as="image" href="{{ url_for('static', filename='hero-stage-mobile-hq.avif') }}" media="(max-width: 760px)" fetchpriority="high">
+  <link rel="preload" as="image" href="{{ url_for('static', filename='flankvpn-devices.svg') }}" fetchpriority="high">
   {% endif %}
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else 'inner-layout' }}">
