@@ -1,0 +1,104 @@
+/* FlankVPN dark Tiffany live theme — additive override */
+:root{
+  color-scheme:dark;
+  --approved-bg:#050708;--approved-paper:#080d0e;--approved-panel:#0c1314;
+  --approved-ink:#eef8f6;--approved-navy:#f1fbf9;--approved-tiffany:#55e2d0;
+  --approved-muted:#9aaead;--approved-border:rgba(108,231,215,.15);
+  --paper:#050708;--ink:#eef8f6;--muted:#9aaead;--green:#55e2d0;
+  --green-2:#24bfae;--line:rgba(108,231,215,.15);--panel:#0c1314;
+}
+html,body,.site-shell{background:#050708!important;color:#eef8f6!important}
+body{background:#050708!important;color:#eef8f6!important}
+a{color:inherit}
+.site-nav,.site-nav-home{
+  color:#f2fbf9!important;background:rgba(5,8,9,.82)!important;
+  border-bottom:1px solid rgba(85,226,208,.12)!important;
+  backdrop-filter:blur(18px)
+}
+.site-nav-home{position:relative!important;left:auto!important;top:auto!important;transform:none!important}
+.brand,.site-nav-home .brand{color:#f4fffd!important}
+.brand img,.site-nav-home .brand img{filter:drop-shadow(0 0 10px rgba(85,226,208,.25))}
+.desktop-nav a,.site-nav-home .desktop-nav a{color:#c0d2cf!important}
+.desktop-nav a.active,.desktop-nav a:hover{color:#55e2d0!important}
+.nav-login,.site-nav-home .nav-login{background:#55e2d0!important;color:#04100f!important;border:1px solid #55e2d0!important;box-shadow:0 0 24px rgba(85,226,208,.15)!important}
+.mobile-menu summary{background:#0b1414!important;border-color:rgba(85,226,208,.22)!important}
+.mobile-menu summary span{background:#55e2d0!important}
+.mobile-menu-panel{background:#0b1314!important;border-color:rgba(85,226,208,.2)!important;color:#eef8f6!important}
+.mobile-menu-panel a,.mobile-menu-panel button{color:#eef8f6!important}
+.home-main{background:#050708!important}
+.approved-hero{
+  position:relative;isolation:isolate;display:flex!important;align-items:center;
+  min-height:calc(100svh - 84px)!important;height:auto!important;
+  max-height:none!important;overflow:hidden!important;
+  padding:clamp(48px,8vh,100px) clamp(28px,8vw,132px)!important;
+  color:#f4fbfa!important;
+  background-color:#050708!important;
+  background-image:linear-gradient(90deg,rgba(3,7,8,.97) 0%,rgba(3,7,8,.88) 34%,rgba(3,7,8,.24) 68%,rgba(3,7,8,.08) 100%),url('/static/hero-stage-hq.avif')!important;
+  background-repeat:no-repeat!important;background-position:center right!important;
+  background-size:cover!important;
+}
+.approved-copy{width:min(690px,58%)!important;margin:0!important;z-index:2}
+.approved-eyebrow{color:#8ca7a2!important;letter-spacing:2.5px!important}
+.approved-eyebrow span{background:#55e2d0!important}
+.approved-title{color:#f4fbfa!important;font-size:clamp(48px,6vw,88px)!important;letter-spacing:-.065em!important}
+.approved-accent{color:#55e2d0!important;font-style:italic}
+.approved-description{color:#aabbb7!important;max-width:510px!important}
+.approved-cta{background:#55e2d0!important;color:#04100f!important;box-shadow:0 10px 36px rgba(85,226,208,.18)!important}
+.approved-cta:hover{background:#8cf3e5!important;color:#04100f!important}
+.approved-secondary{border-color:rgba(85,226,208,.36)!important;color:#e8f8f5!important;background:rgba(9,20,20,.48)!important}
+.approved-benefits{color:#b7c8c4!important}
+.benefit-check{color:#55e2d0!important}
+.approved-features{background:#050708!important;color:#eef8f6!important}
+.approved-feature,.approved-bottom-cta{
+  background:linear-gradient(145deg,#0c1515,#080d0e)!important;
+  border:1px solid rgba(85,226,208,.13)!important;color:#eef8f6!important;
+  box-shadow:0 18px 55px rgba(0,0,0,.24)!important
+}
+.approved-feature h2,.approved-bottom-cta h2{color:#f1fbf9!important}
+.approved-feature p,.approved-bottom-cta p{color:#9fb2ae!important}
+.approved-referral-promo{
+  display:flex;align-items:center;gap:16px;width:min(510px,100%);
+  margin-top:30px;padding:15px 18px;border:1px solid rgba(85,226,208,.24);
+  border-radius:16px;background:linear-gradient(110deg,rgba(15,44,42,.86),rgba(8,17,18,.78));
+  box-shadow:0 12px 38px rgba(0,0,0,.22);backdrop-filter:blur(12px)
+}
+.approved-referral-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:13px;background:rgba(85,226,208,.12);color:#55e2d0;font-size:21px}
+.approved-referral-copy{min-width:0;flex:1}
+.approved-referral-copy strong{display:block;color:#f2fbf9;font-size:14px;line-height:1.35}
+.approved-referral-copy span{display:block;margin-top:4px;color:#9fb5b0;font-size:12px}
+.approved-referral-link{flex:0 0 auto;color:#55e2d0!important;font-size:12px;font-weight:800;white-space:nowrap}
+.page-main{background:#050708!important;color:#eef8f6!important}
+.inner-layout .site-nav{background:#080d0e!important;border-bottom:1px solid rgba(85,226,208,.13)!important}
+.site-footer{background:#050708!important;color:#829793!important;border-top:1px solid rgba(85,226,208,.12)!important}
+.footer-brand{color:#eef8f6!important}
+.page-hero h1,.dashboard-welcome h1,.auth-card h1,.payment-return-card h1,.referral-hero h1{color:#f1fbf9!important}
+.page-hero>p,.dashboard-welcome>div>p,.muted,.tiny{color:#9fb2ae!important}
+.pricing-card,.card,.auth-card,.payment-card,.payment-return-card,.referral-link-card,.referral-how,.support-card,.settings-card,.connection-card,.dashboard-card,.order-card,.referral-stat{
+  background:linear-gradient(145deg,#0d1718,#080e0f)!important;
+  border:1px solid rgba(85,226,208,.15)!important;color:#eaf7f4!important;
+  box-shadow:0 18px 50px rgba(0,0,0,.2)!important
+}
+.pricing-card h2,.pricing-card h3,.referral-stat strong,.referral-how h2{color:#f1fbf9!important}
+.pricing-card p,.referral-stat span,.referral-how li{color:#a5b8b3!important}
+input,textarea,select{background:#080f10!important;color:#eef8f6!important;border:1px solid rgba(85,226,208,.22)!important}
+button,.btn.primary{background:#55e2d0!important;color:#04100f!important}
+.referral-hero .eyebrow{color:#55e2d0!important}
+.referral-url{color:#65e5d5!important;overflow-wrap:anywhere}
+.flash{background:#0c1717!important;color:#eaf7f4!important;border-color:rgba(85,226,208,.2)!important}
+@media(max-width:900px){
+ .approved-hero{background-position:60% center!important;padding-left:7vw!important;padding-right:7vw!important}
+ .approved-copy{width:min(650px,68%)!important}
+}
+@media(max-width:680px){
+ .approved-hero{min-height:calc(100svh - 70px)!important;padding:48px 22px 38px!important;align-items:flex-start!important;
+  background-image:linear-gradient(180deg,rgba(3,7,8,.96) 0%,rgba(3,7,8,.83) 43%,rgba(3,7,8,.2) 100%),url('/static/hero-stage-mobile-hq.avif')!important;
+  background-position:center bottom!important;background-size:cover!important}
+ .approved-copy{width:100%!important;margin-top:8px!important}
+ .approved-title{font-size:clamp(43px,11vw,62px)!important}
+ .approved-description{max-width:440px!important;font-size:14px!important}
+ .approved-referral-promo{margin-top:22px;padding:13px 14px;gap:11px}
+ .approved-referral-link{font-size:11px}
+ .approved-features{grid-template-columns:1fr 1fr!important}
+ .referral-stats{grid-template-columns:1fr!important}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
