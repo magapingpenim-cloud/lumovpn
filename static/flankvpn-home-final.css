@@ -436,3 +436,50 @@ body.home-layout .image-menu-panel form { margin: 0 !important; }
 body:not(.home-layout) .site-nav .brand-wordmark {
   color: #ffffff !important;
 }
+
+
+/* Match inner-page content width and normal document scrolling on the homepage. */
+html body.home-layout,
+html body.home-layout .site-shell {
+  height: auto !important;
+  min-height: 100vh !important;
+  min-height: 100svh !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+html body.home-layout main.home-main {
+  width: min(1160px, calc(100% - 52px)) !important;
+  max-width: 1160px !important;
+  height: auto !important;
+  min-height: calc(100vh - 148px) !important;
+  min-height: calc(100svh - 148px) !important;
+  margin: 0 auto !important;
+  padding: 28px 0 76px !important;
+  overflow: visible !important;
+}
+html body.home-layout .home-page {
+  width: 100% !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+html body.home-layout .home-visual {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  overflow: visible !important;
+}
+html body.home-layout .home-visual .home-artwork {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  object-fit: contain !important;
+}
+@media (max-width: 700px) {
+  html body.home-layout main.home-main {
+    width: calc(100% - 32px) !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    padding: 18px 0 48px !important;
+  }
+}
