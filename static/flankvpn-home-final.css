@@ -286,3 +286,74 @@ body.home-layout .home-secondary-action:hover {
     font-size: 15px !important;
   }
 }
+
+
+/* Clickable areas are aligned over the CTA controls already drawn in the artwork. */
+body.home-layout .home-page {
+  display: block !important;
+  width: 100% !important;
+  min-height: 100svh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #030707 !important;
+}
+body.home-layout .home-visual {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  line-height: 0 !important;
+  overflow: hidden !important;
+}
+body.home-layout .home-visual .home-artwork {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  object-fit: contain !important;
+  object-position: top center !important;
+}
+body.home-layout .image-hotspot {
+  position: absolute !important;
+  z-index: 20 !important;
+  display: block !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  text-decoration: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  cursor: pointer !important;
+}
+body.home-layout .image-hotspot:focus-visible {
+  outline: 3px solid #12f3df !important;
+  outline-offset: 3px !important;
+}
+/* The source artwork is a tall mobile-first poster; percentages scale with it. */
+body.home-layout .image-hotspot-login {
+  left: 78.5% !important;
+  top: 4.2% !important;
+  width: 17.5% !important;
+  height: 4.4% !important;
+}
+body.home-layout .image-hotspot-start {
+  left: 12.5% !important;
+  top: 76.3% !important;
+  width: 75% !important;
+  height: 6.7% !important;
+}
+body.home-layout .image-hotspot-tariffs {
+  left: 12.5% !important;
+  top: 83.6% !important;
+  width: 75% !important;
+  height: 6.7% !important;
+}
+@media (min-width: 900px) {
+  body.home-layout .home-visual {
+    max-width: 1100px !important;
+  }
+}
