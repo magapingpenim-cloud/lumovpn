@@ -512,3 +512,45 @@ html body.home-layout .home-visual .home-artwork {
     object-fit: contain !important;
   }
 }
+
+
+/* Phone-fit mode: the complete poster fills one mobile viewport. */
+@media (max-width: 700px) {
+  html body.home-layout,
+  html body.home-layout .site-shell {
+    min-height: 100svh !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+  }
+  html body.home-layout main.home-main {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  html body.home-layout .home-page,
+  html body.home-layout .home-visual {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: calc(100svh - env(safe-area-inset-top)) !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    background: #030707 !important;
+  }
+  html body.home-layout .home-visual .home-artwork {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    object-fit: fill !important;
+    object-position: center center !important;
+  }
+}
