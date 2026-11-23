@@ -771,3 +771,37 @@ html body.home-layout .home-visual .home-artwork {
     object-fit: contain !important;
   }
 }
+
+
+/* Dashboard refinements: Tiffany support card with dark text, and a
+   high-contrast subscription duration heading. */
+html body.inner-layout .dashboard-help {
+  background: #72e4d2 !important;
+  background-image: none !important;
+  border: 1px solid #72e4d2 !important;
+  color: #06221e !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.18) !important;
+}
+html body.inner-layout .dashboard-help,
+html body.inner-layout .dashboard-help * {
+  color: #06221e !important;
+  text-shadow: none !important;
+}
+html body.inner-layout .dashboard-help .eyebrow,
+html body.inner-layout .dashboard-help h2,
+html body.inner-layout .dashboard-help p,
+html body.inner-layout .dashboard-help a,
+html body.inner-layout .dashboard-help .btn {
+  color: #06221e !important;
+}
+html body.inner-layout .dashboard-help .btn {
+  background: rgba(255,255,255,.28) !important;
+  border: 1px solid rgba(6,34,30,.32) !important;
+  box-shadow: none !important;
+}
+html body.inner-layout .ready-card .ready-card-head h3 {
+  color: #f5f8f7 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  -webkit-text-fill-color: #f5f8f7 !important;
+}
