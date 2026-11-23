@@ -693,3 +693,25 @@ html body.home-layout .home-visual .home-artwork {
     min-height: 44px !important;
   }
 }
+
+
+/* Dashboard: darken the subscriptions heading panel and restore clear contrast. */
+html body.inner-layout .dashboard-welcome {
+  background: #050909 !important;
+  color: #f4f8f6 !important;
+  border: 1px solid rgba(114,228,210,.18) !important;
+  border-radius: 22px !important;
+  box-shadow: none !important;
+}
+html body.inner-layout .dashboard-welcome h1,
+html body.inner-layout .dashboard-welcome h2,
+html body.inner-layout .dashboard-welcome p,
+html body.inner-layout .dashboard-welcome .eyebrow {
+  color: #f4f8f6 !important;
+}
+html body.inner-layout .dashboard-welcome .eyebrow {
+  color: #72e4d2 !important;
+}
+html body.inner-layout .ready-card h3 {
+  color: #f4f8f6 !important;
+}
