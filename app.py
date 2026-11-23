@@ -374,7 +374,10 @@ def apply_security_headers(response):
  return response
 
 @app.route("/")
-def index(): return render_template("index.html")
+def index():
+ if current_user.is_authenticated:
+  return redirect(url_for("dashboard"))
+ return render_template("index.html")
 @app.route("/tariffs")
 def tariffs(): return render_template("tariffs.html")
 @app.route("/connection")
@@ -624,7 +627,7 @@ def login():
   return redirect(url_for("dashboard"))
  if request.method=="POST":
   email=request.form.get("email","").strip().lower(); u=User.query.filter(func.lower(User.email)==email).first()
-  if u and u.check_password(request.form.get("password","")): login_user(u); return redirect(url_for("index"))
+  if u and u.check_password(request.form.get("password","")): login_user(u); return redirect(url_for("dashboard"))
   flash("Неверный email или пароль.","error")
  return render_template("auth.html",mode="login")
 
