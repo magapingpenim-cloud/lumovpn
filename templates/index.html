@@ -1,43 +1,17 @@
 {% extends "base.html" %}
-{% block title %}FlankVPN — интернет без границ{% endblock %}
+{% block title %}FlankVPN — интернет без ограничений{% endblock %}
 {% block content %}
-<section class="home-artboard" aria-label="FlankVPN — интернет без границ">
-  <img class="home-artwork" src="{{ url_for('static', filename='8AB98134-41CB-4E43-911E-E22863415E06.png') }}" data-dark="{{ url_for('static', filename='64CCD41B-17D6-4147-B773-F6617872FDE1.png') }}" data-cream="{{ url_for('static', filename='8AB98134-41CB-4E43-911E-E22863415E06.png') }}" alt="FlankVPN — интернет без границ" fetchpriority="high" decoding="async">
-  <details class="home-menu-hotspot">
-    <summary aria-label="Открыть меню"><span class="sr-only">Меню</span></summary>
-    <nav class="home-hotspot-menu" aria-label="Меню сайта">
-      <a href="{{ url_for('index') }}">Главная</a>
-      <a href="{{ url_for('tariffs') }}">Тарифы</a>
-      <a href="{{ url_for('connection') }}">Подключение</a>
-      <a href="{{ url_for('support') }}">Поддержка</a>
-      <button type="button" class="home-theme-toggle" id="home-theme-toggle">Переключить на кремовую тему</button>
-      {% if current_user.is_authenticated %}
-        <a href="{{ url_for('dashboard') }}">Моя подписка</a>
-        <a href="{{ url_for('settings') }}">Настройки</a>
-      {% else %}
-        <a href="{{ url_for('login') }}">Войти</a>
-        <a href="{{ url_for('register') }}">Регистрация</a>
-      {% endif %}
-    </nav>
-  </details>
-  {% if current_user.is_authenticated %}
-    <a class="home-hotspot home-hotspot-login" href="{{ url_for('dashboard') }}" aria-label="Открыть личный кабинет"></a>
-    <a class="home-hotspot home-hotspot-start" href="{{ url_for('dashboard') }}" aria-label="Моя подписка"></a>
-  {% else %}
-    <a class="home-hotspot home-hotspot-login" href="{{ url_for('login') }}" aria-label="Войти"></a>
-    <a class="home-hotspot home-hotspot-start" href="{{ url_for('register') }}" aria-label="Начать бесплатно"></a>
-  {% endif %}
-  <a class="home-hotspot home-hotspot-tariffs" href="{{ url_for('tariffs') }}" aria-label="Тарифы"></a>
+<section class="home-page" aria-label="FlankVPN">
+  <div class="home-visual">
+    <img class="home-artwork" src="{{ url_for('static', filename='5C269ABB-B67E-471C-98ED-71D246689E6F.png') }}" alt="FlankVPN — главная страница" fetchpriority="high" decoding="async">
+  </div>
+  <div class="home-actions">
+    {% if current_user.is_authenticated %}
+      <a class="home-primary-action" href="{{ url_for('dashboard') }}">Личный кабинет <span aria-hidden="true">↗</span></a>
+    {% else %}
+      <a class="home-primary-action" href="{{ url_for('register') }}">Начать бесплатно <span aria-hidden="true">↗</span></a>
+      <a class="home-secondary-action" href="{{ url_for('login') }}">Войти</a>
+    {% endif %}
+  </div>
 </section>
-<style>
-.home-theme-toggle{display:block;width:100%;margin:8px 0 0;padding:12px 14px;border:1px solid rgba(0,210,195,.45);border-radius:12px;background:rgba(0,25,25,.9);color:#bafff7;font:inherit;font-weight:700;text-align:left;cursor:pointer}
-.home-artwork{transition:opacity .28s ease}
-</style>
-<script>
-(()=>{const img=document.querySelector(".home-artwork"),toggle=document.getElementById("home-theme-toggle");if(!img||!toggle)return;
- const apply=theme=>{const cream=theme==="cream";img.style.opacity=".2";window.setTimeout(()=>{img.src=cream?img.dataset.cream:img.dataset.dark;img.style.opacity="1";},130);document.documentElement.dataset.homeTheme=theme;toggle.textContent=cream?"Переключить на тёмную тему":"Переключить на кремовую тему";try{localStorage.setItem("flankvpn-home-theme",theme)}catch(e){}};
- let theme="dark";try{theme=localStorage.getItem("flankvpn-home-theme")||"dark"}catch(e){};if(theme==="cream"){img.src=img.dataset.cream;document.documentElement.dataset.homeTheme="cream";toggle.textContent="Переключить на тёмную тему";}
- toggle.addEventListener("click",()=>apply(document.documentElement.dataset.homeTheme==="cream"?"dark":"cream"));
-})();
-</script>
 {% endblock %}
