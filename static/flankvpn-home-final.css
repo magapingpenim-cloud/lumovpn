@@ -357,3 +357,76 @@ body.home-layout .image-hotspot-tariffs {
     max-width: 1100px !important;
   }
 }
+
+
+/* Clickable hamburger hotspot and accessible dropdown on the artwork. */
+body.home-layout .home-visual { position: relative !important; }
+body.home-layout .image-menu {
+  position: absolute !important;
+  z-index: 30 !important;
+  left: 4.6% !important;
+  top: 6.0% !important;
+  width: 8.2% !important;
+  height: 4.8% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+body.home-layout .image-menu > summary {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  list-style: none !important;
+  cursor: pointer !important;
+  border-radius: 12px !important;
+  -webkit-tap-highlight-color: transparent;
+}
+body.home-layout .image-menu > summary::-webkit-details-marker { display: none !important; }
+body.home-layout .image-menu > summary:focus-visible {
+  outline: 2px solid #00e6d3 !important;
+  outline-offset: 3px !important;
+}
+body.home-layout .image-menu-panel {
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  left: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  width: min(250px, 78vw) !important;
+  max-height: min(70vh, 520px) !important;
+  overflow-y: auto !important;
+  padding: 10px !important;
+  border: 1px solid rgba(0,230,211,.42) !important;
+  border-radius: 16px !important;
+  background: rgba(3,12,13,.97) !important;
+  box-shadow: 0 18px 48px rgba(0,0,0,.55) !important;
+  line-height: 1.25 !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+body.home-layout .image-menu-panel a,
+body.home-layout .image-menu-panel button {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 12px 13px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: #effffc !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  font: inherit !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+}
+body.home-layout .image-menu-panel a:hover,
+body.home-layout .image-menu-panel a:focus-visible,
+body.home-layout .image-menu-panel button:hover,
+body.home-layout .image-menu-panel button:focus-visible {
+  outline: none !important;
+  background: rgba(0,230,211,.13) !important;
+  color: #66f5e6 !important;
+}
+body.home-layout .image-menu-panel form { margin: 0 !important; }
