@@ -430,3 +430,9 @@ body.home-layout .image-menu-panel button:focus-visible {
   color: #66f5e6 !important;
 }
 body.home-layout .image-menu-panel form { margin: 0 !important; }
+
+
+/* Keep the FlankVPN wordmark readable on dark inner/auth pages. */
+body:not(.home-layout) .site-nav .brand-wordmark {
+  color: #ffffff !important;
+}
