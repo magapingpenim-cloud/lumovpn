@@ -805,3 +805,29 @@ html body.inner-layout .ready-card .ready-card-head h3 {
   text-shadow: none !important;
   -webkit-text-fill-color: #f5f8f7 !important;
 }
+
+
+/* Dashboard polish: Tiffany support panel with dark, readable typography. */
+html body.inner-layout .dashboard-help {
+  background: linear-gradient(135deg, #72e4d2 0%, #4ddbc8 100%) !important;
+  border: 1px solid rgba(114,228,210,.9) !important;
+  color: #002b28 !important;
+  box-shadow: 0 12px 34px rgba(0,220,200,.12) !important;
+}
+html body.inner-layout .dashboard-help h2,
+html body.inner-layout .dashboard-help p,
+html body.inner-layout .dashboard-help .eyebrow {
+  color: #002b28 !important;
+}
+html body.inner-layout .dashboard-help .btn,
+html body.inner-layout .dashboard-help a {
+  color: #002b28 !important;
+  background: rgba(255,255,255,.22) !important;
+  border: 1px solid rgba(0,43,40,.42) !important;
+  box-shadow: none !important;
+}
+html body.inner-layout .ready-card .ready-card-head h3 {
+  color: #72e4d2 !important;
+  opacity: 1 !important;
+  text-shadow: 0 0 16px rgba(114,228,210,.12) !important;
+}
