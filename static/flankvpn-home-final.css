@@ -554,3 +554,52 @@ html body.home-layout .home-visual .home-artwork {
     object-position: center center !important;
   }
 }
+
+
+/* iPhone Safari: fill the actual visible browser viewport, not svh.
+   Keep the complete artwork visible and scale it to the viewport box. */
+@media (max-width: 700px) {
+  html body.home-layout,
+  html body.home-layout .site-shell {
+    width: 100% !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+  }
+  html body.home-layout main.home-main {
+    display: block !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  html body.home-layout .home-page,
+  html body.home-layout .home-visual {
+    display: block !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+  html body.home-layout .home-visual .home-artwork {
+    display: block !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    object-fit: fill !important;
+    object-position: center center !important;
+  }
+}
