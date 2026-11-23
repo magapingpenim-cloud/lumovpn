@@ -85,7 +85,6 @@
     <article class="ready-card">
       <div class="ready-card-head">
         <div><span class="status status-active">Подписка активна</span><h3>{{ tariffs[o.tariff_key].title }}</h3><p class="muted tiny">Заказ #{{ o.id }} · {{ o.created_at.strftime('%d.%m.%Y') }}</p></div>
-        <strong class="order-amount">{{ o.amount }} ₽</strong>
       </div>
       <div class="ready-card-body">
         <a class="ready-qr-link" href="{{ url_for('qr',oid=o.id) }}" target="_blank" rel="noopener"><img class="ready-qr" src="{{ url_for('qr',oid=o.id) }}" alt="QR-код подписки"><span>Открыть QR-код</span></a>
