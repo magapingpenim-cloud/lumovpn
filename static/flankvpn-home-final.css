@@ -894,3 +894,12 @@ html body.inner-layout .trial-banner small {
   color: #c1d8d3 !important;
   opacity: 1 !important;
 }
+
+
+/* Dashboard: make subscription duration fully readable on dark cards. */
+html body.inner-layout .ready-subscriptions .ready-card .ready-card-head h3 {
+  color: #f5f8f7 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #f5f8f7 !important;
+  text-shadow: none !important;
+}
