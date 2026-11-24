@@ -962,3 +962,58 @@ html body.inner-layout .order .admin-help {
   color: #f5f8f7 !important;
   border-color: rgba(235,245,242,.18) !important;
 }
+
+
+/* Final responsive homepage sizing: use the full phone width at natural
+   artwork ratio. No 83% sizing, zoom, fixed viewport height, or stretching. */
+html body.home-layout main.home-main,
+html body.home-layout .home-page,
+html body.home-layout .home-visual {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+html body.home-layout .home-visual {
+  position: relative !important;
+  zoom: 1 !important;
+}
+html body.home-layout .home-visual .home-artwork {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  object-fit: contain !important;
+  object-position: center top !important;
+}
+@media (max-width: 900px) {
+  html body.home-layout main.home-main,
+  html body.home-layout .home-page,
+  html body.home-layout .home-visual {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  html body.home-layout .home-visual .home-artwork {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    object-fit: contain !important;
+  }
+}
