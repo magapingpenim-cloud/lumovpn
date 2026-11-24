@@ -31,4 +31,17 @@
     <a class="image-hotspot image-hotspot-tariffs" href="{{ url_for('tariffs') }}" aria-label="Тарифы"></a>
   </div>
 </section>
+<script>
+(() => {
+  const menu = document.querySelector('.image-menu');
+  const visual = document.querySelector('.home-visual');
+  if (!menu || !visual) return;
+  document.addEventListener('click', event => {
+    if (menu.open && !menu.contains(event.target)) menu.removeAttribute('open');
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && menu.open) menu.removeAttribute('open');
+  });
+})();
+</script>
 {% endblock %}
