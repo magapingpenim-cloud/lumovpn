@@ -230,6 +230,17 @@ class TelegramLinkCode(db.Model):
  expires_at=db.Column(db.DateTime,nullable=False)
  used=db.Column(db.Boolean,default=False,nullable=False)
 
+class TelegramAuthSession(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ telegram_id=db.Column(db.String(40),unique=True,nullable=False,index=True)
+ stage=db.Column(db.String(24),nullable=False)
+ email=db.Column(db.String(160),nullable=True)
+ password_hash=db.Column(db.String(255),nullable=True)
+ code_hash=db.Column(db.String(255),nullable=True)
+ expires_at=db.Column(db.DateTime,nullable=True)
+ attempts=db.Column(db.Integer,nullable=False,default=0)
+ updated_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+
 class GameCampaign(db.Model):
  id=db.Column(db.Integer,primary_key=True)
  start_at=db.Column(db.DateTime,nullable=False)
@@ -804,6 +815,138 @@ def telegram_webhook(secret):
            [{"text":"⬅️ К тарифам","callback_data":"show_tariffs"}]])
  cmd=text_in.split(maxsplit=1)[0].lower() if text_in else ""
  arg=text_in.split(maxsplit=1)[1].strip() if len(text_in.split(maxsplit=1))>1 else ""
+ # Email/password authentication is handled as a private, multi-step Telegram flow.
+ auth=TelegramAuthSession.query.filter_by(telegram_id=telegram_id).first()
+ if cmd in ("/register","/login"):
+  if auth:
+   db.session.delete(auth)
+  auth=TelegramAuthSession(telegram_id=telegram_id,stage="register_email" if cmd=="/register" else "login_email")
+  db.session.add(auth); db.session.commit()
+  send("✉️ Введи email, который хочешь использовать для аккаунта FlankVPN." if cmd=="/register" else "✉️ Введи email своего аккаунта FlankVPN.",keyboard=False)
+  return {"ok":True}
+ if cmd=="/cancel":
+  if auth: db.session.delete(auth); db.session.commit()
+  send("Действие отменено. Используй /register или /login для входа.",keyboard=True)
+  return {"ok":True}
+ if auth and not callback_data:
+  value=text_in.strip()
+  if auth.stage in ("register_email","login_email"):
+   email=value.lower()
+   if len(email)>160 or "@" not in email or email.startswith("@") or email.endswith("@"):
+    send("Похоже, email введён неверно. Отправь корректный адрес, например name@example.com. Для отмены — /cancel.",keyboard=False)
+    return {"ok":True}
+   user=User.query.filter(func.lower(User.email)==email).first()
+   if auth.stage=="register_email":
+    if user and not email.endswith("@telegram.flankvpn.local"):
+     auth.stage="login_email"; auth.email=None; db.session.commit()
+     send("Этот email уже зарегистрирован. Для входа используй /login и введи email ещё раз.",keyboard=False)
+     return {"ok":True}
+    linked=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+    if linked:
+     linked_user=db.session.get(User,linked.user_id)
+     if linked_user and not linked_user.email.endswith("@telegram.flankvpn.local"):
+      db.session.delete(auth); db.session.commit()
+      send("Этот Telegram уже привязан к аккаунту. Используй /login для входа в другой аккаунт или продолжай пользоваться текущим.",keyboard=True)
+      return {"ok":True}
+    auth.email=email; auth.stage="register_password"; auth.updated_at=datetime.utcnow(); db.session.commit()
+    send("🔐 Придумай пароль длиной не менее 10 символов. Не отправляй пароль никому, кроме этого бота. Для отмены — /cancel.",keyboard=False)
+   else:
+    if not user or email.endswith("@telegram.flankvpn.local"):
+     send("Аккаунт с таким email не найден. Проверь адрес или используй /register для регистрации.",keyboard=False)
+     return {"ok":True}
+    auth.email=email; auth.stage="login_password"; auth.updated_at=datetime.utcnow(); db.session.commit()
+    send("🔐 Теперь введи пароль от аккаунта. Для отмены — /cancel.",keyboard=False)
+   return {"ok":True}
+  if auth.stage=="register_password":
+   if len(value)<10 or len(value)>128:
+    send("Пароль должен содержать от 10 до 128 символов. Попробуй ещё раз или отправь /cancel.",keyboard=False)
+    return {"ok":True}
+   api_key=os.getenv("RESEND_API_KEY","").strip()
+   sender=os.getenv("RESEND_FROM_EMAIL","").strip()
+   if not api_key or not sender:
+    send("Регистрация временно недоступна: отправка email не настроена. Попробуй позже.",keyboard=False)
+    return {"ok":True}
+   code="".join(secrets.choice(string.digits) for _ in range(6))
+   try:
+    response=requests.post("https://api.resend.com/emails",
+     headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json"},
+     json={"from":sender,"to":[auth.email],"subject":"Код подтверждения FlankVPN",
+      "html":f"<div style='font-family:Arial,sans-serif'><h2>FlankVPN</h2><p>Код подтверждения регистрации:</p><p style='font-size:32px;font-weight:bold;letter-spacing:8px'>{code}</p><p>Код действует 10 минут. Если ты не регистрировался, проигнорируй письмо.</p></div>",
+      "text":f"Код подтверждения FlankVPN: {code}. Он действует 10 минут."},timeout=15)
+    response.raise_for_status()
+    auth.password_hash=generate_password_hash(value); auth.code_hash=generate_password_hash(code)
+    auth.stage="register_verify"; auth.expires_at=datetime.utcnow()+timedelta(minutes=10)
+    auth.attempts=0; auth.updated_at=datetime.utcnow(); db.session.commit()
+    send("📨 Код отправлен на твою почту. Введи 6 цифр из письма. Код действует 10 минут.",keyboard=False)
+   except Exception:
+    db.session.rollback(); app.logger.exception("Telegram registration verification email failed")
+    send("Не удалось отправить код. Проверь почту позже или попробуй снова командой /register.",keyboard=False)
+   return {"ok":True}
+  if auth.stage=="register_verify":
+   if datetime.utcnow()>(auth.expires_at or datetime.min):
+    db.session.delete(auth); db.session.commit()
+    send("⌛ Код истёк. Начни регистрацию заново командой /register.",keyboard=False)
+    return {"ok":True}
+   if auth.attempts>=5:
+    db.session.delete(auth); db.session.commit()
+    send("Слишком много попыток. Начни регистрацию заново командой /register.",keyboard=False)
+    return {"ok":True}
+   auth.attempts+=1
+   if not value.isdigit() or len(value)!=6 or not check_password_hash(auth.code_hash or "",value):
+    db.session.commit(); send("Неверный код. Проверь письмо и попробуй ещё раз.",keyboard=False)
+    return {"ok":True}
+   email=auth.email
+   existing=User.query.filter(func.lower(User.email)==email).first()
+   if existing and not email.endswith("@telegram.flankvpn.local"):
+    db.session.delete(auth); db.session.commit()
+    send("Этот email уже зарегистрирован. Войди через /login.",keyboard=False)
+    return {"ok":True}
+   linked=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+   account_user=db.session.get(User,linked.user_id) if linked else None
+   if account_user and not account_user.email.endswith("@telegram.flankvpn.local"):
+    db.session.delete(auth); db.session.commit()
+    send("У этого Telegram уже есть привязанный аккаунт. Для смены аккаунта сначала отвяжи Telegram в личном кабинете.",keyboard=True)
+    return {"ok":True}
+   user=account_user or existing
+   if not user:
+    nick=("tg_"+telegram_id[-30:])[:40]
+    if User.query.filter(func.lower(User.nickname)==nick.lower()).first():
+     nick=("tg_"+telegram_id[-20:]+"_"+secrets.token_hex(4))[:40]
+    user=User(nickname=nick,email=email,password_hash=auth.password_hash)
+    db.session.add(user); db.session.flush()
+   else:
+    user.email=email; user.password_hash=auth.password_hash
+   if not linked:
+    other_link=TelegramAccount.query.filter_by(user_id=user.id).first()
+    if other_link and other_link.telegram_id!=telegram_id:
+     db.session.delete(auth); db.session.commit()
+     send("Этот аккаунт уже привязан к другому Telegram.",keyboard=False)
+     return {"ok":True}
+    db.session.add(TelegramAccount(telegram_id=telegram_id,user_id=user.id))
+   db.session.delete(auth); db.session.commit()
+   send("✅ Регистрация завершена! Email подтверждён, аккаунт привязан к Telegram. Теперь доступны тарифы, заказы и управление подпиской.",keyboard=True)
+   return {"ok":True}
+  if auth.stage=="login_password":
+   user=User.query.filter(func.lower(User.email)==(auth.email or "").lower()).first()
+   if not user or not check_password_hash(user.password_hash,value):
+    auth.attempts+=1
+    if auth.attempts>=5:
+     db.session.delete(auth); db.session.commit()
+     send("Слишком много неверных попыток. Начни вход заново командой /login.",keyboard=False)
+    else:
+     db.session.commit(); send("Неверный пароль. Попробуй ещё раз или отправь /cancel.",keyboard=False)
+    return {"ok":True}
+   linked=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+   other_link=TelegramAccount.query.filter_by(user_id=user.id).first()
+   if (linked and linked.user_id!=user.id) or (other_link and other_link.telegram_id!=telegram_id):
+    db.session.delete(auth); db.session.commit()
+    send("Этот аккаунт или Telegram уже привязан к другому пользователю. Обратись в поддержку для безопасной перепривязки.",keyboard=False)
+    return {"ok":True}
+   if not linked:
+    db.session.add(TelegramAccount(telegram_id=telegram_id,user_id=user.id))
+   db.session.delete(auth); db.session.commit()
+   send("✅ Вход выполнен! Telegram привязан к твоему аккаунту FlankVPN. Заказы и подписка синхронизированы.",keyboard=True)
+   return {"ok":True}
  if callback_data:
   answer_callback("Готовлю ссылку оплаты…") if callback_data.startswith("buy:") else answer_callback()
   if callback_data=="claim_trial":
@@ -843,6 +986,8 @@ def telegram_webhook(secret):
    show_tariffs()
   elif callback_data=="support_info":
    send("💬 Поддержка FlankVPN поможет с подключением, оплатой и настройкой. Напиши /support и свой вопрос.")
+  elif callback_data=="account_auth":
+   send("👤 Аккаунт FlankVPN\n\n/register — регистрация по email и паролю с подтверждением почты\n/login — вход в существующий аккаунт",keyboard=False)
   elif callback_data.startswith("tariff:"):
    key=callback_data.split(":",1)[1]
    if key not in ("1","3","12"):
@@ -953,7 +1098,7 @@ def telegram_webhook(secret):
    "📱 До 3 устройств в одной подписке\n"
    "🌐 Удобное подключение к сайтам и приложениям\n\n"
    "Попробуй FlankVPN и выбери подходящий тариф.")
-  welcome_buttons=[[{"text":"🎁 Бесплатные 10 дней","callback_data":"claim_trial"}],
+  welcome_buttons=[[{"text":"👤 Регистрация / вход","callback_data":"account_auth"}],\n   [{"text":"🎁 Бесплатные 10 дней","callback_data":"claim_trial"}],
    [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],
    [{"text":"💬 Поддержка","callback_data":"support_info"}]]
   image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
@@ -994,6 +1139,13 @@ def telegram_webhook(secret):
    send(f"🔐 Твоя подписка FlankVPN\nСтатус: активна\nТариф: {title}\nЗаказ: #{active_order.id}\n\nСсылка для подключения:\n{active_order.subscription_url}\n\nСрок действия управляется VPN-сервером. Здесь отображается последний успешно активированный заказ.",keyboard=False)
  elif text_in in ("💬 Поддержка","/support"):
   send("Чтобы написать в поддержку, отправь сообщение командой:\n/support Твой вопрос")
+ elif text_in in ("👤 Аккаунт","/account"):
+  linked=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
+  user=db.session.get(User,linked.user_id) if linked else None
+  if user and not user.email.endswith("@telegram.flankvpn.local"):
+   send("👤 Твой аккаунт FlankVPN\nEmail: "+user.email+"\n\nДля входа с другого Telegram используй /login. Для нового аккаунта — /register.",keyboard=False)
+  else:
+   send("👤 Аккаунт ещё не зарегистрирован.\n\n/register — создать аккаунт по email и паролю\n/login — войти в существующий аккаунт",keyboard=False)
  elif cmd=="/support" and len(arg)>=3:
   account=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
   user=db.session.get(User,account.user_id) if account else None
