@@ -1,61 +1,39 @@
 {% extends "base.html" %}
 {% block title %}FlankVPN — интернет без границ{% endblock %}
 {% block content %}
-<section class="home-v2 home-v2-plain" aria-label="FlankVPN — главная">
-  <div class="home-v2-hero">
-    <div class="home-v2-copy">
-      <div class="home-v2-kicker">FLANKVPN · ПРОСТОЕ ПОДКЛЮЧЕНИЕ</div>
-      <h1>Интернет <span>без границ.</span></h1>
-      <p class="home-v2-lead">Подключайся к нужным ресурсам и управляй своей подпиской в одном личном кабинете.</p>
-      <div class="home-v2-actions">
-        {% if current_user.is_authenticated %}
-          <a class="home-v2-primary" href="{{ url_for('dashboard') }}">Открыть кабинет <span aria-hidden="true">→</span></a>
-        {% else %}
-          <a class="home-v2-primary" href="{{ url_for('register') }}">Начать бесплатно <span aria-hidden="true">→</span></a>
-        {% endif %}
-        <a class="home-v2-secondary" href="{{ url_for('tariffs') }}">Тарифы</a>
-      </div>
-      <ul class="home-v2-benefits">
-        <li>Защита соединения</li>
-        <li>До 3 устройств</li>
-        <li>Управление подпиской</li>
-      </ul>
-    </div>
-  </div>
+<section class="home-poster" aria-label="FlankVPN — главная страница">
+  <img
+    class="home-poster-art"
+    src="{{ url_for('static', filename='flankvpn-home-david-final.png') }}"
+    alt="FlankVPN. Интернет без границ. Быстрый, безопасный и стабильный доступ. Давид в бирюзовых очках."
+    width="941"
+    height="1672"
+    fetchpriority="high"
+    decoding="async"
+  >
 
-  <section class="home-v2-features" aria-label="Возможности FlankVPN">
-    <article class="home-v2-feature">
-      <span class="home-v2-feature-mark" aria-hidden="true">01</span>
-      <h2>Простое подключение</h2>
-      <p>Личная ссылка и QR-код доступны в кабинете</p>
-    </article>
-    <article class="home-v2-feature">
-      <span class="home-v2-feature-mark" aria-hidden="true">02</span>
-      <h2>Защита соединения</h2>
-      <p>Подключение через совместимый VPN-клиент</p>
-    </article>
-    <article class="home-v2-feature">
-      <span class="home-v2-feature-mark" aria-hidden="true">03</span>
-      <h2>До 3 устройств</h2>
-      <p>Выбирай количество устройств в настройках тарифа</p>
-    </article>
-  </section>
+  <details class="home-poster-menu">
+    <summary aria-label="Открыть меню"></summary>
+    <nav class="home-poster-menu-panel" aria-label="Меню FlankVPN">
+      <a href="{{ url_for('index') }}">Главная</a>
+      <a href="{{ url_for('tariffs') }}">Тарифы</a>
+      <a href="{{ url_for('connection') }}">Подключение</a>
+      <a href="{{ url_for('support') }}">Поддержка</a>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('dashboard') }}">Моя подписка</a>
+        <a href="{{ url_for('settings') }}">Настройки</a>
+        <a href="{{ url_for('my_support') }}">Мои обращения</a>
+        <form method="post" action="{{ url_for('logout') }}"><button type="submit">Выйти</button></form>
+      {% else %}
+        <a href="{{ url_for('login') }}">Войти</a>
+        <a href="{{ url_for('register') }}">Регистрация</a>
+      {% endif %}
+    </nav>
+  </details>
 
-  <section class="home-v2-trial">
-    <div class="home-v2-trial-copy">
-      <strong>10 дней бесплатно</strong>
-      <span>Для новых пользователей после регистрации и подтверждения email</span>
-    </div>
-    <a href="{{ url_for('register') if not current_user.is_authenticated else url_for('dashboard') }}">Начать ↗</a>
-  </section>
-
-  <footer class="home-v2-footer">
-    <a href="{{ url_for('index') }}" class="brand" aria-label="FlankVPN — главная">
-      <img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt="">
-      <span class="brand-wordmark">FlankVPN</span>
-    </a>
-    <span>Свобода. Скорость. Защита.</span>
-    <span>© 2026 FlankVPN</span>
-  </footer>
+  <a class="home-poster-hotspot home-poster-brand" href="{{ url_for('index') }}" aria-label="FlankVPN — главная"></a>
+  <a class="home-poster-hotspot home-poster-login" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('login') }}" aria-label="{{ 'Открыть личный кабинет' if current_user.is_authenticated else 'Войти' }}"></a>
+  <a class="home-poster-hotspot home-poster-start" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('register') }}" aria-label="{{ 'Открыть личный кабинет' if current_user.is_authenticated else 'Начать бесплатно' }}"></a>
+  <a class="home-poster-hotspot home-poster-tariffs" href="{{ url_for('tariffs') }}" aria-label="Тарифы"></a>
 </section>
 {% endblock %}
