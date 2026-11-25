@@ -4,21 +4,43 @@
 <section class="page-hero">
   <div class="eyebrow">FLANKVPN / ПОДКЛЮЧЕНИЕ</div>
   <h1>Подключиться просто<span class="heading-dot">.</span></h1>
-  <p>Для подключения FlankVPN понадобится VPN-клиент HAPP или INCI. Выберите приложение, добавьте личную подписку — и готово.</p>
+  <p>Установи VPN-клиент, добавь личную ссылку подписки — и подключайся.</p>
 </section>
-<section class="connection-layout">
-  <div class="connection-steps">
-    <article class="connection-step"><span>01</span><div><h2>Создайте аккаунт</h2><p>Зарегистрируйтесь по email и подтвердите адрес. Новым пользователям доступен пробный период на 10 дней.</p><a href="{{ url_for('register') if not current_user.is_authenticated else url_for('dashboard') }}" class="text-link">{{ 'Перейти в кабинет' if current_user.is_authenticated else 'Создать аккаунт' }} ↗</a></div></article>
-    <article class="connection-step"><span>02</span><div><h2>Получите ссылку подписки</h2><p>После активации подписки откройте личный кабинет. Скопируйте персональную ссылку подписки или используйте QR-код.</p><a href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('login') }}" class="text-link">Открыть личный кабинет ↗</a></div></article>
-    <article class="connection-step"><span>03</span><div><h2>Установите VPN-клиент</h2><p>Для работы FlankVPN используйте одно из приложений:</p>
-      <div class="client-options">
-        <div class="client-option"><span class="client-emoji">📲</span><div><strong>HAPP</strong><small>VPN-клиент для импорта подписки FlankVPN</small></div></div>
-        <div class="client-option"><span class="client-emoji">🔐</span><div><strong>INCI</strong><small>Альтернативный VPN-клиент для подключения</small></div></div>
-      </div>
-      <p>Установите HAPP или INCI на своё устройство и откройте приложение.</p>
-    </div></article>
-    <article class="connection-step"><span>04</span><div><h2>Добавьте подписку и подключитесь</h2><p>В HAPP или INCI выберите добавление подписки по ссылке (импорт из буфера обмена/URL) либо отсканируйте QR-код из личного кабинета. После импорта выберите конфигурацию FlankVPN и нажмите «Подключить».</p></div></article>
+
+<section class="download-section" aria-label="Скачать VPN-клиент">
+  <div class="download-section-heading">
+    <div class="eyebrow">ВЫБЕРИ ПРИЛОЖЕНИЕ</div>
+    <h2>Скачать приложение</h2>
+    <p>Открой официальную страницу загрузки и выбери свою систему.</p>
   </div>
-  <aside class="connection-note"><div class="connection-note-icon">📱</div><h2>Что понадобится</h2><p><strong>HAPP или INCI</strong></p><p class="muted">Поддерживаются Windows · macOS · iOS · Android — доступность конкретного клиента зависит от устройства. Используйте только свою персональную ссылку подписки и никому её не передавайте.</p><a class="btn-main btn-main-small" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('register') }}">Продолжить <span>↗</span></a></aside>
+  <div class="download-grid">
+    <article class="download-card">
+      <div class="download-card-icon happ-icon">H</div>
+      <div class="download-card-copy"><h3>HAPP</h3><p>Клиент для телефона, компьютера и других поддерживаемых устройств.</p></div>
+      <a class="download-cta" href="https://www.happ.su/main" target="_blank" rel="noopener noreferrer">Скачать HAPP <span aria-hidden="true">↗</span></a>
+    </article>
+    <article class="download-card">
+      <div class="download-card-icon incy-icon">I</div>
+      <div class="download-card-copy"><h3>INCY</h3><p>Альтернативный клиент. Выбери свою платформу на официальной странице.</p></div>
+      <a class="download-cta" href="https://incy.cc/" target="_blank" rel="noopener noreferrer">Скачать INCY <span aria-hidden="true">↗</span></a>
+    </article>
+  </div>
+  <p class="download-safety-note">Скачивай приложения только с официальных страниц разработчиков.</p>
+</section>
+
+<section class="connection-steps-wrap">
+  <div class="download-section-heading">
+    <div class="eyebrow">ПОСЛЕ УСТАНОВКИ</div>
+    <h2>Как подключиться</h2>
+  </div>
+  <div class="connection-layout">
+    <div class="connection-steps">
+      <article class="connection-step"><span>01</span><div><h2>Создай аккаунт</h2><p>Зарегистрируйся по email и подтверди адрес. Новым пользователям доступен пробный период на 10 дней.</p><a href="{{ url_for('register') if not current_user.is_authenticated else url_for('dashboard') }}" class="text-link">{{ 'Перейти в кабинет' if current_user.is_authenticated else 'Создать аккаунт' }} ↗</a></div></article>
+      <article class="connection-step"><span>02</span><div><h2>Получи ссылку подписки</h2><p>После активации открой личный кабинет. Скопируй персональную ссылку или используй QR-код.</p><a href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('login') }}" class="text-link">Открыть личный кабинет ↗</a></div></article>
+      <article class="connection-step"><span>03</span><div><h2>Добавь подписку</h2><p>Открой HAPP или INCY, выбери добавление подписки по ссылке и вставь ссылку из кабинета. Также можно отсканировать QR-код.</p></div></article>
+      <article class="connection-step"><span>04</span><div><h2>Подключись</h2><p>Выбери конфигурацию FlankVPN в приложении и нажми «Подключить».</p></div></article>
+    </div>
+    <aside class="connection-note"><div class="connection-note-icon">✓</div><h2>Готово к работе</h2><p>Одна подписка поддерживает до 3 устройств. Ссылка и QR-код всегда доступны в личном кабинете.</p><a class="connection-note-link" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('register') }}">Открыть кабинет <span aria-hidden="true">↗</span></a></aside>
+  </div>
 </section>
 {% endblock %}
