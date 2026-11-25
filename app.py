@@ -913,7 +913,9 @@ def telegram_webhook(secret):
     db.session.delete(auth); db.session.commit()
     send("У этого Telegram уже есть привязанный аккаунт. Для смены аккаунта сначала отвяжи Telegram в личном кабинете.",keyboard=True)
     return {"ok":True}
-   user=account_user or existing
+   shadow_email="telegram_"+telegram_id+"@telegram.flankvpn.local"
+   shadow_user=User.query.filter_by(email=shadow_email).first()
+   user=account_user or shadow_user or existing
    if not user:
     nick=("tg_"+telegram_id[-30:])[:40]
     if User.query.filter(func.lower(User.nickname)==nick.lower()).first():
