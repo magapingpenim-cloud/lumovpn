@@ -838,8 +838,8 @@ def telegram_webhook(secret):
    user=User.query.filter(func.lower(User.email)==email).first()
    if auth.stage=="register_email":
     if user and not email.endswith("@telegram.flankvpn.local"):
-     auth.stage="login_email"; auth.email=None; db.session.commit()
-     send("Этот email уже зарегистрирован. Для входа используй /login и введи email ещё раз.",keyboard=False)
+     auth.stage="login_password"; auth.email=email; auth.attempts=0; auth.updated_at=datetime.utcnow(); db.session.commit()
+     send("Этот email уже зарегистрирован. Введи пароль от аккаунта FlankVPN, чтобы привязать Telegram.",keyboard=False)
      return {"ok":True}
     linked=TelegramAccount.query.filter_by(telegram_id=telegram_id).first()
     if linked:
@@ -849,7 +849,7 @@ def telegram_webhook(secret):
       send("Этот Telegram уже привязан к аккаунту. Используй /login для входа в другой аккаунт или продолжай пользоваться текущим.",keyboard=True)
       return {"ok":True}
     auth.email=email; auth.stage="register_password"; auth.updated_at=datetime.utcnow(); db.session.commit()
-    send("🔐 Придумай пароль длиной не менее 10 символов. Не отправляй пароль никому, кроме этого бота. Для отмены — /cancel.",keyboard=False)
+    send("🔐 Придумай пароль длиной не менее 8 символов — как на сайте FlankVPN. Не отправляй пароль никому, кроме этого бота. Для отмены — /cancel.",keyboard=False)
    else:
     if not user or email.endswith("@telegram.flankvpn.local"):
      send("Аккаунт с таким email не найден. Проверь адрес или используй /register для регистрации.",keyboard=False)
@@ -864,8 +864,8 @@ def telegram_webhook(secret):
    except Exception:
     app.logger.warning("Could not delete a password message from Telegram chat %s",chat_id)
   if auth.stage=="register_password":
-   if len(value)<10 or len(value)>128:
-    send("Пароль должен содержать от 10 до 128 символов. Попробуй ещё раз или отправь /cancel.",keyboard=False)
+   if len(value)<8 or len(value)>128:
+    send("Пароль должен содержать от 8 до 128 символов. Попробуй ещё раз или отправь /cancel.",keyboard=False)
     return {"ok":True}
    api_key=os.getenv("RESEND_API_KEY","").strip()
    sender=os.getenv("RESEND_FROM_EMAIL","").strip()
