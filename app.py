@@ -35,7 +35,24 @@ app.config["PAYMENT_RECIPIENT"] = os.getenv("PAYMENT_RECIPIENT", "")
 oauth = OAuth(app)
 oauth.register(name="google", client_id=os.getenv("GOOGLE_CLIENT_ID"), client_secret=os.getenv("GOOGLE_CLIENT_SECRET"), server_metadata_url="https://accounts.google.com/.well-known/openid-configuration", client_kwargs={"scope":"openid email profile"})
 db=SQLAlchemy(app); lm=LoginManager(app); lm.login_view="login"
-TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"},"1":{"months":1,"price":249,"title":"1 месяц","discount":0,"save":0},"3":{"months":3,"price":749,"title":"3 месяца","discount":0,"save":0},"12":{"months":12,"price":2199,"title":"12 месяцев","discount":26,"save":789}}
+def _tariff_price(months):
+ if months==1: return 249
+ if months==2: return 499
+ if months==3: return 749
+ return int(round(749+(months-3)*(2199-749)/9))
+
+def _month_title(months):
+ if months==1: return "1 месяц"
+ if months in (2,3,4): return f"{months} месяца"
+ return f"{months} месяцев"
+
+TARIFFS={"trial":{"months":0,"days":10,"price":0,"title":"Бесплатный пробный период — 10 дней"}}
+for _months in range(1,13):
+ _price=_tariff_price(_months)
+ _regular=249*_months
+ TARIFFS[str(_months)]={"months":_months,"price":_price,"title":_month_title(_months),
+  "discount":max(0,int(round((_regular-_price)/_regular*100))),
+  "save":max(0,_regular-_price)}
 PAYMENTS={"sbp":{"title":"СБП","detail":os.getenv("PAYMENT_SBP_PHONE","Настройте PAYMENT_SBP_PHONE")},"card":{"title":"Банковская карта","detail":os.getenv("PAYMENT_CARD_NUMBER","Настройте PAYMENT_CARD_NUMBER")}}
 
 def notify_admin_telegram(message):
@@ -108,7 +125,7 @@ class User(UserMixin,db.Model):
  def set_password(self,p): self.password_hash=generate_password_hash(p)
  def check_password(self,p): return check_password_hash(self.password_hash,p)
 class Order(db.Model):
- id=db.Column(db.Integer,primary_key=True); user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False); nickname=db.Column(db.String(40),nullable=False); email=db.Column(db.String(160),nullable=False); tariff_key=db.Column(db.String(8),nullable=False); amount=db.Column(db.Integer,nullable=False); payment_method=db.Column(db.String(12),nullable=False); status=db.Column(db.String(24),default="awaiting_payment"); created_at=db.Column(db.DateTime,default=datetime.utcnow); subscription_url=db.Column(db.Text); error_message=db.Column(db.Text); requested_days=db.Column(db.Integer); telegram_id=db.Column(db.String(40),nullable=True,index=True); yookassa_payment_id=db.Column(db.String(100),nullable=True,index=True); promo_code=db.Column(db.String(40),nullable=True); discount_percent=db.Column(db.Integer,nullable=False,default=0)
+ id=db.Column(db.Integer,primary_key=True); user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False); nickname=db.Column(db.String(40),nullable=False); email=db.Column(db.String(160),nullable=False); tariff_key=db.Column(db.String(8),nullable=False); amount=db.Column(db.Integer,nullable=False); payment_method=db.Column(db.String(12),nullable=False); status=db.Column(db.String(24),default="awaiting_payment"); created_at=db.Column(db.DateTime,default=datetime.utcnow); subscription_url=db.Column(db.Text); error_message=db.Column(db.Text); requested_days=db.Column(db.Integer); telegram_id=db.Column(db.String(40),nullable=True,index=True); yookassa_payment_id=db.Column(db.String(100),nullable=True,index=True); promo_code=db.Column(db.String(40),nullable=True); discount_percent=db.Column(db.Integer,nullable=False,default=0); requested_devices=db.Column(db.Integer,nullable=False,default=3); traffic_limit_gb=db.Column(db.Integer,nullable=False,default=0)
  user=db.relationship("User",backref=db.backref("orders",lazy=True))
 
 class SubscriptionNotice(db.Model):
@@ -1199,7 +1216,14 @@ def checkout():
   discount=int(promo.discount_percent)
   if discount<1 or discount>90: flash("Некорректная скидка по промокоду.","error"); return redirect(url_for("dashboard")+"#buy")
   amount=int(round(t["price"]*(100-discount)/100))
- o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=amount,payment_method="yookassa",status="awaiting_payment",promo_code=promo.code if promo else None,discount_percent=discount)
+ try:
+  requested_devices=int(request.form.get("requested_devices","3"))
+  traffic_limit_gb=int(request.form.get("traffic_limit_gb","0"))
+ except (TypeError,ValueError):
+  flash("Проверь выбранные устройства и лимит трафика.","error"); return redirect(url_for("tariffs"))
+ if requested_devices not in (1,2,3) or traffic_limit_gb<0 or traffic_limit_gb>1000 or (traffic_limit_gb and traffic_limit_gb%50):
+  flash("Допустимо от 1 до 3 устройств и трафик от 0 до 1000 ГБ с шагом 50 ГБ.","error"); return redirect(url_for("tariffs"))
+ o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=amount,payment_method="yookassa",status="awaiting_payment",promo_code=promo.code if promo else None,discount_percent=discount,requested_devices=requested_devices,traffic_limit_gb=traffic_limit_gb)
  db.session.add(o)
  db.session.commit()
  return redirect(url_for("payment",oid=o.id))
@@ -1798,17 +1822,19 @@ def provision(o):
  if not base or not token: raise RuntimeError("Настройте H1_API_BASE и H1_API_TOKEN в переменных окружения.")
  h={"Authorization":"Bearer "+token,"Content-Type":"application/json"}
  tariff=TARIFFS[o.tariff_key]; days=int(o.requested_days or tariff.get("days",tariff["months"]*30))
+ device_limit=max(1,min(3,int(getattr(o,"requested_devices",3) or 3)))
+ traffic_limit_gb=max(0,min(1000,int(getattr(o,"traffic_limit_gb",0) or 0)))
  user=db.session.get(User,o.user_id)
  if not user: raise RuntimeError("Не найден аккаунт клиента для заказа.")
  # Один постоянный H1-клиент на аккаунт: повторная покупка добавляет дни к нему.
  name=(user.h1_client_name or "").strip()
  if name:
-  r=requests.patch(base+"/edit",headers=h,json={"name":name,"days":days},timeout=25)
+  r=requests.patch(base+"/edit",headers=h,json={"name":name,"days":days,"traffic_limit_gb":traffic_limit_gb,"device_limit":device_limit},timeout=25)
   r.raise_for_status(); d=r.json()
   if d.get("ok") is False: raise RuntimeError(str(d))
  else:
   name="user_"+str(user.id)
-  r=requests.post(base+"/create",headers=h,json={"name":name,"days":days,"traffic_limit_gb":0,"device_limit":3},timeout=25)
+  r=requests.post(base+"/create",headers=h,json={"name":name,"days":days,"traffic_limit_gb":traffic_limit_gb,"device_limit":device_limit},timeout=25)
   r.raise_for_status(); d=r.json()
   if d.get("ok") is False: raise RuntimeError(str(d))
  r=requests.get(base+"/info",headers=h,params={"name":name},timeout=25); r.raise_for_status(); c=r.json().get("client",r.json()); sub=c.get("sub_url") or c.get("subscription_url")
@@ -1917,6 +1943,10 @@ with app.app_context():
     conn.execute(text('ALTER TABLE "'+order_table+'" ADD COLUMN promo_code VARCHAR(40)'))
    if "discount_percent" not in order_columns:
     conn.execute(text('ALTER TABLE "'+order_table+'" ADD COLUMN discount_percent INTEGER NOT NULL DEFAULT 0'))
+   if "requested_devices" not in order_columns:
+    conn.execute(text('ALTER TABLE "'+order_table+'" ADD COLUMN requested_devices INTEGER NOT NULL DEFAULT 3'))
+   if "traffic_limit_gb" not in order_columns:
+    conn.execute(text('ALTER TABLE "'+order_table+'" ADD COLUMN traffic_limit_gb INTEGER NOT NULL DEFAULT 0'))
   draft_table=TelegramCheckoutDraft.__tablename__
   if inspector.has_table(draft_table):
    draft_columns={column["name"] for column in inspector.get_columns(draft_table)}
