@@ -1,104 +1,28 @@
 {% extends "base.html" %}
 {% block title %}Тарифы — FlankVPN{% endblock %}
 {% block content %}
-<section class="page-hero tariff-hero">
+<section class="page-hero">
   <div class="eyebrow">FLANKVPN / ТАРИФЫ</div>
-  <h1>Собери свой план<span class="heading-dot">.</span></h1>
-  <p>Выбери срок подписки, количество устройств и лимит трафика. Новым пользователям доступно 10 дней бесплатно.</p>
+  <h1>Выберите свой план<span class="heading-dot">.</span></h1>
+  <p>Один понятный тарифный план — все возможности FlankVPN. Начните с бесплатного доступа на 10 дней.</p>
   <div class="trial-banner"><span class="trial-glyph">✳</span><div><strong>10 дней бесплатно</strong><small>Для новых пользователей после регистрации и подтверждения email</small></div><a href="{{ url_for('register') if not current_user.is_authenticated else url_for('dashboard') }}">Начать ↗</a></div>
 </section>
-
-<section class="tariff-builder" aria-label="Настройка тарифа">
-  <div class="tariff-builder-heading">
-    <div><div class="eyebrow">КОНФИГУРАТОР ПОДПИСКИ</div><h2>Настрой доступ</h2></div>
-    <span class="tariff-builder-note">Без скрытых доплат</span>
-  </div>
-
-  <div class="tariff-controls">
-    <div class="tariff-control">
-      <div class="tariff-control-title"><label for="months-range">Срок подписки</label><output id="months-value" for="months-range">1 месяц</output></div>
-      <input id="months-range" class="tariff-range" type="range" min="1" max="12" step="1" value="1">
-      <div class="range-endpoints"><span>1 месяц</span><span>12 месяцев</span></div>
-    </div>
-    <div class="tariff-control">
-      <div class="tariff-control-title"><label for="devices-range">Количество устройств</label><output id="devices-value" for="devices-range">3 устройства</output></div>
-      <input id="devices-range" class="tariff-range" type="range" min="1" max="3" step="1" value="3">
-      <div class="range-endpoints"><span>1 устройство</span><span>3 устройства</span></div>
-    </div>
-    <div class="tariff-control">
-      <div class="tariff-control-title"><label for="traffic-range">Лимит трафика</label><output id="traffic-value" for="traffic-range">Без лимита</output></div>
-      <input id="traffic-range" class="tariff-range" type="range" min="0" max="1000" step="50" value="0">
-      <div class="range-endpoints"><span>Без лимита</span><span>1 000 ГБ</span></div>
-    </div>
-  </div>
-
-  <div class="tariff-summary">
-    <div class="tariff-total-block">
-      <span class="tariff-summary-label">ИТОГО ЗА ПОДПИСКУ</span>
-      <div class="tariff-total"><strong id="tariff-total">249</strong><span>₽</span></div>
-      <p id="tariff-monthly" class="tariff-monthly">249 ₽ / месяц</p>
-    </div>
-    <div class="tariff-summary-meta">
-      <span id="tariff-discount" class="tariff-discount" hidden></span>
-      <span id="tariff-savings" class="tariff-savings"></span>
-      <small>Стоимость зависит от срока подписки. Выбранные лимиты устройств и трафика будут применены к подписке.</small>
-    </div>
-  </div>
-
-  {% if current_user.is_authenticated %}
-  <form id="tariff-checkout" method="post" action="{{ url_for('checkout') }}" class="tariff-checkout">
-    <input type="hidden" name="tariff" id="tariff-key" value="1">
-    <input type="hidden" name="requested_devices" id="requested-devices" value="3">
-    <input type="hidden" name="traffic_limit_gb" id="traffic-limit" value="0">
-    <button class="tariff-submit" type="submit">Перейти к оплате <span aria-hidden="true">↗</span></button>
-  </form>
-  {% else %}
-  <a class="tariff-submit tariff-register" href="{{ url_for('register') }}">Создать аккаунт и выбрать тариф <span aria-hidden="true">↗</span></a>
-  {% endif %}
+<section class="pricing-grid" aria-label="Тарифные планы">
+  {% for k,t in tariffs.items() if k in ['1','3','12'] %}
+  <article class="pricing-card {% if k == '12' %}pricing-card-featured{% endif %}">
+    <div class="plan-card-top"><span class="plan-index">{{ '01' if k == '1' else ('03' if k == '3' else '12') }}</span>{% if t.discount %}<span class="discount-label">−{{ t.discount }}%</span>{% endif %}</div>
+    <h2>{{ t.title }}</h2>
+    <div class="plan-price">{{ "{:,.0f}".format(t.price).replace(",", " ") }} <small>₽</small></div>
+    <p class="plan-monthly">≈ {{ (t.price / t.months)|round(0)|int }} ₽ / месяц</p>
+    <ul class="plan-features"><li>Полный доступ к VPN</li><li>Подписка по ссылке и QR-коду</li><li>Инструкции для устройств</li><li>Управление в личном кабинете</li></ul>
+    {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('checkout') }}"><input type="hidden" name="tariff" value="{{ k }}"><button type="submit" class="plan-select">{% if k == '12' %}Выбрать годовой план{% else %}Выбрать тариф{% endif %} <span>↗</span></button></form>
+    {% else %}
+      <a class="plan-select" href="{{ url_for('register') }}">Выбрать тариф <span>↗</span></a>
+    {% endif %}
+    {% if t.discount and t.save %}<p class="plan-saving">Экономия {{ t.save }} ₽ относительно помесячной оплаты</p>{% endif %}
+  </article>
+  {% endfor %}
 </section>
-
-<p class="pricing-footnote">1 месяц — 249 ₽, 3 месяца — 749 ₽, 12 месяцев — 2 199 ₽. Промежуточная стоимость рассчитывается между этими сроками. Пробный период доступен новым пользователям после регистрации и подтверждения email.</p>
-
-<script>
-(() => {
-  const months = document.getElementById("months-range");
-  const devices = document.getElementById("devices-range");
-  const traffic = document.getElementById("traffic-range");
-  if (!months || !devices || !traffic) return;
-  const prices = m => {
-    if (m === 1) return 249;
-    if (m === 2) return 499;
-    if (m === 3) return 749;
-    return Math.round(749 + (m - 3) * (2199 - 749) / 9);
-  };
-  const money = n => new Intl.NumberFormat("ru-RU").format(n);
-  const monthText = n => n === 1 ? "1 месяц" : n < 5 ? n + " месяца" : n + " месяцев";
-  const deviceText = n => n === 1 ? "1 устройство" : n < 5 ? n + " устройства" : n + " устройств";
-  const sync = () => {
-    const m = Number(months.value), d = Number(devices.value), t = Number(traffic.value);
-    const price = prices(m), regular = m * 249, saved = Math.max(0, regular - price);
-    document.getElementById("months-value").textContent = monthText(m);
-    document.getElementById("devices-value").textContent = deviceText(d);
-    document.getElementById("traffic-value").textContent = t === 0 ? "Без лимита" : money(t) + " ГБ";
-    document.getElementById("tariff-total").textContent = money(price);
-    document.getElementById("tariff-monthly").textContent = money(Math.round(price / m)) + " ₽ / месяц";
-    const discount = document.getElementById("tariff-discount");
-    discount.hidden = saved <= 0;
-    discount.textContent = saved > 0 ? "−" + Math.round(saved / regular * 100) + "%" : "";
-    document.getElementById("tariff-savings").textContent = saved > 0 ? "Экономия " + money(saved) + " ₽" : "";
-    const keys = document.getElementById("tariff-key");
-    const dev = document.getElementById("requested-devices");
-    const limit = document.getElementById("traffic-limit");
-    if (keys) keys.value = String(m);
-    if (dev) dev.value = String(d);
-    if (limit) limit.value = String(t);
-    [months,devices,traffic].forEach(el => {
-      const pct = (Number(el.value)-Number(el.min))/(Number(el.max)-Number(el.min))*100;
-      el.style.setProperty("--range-progress", pct + "%");
-    });
-  };
-  [months,devices,traffic].forEach(el => el.addEventListener("input",sync));
-  sync();
-})();
-</script>
+<p class="pricing-footnote">Платная подписка активируется после подтверждения оплаты. Новым пользователям доступен пробный период на 10 дней.</p>
 {% endblock %}
