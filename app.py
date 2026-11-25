@@ -792,7 +792,7 @@ def telegram_webhook(secret):
   if inline is not None:
    payload["reply_markup"]={"inline_keyboard":inline}
   elif keyboard:
-   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"🔐 Моя подписка"}],[{"text":"💬 Поддержка"}]],"resize_keyboard":True}
+   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"🔐 Моя подписка"}],[{"text":"👤 Аккаунт"},{"text":"💬 Поддержка"}]],"resize_keyboard":True}
   try:
    resp=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",json=payload,timeout=8)
    resp.raise_for_status()
@@ -857,6 +857,12 @@ def telegram_webhook(secret):
     auth.email=email; auth.stage="login_password"; auth.updated_at=datetime.utcnow(); db.session.commit()
     send("🔐 Теперь введи пароль от аккаунта. Для отмены — /cancel.",keyboard=False)
    return {"ok":True}
+  if auth.stage in ("register_password","login_password") and message.get("message_id"):
+   # Remove the password message from the chat as soon as it has been read.
+   try:
+    requests.post("https://api.telegram.org/bot"+token+"/deleteMessage",json={"chat_id":chat_id,"message_id":message["message_id"]},timeout=5)
+   except Exception:
+    app.logger.warning("Could not delete a password message from Telegram chat %s",chat_id)
   if auth.stage=="register_password":
    if len(value)<10 or len(value)>128:
     send("Пароль должен содержать от 10 до 128 символов. Попробуй ещё раз или отправь /cancel.",keyboard=False)
