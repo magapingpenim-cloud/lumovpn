@@ -235,3 +235,40 @@ body.home-layout main.home-main{width:100%!important;max-width:none!important;mi
  .home-v2-trial a{width:100%}
  .home-v2-footer{display:grid;grid-template-columns:1fr;justify-items:start;margin-top:28px}
 }
+
+/* Plain FlankVPN home — no portrait, no text baked into artwork. */
+.home-v2-plain .home-v2-hero{grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);min-height:570px;gap:clamp(28px,6vw,88px)}
+.home-v2-plain .home-v2-copy{max-width:690px}
+.home-v2-plain .home-v2 h1{max-width:720px}
+.home-v2-brand-panel{
+  position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:390px;padding:34px;border:1px solid #315165;border-radius:26px;
+  background:linear-gradient(145deg,#142638 0%,#101b2a 55%,#0a1420 100%);
+  text-align:center;overflow:hidden
+}
+.home-v2-brand-glow{position:absolute;z-index:-1;inset:15% 10%;border-radius:50%;background:radial-gradient(circle,rgba(41,230,220,.18),transparent 68%)}
+.home-v2-brand-logo{display:block;width:clamp(100px,15vw,158px);height:auto;filter:none}
+.home-v2-brand-name{margin-top:20px;color:#fff;font-size:clamp(30px,4vw,42px);font-weight:900;letter-spacing:-.06em}
+.home-v2-brand-panel p{margin:8px 0 24px;color:#fff;font-size:16px;font-weight:650}
+.home-v2-brand-rule{width:72px;height:3px;border-radius:3px;background:#29e6dc}
+.home-v2-brand-label{margin-top:20px;color:#fff;font-size:10px;font-weight:850;letter-spacing:.15em}
+.home-v2-plain .home-v2-features{margin-top:4px}
+.mobile-menu,.mobile-menu>summary,.mobile-menu>summary span{
+  transition:none!important;transform:none!important;animation:none!important
+}
+.mobile-menu>summary{flex:0 0 44px!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}
+.mobile-menu[open]>summary,.mobile-menu>summary:active{transform:none!important}
+.mobile-menu>summary span{transition:none!important;transform:none!important}
+.mobile-menu-panel{animation:none!important;transition:none!important;transform:none!important;opacity:1!important}
+@media(max-width:900px){
+ .home-v2-plain .home-v2-hero{grid-template-columns:1fr;gap:25px;min-height:0;padding:30px 0 24px}
+ .home-v2-brand-panel{min-height:270px}
+ .home-v2-brand-logo{width:100px}
+}
+@media(max-width:600px){
+ .home-v2-plain .home-v2-hero{padding-top:24px}
+ .home-v2-brand-panel{min-height:230px;padding:26px}
+ .home-v2-brand-logo{width:82px}
+ .home-v2-brand-name{font-size:29px;margin-top:12px}
+ .home-v2-brand-panel p{margin:6px 0 16px;font-size:14px}
+}
