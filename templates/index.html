@@ -4,16 +4,16 @@
 <section class="home-v2 home-v2-plain" aria-label="FlankVPN — главная">
   <div class="home-v2-hero">
     <div class="home-v2-copy">
-      <div class="home-v2-kicker">FLANKVPN · ПРОСТОЕ ПОДКЛЮЧЕНИЕ</div>
+      <div class="home-v2-kicker">VPN ДЛЯ ПОВСЕДНЕВНЫХ ЗАДАЧ</div>
       <h1>Интернет <span>без границ.</span></h1>
-      <p class="home-v2-lead">Подключайся к нужным ресурсам, управляй своей подпиской и устройствами в одном личном кабинете.</p>
+      <p class="home-v2-lead">Подключайся к нужным ресурсам и управляй своей подпиской в одном личном кабинете.</p>
       <div class="home-v2-actions">
         {% if current_user.is_authenticated %}
           <a class="home-v2-primary" href="{{ url_for('dashboard') }}">Открыть кабинет <span aria-hidden="true">→</span></a>
         {% else %}
           <a class="home-v2-primary" href="{{ url_for('register') }}">Начать бесплатно <span aria-hidden="true">→</span></a>
         {% endif %}
-        <a class="home-v2-secondary" href="{{ url_for('tariffs') }}">Тарифы</a>
+        <a class="home-v2-secondary" href="{{ url_for('tariffs') }}">Посмотреть тарифы</a>
       </div>
       <ul class="home-v2-benefits">
         <li>Защита соединения</li>
@@ -21,14 +21,16 @@
         <li>Управление подпиской</li>
       </ul>
     </div>
-    <aside class="home-v2-brand-panel" aria-label="FlankVPN">
-      <div class="home-v2-brand-glow"></div>
-      <img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt="Логотип FlankVPN" class="home-v2-brand-logo">
-      <div class="home-v2-brand-name">FlankVPN</div>
-      <p>Свобода. Скорость. Защита.</p>
-      <div class="home-v2-brand-rule"></div>
-      <div class="home-v2-brand-label">ТВОЁ ПОДКЛЮЧЕНИЕ — ПОД КОНТРОЛЕМ</div>
-    </aside>
+    <div class="home-v2-visual" aria-hidden="true">
+      <div class="home-v2-orbit orbit-one"></div>
+      <div class="home-v2-orbit orbit-two"></div>
+      <div class="home-v2-orbit orbit-three"></div>
+      <div class="home-v2-orbit-core">
+        <img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt="">
+      </div>
+      <span class="home-v2-orbit-label">FLANKVPN</span>
+      <span class="home-v2-orbit-caption">SECURE CONNECTION</span>
+    </div>
   </div>
 
   <section class="home-v2-features" aria-label="Возможности FlankVPN">
@@ -40,12 +42,12 @@
     <article class="home-v2-feature">
       <span class="home-v2-feature-mark" aria-hidden="true">02</span>
       <h2>Защита соединения</h2>
-      <p>Подключайся через совместимый VPN-клиент</p>
+      <p>Подключение через совместимый VPN-клиент</p>
     </article>
     <article class="home-v2-feature">
       <span class="home-v2-feature-mark" aria-hidden="true">03</span>
       <h2>Твои устройства</h2>
-      <p>Используй подписку на поддерживаемых устройствах</p>
+      <p>Управляй своей подпиской в одном месте</p>
     </article>
   </section>
 
