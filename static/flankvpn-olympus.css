@@ -135,3 +135,34 @@ body.home-layout .flash-stack{position:fixed!important;top:12px!important;left:1
 body.inner-layout .site-nav .brand .brand-wordmark {
   color: #ffffff !important;
 }
+
+
+/* Consistent menu sizing and a restrained open/close motion on every page. */
+.mobile-menu{flex:0 0 42px!important;width:42px!important;height:42px!important;z-index:120!important}
+.mobile-menu>summary{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;
+  box-sizing:border-box!important;border-radius:12px!important;transform:none!important;
+  transition:background-color .18s ease,border-color .18s ease!important;
+}
+.mobile-menu>summary:active{transform:none!important}
+.mobile-menu>summary span{flex:0 0 1.5px!important;width:17px!important;height:1.5px!important}
+.mobile-menu-panel{
+  z-index:130!important;min-width:230px!important;max-width:min(300px,calc(100vw - 32px))!important;
+  display:grid!important;gap:4px!important;padding:10px!important;
+  border-radius:16px!important;background:rgba(10,17,17,.98)!important;
+  border:1px solid rgba(114,228,210,.28)!important;
+  box-shadow:0 18px 48px rgba(0,0,0,.48)!important;
+  opacity:1;transform:translateY(0);transform-origin:top left;
+  transition:opacity .18s ease,transform .18s ease!important;
+}
+.mobile-menu[open]>.mobile-menu-panel{opacity:1;transform:translateY(0)}
+.mobile-menu[open][data-closing="true"]>.mobile-menu-panel{opacity:0;transform:translateY(-5px);pointer-events:none}
+.mobile-menu-panel a,.mobile-menu-panel button{
+  min-height:44px!important;display:flex!important;align-items:center!important;
+  padding:11px 13px!important;border-radius:10px!important;background:transparent!important;
+  color:#f4f8f6!important;font-size:15px!important;font-weight:650!important;
+}
+.mobile-menu-panel a:active,.mobile-menu-panel button:active{background:rgba(114,228,210,.14)!important}
+.image-menu[open][data-closing="true"] .image-menu-panel{opacity:0!important;transform:translateY(-5px)!important;pointer-events:none!important}
+@media(prefers-reduced-motion:reduce){.mobile-menu-panel,.mobile-menu>summary{transition:none!important}}
