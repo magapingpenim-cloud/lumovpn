@@ -1104,7 +1104,8 @@ def telegram_webhook(secret):
    "📱 До 3 устройств в одной подписке\n"
    "🌐 Удобное подключение к сайтам и приложениям\n\n"
    "Попробуй FlankVPN и выбери подходящий тариф.")
-  welcome_buttons=[[{"text":"👤 Регистрация / вход","callback_data":"account_auth"}],\n   [{"text":"🎁 Бесплатные 10 дней","callback_data":"claim_trial"}],
+  welcome_buttons=[[{"text":"👤 Регистрация / вход","callback_data":"account_auth"}],
+   [{"text":"🎁 Бесплатные 10 дней","callback_data":"claim_trial"}],
    [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],
    [{"text":"💬 Поддержка","callback_data":"support_info"}]]
   image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
