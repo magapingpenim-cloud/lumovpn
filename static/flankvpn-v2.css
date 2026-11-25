@@ -272,3 +272,157 @@ body.home-layout main.home-main{width:100%!important;max-width:none!important;mi
  .home-v2-brand-name{font-size:29px;margin-top:12px}
  .home-v2-brand-panel p{margin:6px 0 16px;font-size:14px}
 }
+
+/* --- Final corrections: dark mobile header, always-three-line menu, clear dropdown --- */
+html body.home-layout .site-shell>header.site-nav-home{
+  background:#080f19!important;
+  background-image:none!important;
+  border-bottom:1px solid #263c4f!important;
+  box-shadow:none!important;
+}
+html body.home-layout .site-shell>header.site-nav-home::before,
+html body.home-layout .site-shell>header.site-nav-home::after{
+  content:none!important;display:none!important;
+}
+html body.home-layout .site-shell>header.site-nav-home>.mobile-menu>summary{
+  background:#101d2b!important;
+  border:1px solid #2b4052!important;
+  border-radius:13px!important;
+  transform:none!important;
+  animation:none!important;
+  transition:none!important;
+}
+html body.home-layout .site-shell>header.site-nav-home>.mobile-menu[open]>summary,
+html body.inner-layout .site-shell>header.site-nav>.mobile-menu[open]>summary,
+html body .site-shell>header.site-nav .mobile-menu>summary:active{
+  background:#101d2b!important;
+  border-color:#2b4052!important;
+  transform:none!important;
+  animation:none!important;
+}
+html body.home-layout .site-shell>header.site-nav-home>.mobile-menu>summary span,
+html body.inner-layout .site-shell>header.site-nav>.mobile-menu>summary span,
+html body .site-shell>header.site-nav .mobile-menu>summary span,
+html body .site-shell>header.site-nav .mobile-menu[open]>summary span,
+html body .site-shell>header.site-nav .mobile-menu[open]>summary span:first-child,
+html body .site-shell>header.site-nav .mobile-menu[open]>summary span:nth-child(2),
+html body .site-shell>header.site-nav .mobile-menu[open]>summary span:last-child{
+  display:block!important;
+  width:19px!important;height:2px!important;min-height:2px!important;max-height:2px!important;
+  flex:0 0 2px!important;margin:0!important;padding:0!important;
+  border:0!important;border-radius:2px!important;
+  background:#ffffff!important;
+  opacity:1!important;visibility:visible!important;
+  transform:none!important;translate:none!important;rotate:none!important;
+  transition:none!important;animation:none!important;
+}
+html body.home-layout .site-shell>header.site-nav-home>.mobile-menu[open]>.mobile-menu-panel,
+html body.inner-layout .site-shell>header.site-nav>.mobile-menu[open]>.mobile-menu-panel{
+  display:grid!important;
+  position:absolute!important;top:54px!important;left:0!important;right:auto!important;
+  z-index:9999!important;
+  width:min(280px,calc(100vw - 32px))!important;
+  max-height:min(72dvh,560px)!important;overflow:auto!important;
+  padding:10px!important;
+  border:1px solid #2b4052!important;border-radius:16px!important;
+  background:#101d2b!important;background-image:none!important;
+  box-shadow:0 18px 55px rgba(0,0,0,.65)!important;
+  opacity:1!important;visibility:visible!important;
+  transform:none!important;animation:none!important;transition:none!important;
+}
+html body.home-layout .site-shell>header.site-nav-home>.mobile-menu>.mobile-menu-panel a,
+html body.home-layout .site-shell>header.site-nav-home>.mobile-menu>.mobile-menu-panel button,
+html body.inner-layout .site-shell>header.site-nav>.mobile-menu>.mobile-menu-panel a,
+html body.inner-layout .site-shell>header.site-nav>.mobile-menu>.mobile-menu-panel button{
+  display:flex!important;align-items:center!important;
+  min-height:46px!important;padding:12px 14px!important;
+  border:0!important;border-radius:10px!important;
+  background:transparent!important;color:#ffffff!important;
+  opacity:1!important;visibility:visible!important;
+  font-size:15px!important;font-weight:750!important;text-align:left!important;
+}
+html body.home-layout .site-shell>header.site-nav-home>.mobile-menu>.mobile-menu-panel a:hover,
+html body.inner-layout .site-shell>header.site-nav>.mobile-menu>.mobile-menu-panel a:hover{
+  background:#1b3042!important;color:#29e6dc!important;
+}
+/* Clean, centered home composition — no logo card, no people, no fake metrics. */
+.home-v2-plain .home-v2-hero{
+  grid-template-columns:minmax(0,1fr) minmax(300px,.85fr);
+  min-height:590px;gap:clamp(30px,6vw,90px);
+  padding-top:64px;padding-bottom:54px;
+}
+.home-v2-plain .home-v2-copy{max-width:700px}
+.home-v2-plain .home-v2-kicker{
+  padding:0;border:0;border-radius:0;background:transparent;
+  color:#29e6dc;font-size:12px;letter-spacing:.2em;
+}
+.home-v2-plain .home-v2-kicker:before{display:none}
+.home-v2-plain .home-v2 h1{
+  margin:30px 0 24px;font-size:clamp(64px,8vw,112px);
+  line-height:.96;letter-spacing:-.075em;
+}
+.home-v2-plain .home-v2 h1 span{color:#29e6dc}
+.home-v2-plain .home-v2-lead{
+  max-width:510px;color:#ffffff;font-size:clamp(18px,1.7vw,22px);
+  line-height:1.65;font-weight:500;
+}
+.home-v2-plain .home-v2-primary,.home-v2-plain .home-v2-secondary{
+  min-height:58px;border-radius:14px;font-size:16px;
+}
+.home-v2-plain .home-v2-primary{background:#29e6dc;color:#041417!important}
+.home-v2-plain .home-v2-secondary{background:#101d2b;border:1px solid #637d91;color:#ffffff!important}
+.home-v2-plain .home-v2-visual{
+  position:relative;display:grid;place-items:center;
+  min-height:440px;height:100%;isolation:isolate;
+}
+.home-v2-orbit{
+  position:absolute;border:1px solid rgba(41,230,220,.48);
+  border-radius:50%;aspect-ratio:1;transform:rotate(-28deg);
+}
+.home-v2-orbit.orbit-one{width:min(100%,420px);border-width:2px;box-shadow:0 0 35px rgba(41,230,220,.08)}
+.home-v2-orbit.orbit-two{width:min(78%,330px);transform:rotate(36deg);border-color:rgba(130,170,196,.55)}
+.home-v2-orbit.orbit-three{width:min(57%,245px);transform:rotate(-8deg);border-style:dashed;border-color:rgba(41,230,220,.35)}
+.home-v2-orbit-core{
+  display:grid;place-items:center;width:148px;height:148px;
+  border:1px solid #42677b;border-radius:34px;
+  background:#101f2d;box-shadow:0 0 0 14px rgba(41,230,220,.035),0 0 70px rgba(41,230,220,.13);
+}
+.home-v2-orbit-core img{display:block;width:112px;height:112px;object-fit:contain}
+.home-v2-orbit-label{
+  position:absolute;bottom:calc(50% - 145px);color:#fff;
+  font-size:17px;font-weight:900;letter-spacing:.2em;
+}
+.home-v2-orbit-caption{
+  position:absolute;bottom:calc(50% - 176px);color:#b9c9d6;
+  font-size:9px;font-weight:800;letter-spacing:.23em;
+}
+.home-v2-plain .home-v2-feature{background:#111d2a;border-color:#30485d}
+.home-v2-plain .home-v2-feature h2{color:#fff}
+.home-v2-plain .home-v2-feature p{color:#f0f6fb}
+.home-v2-plain .home-v2-feature-mark{background:#173744;color:#29e6dc}
+.home-v2-plain .home-v2-trial{background:#102832;border-color:#277b83}
+.home-v2-plain .home-v2-trial-copy strong,.home-v2-plain .home-v2-trial-copy span{color:#fff}
+.home-v2-plain .home-v2-trial>a{background:#29e6dc;color:#041417!important}
+.home-v2-plain .home-v2-footer{border-color:#2b4052}
+.home-v2-plain .home-v2-footer span{color:#fff}
+@media(max-width:900px){
+ .home-v2-plain .home-v2-hero{grid-template-columns:1fr;min-height:0;padding:46px 0 38px;gap:20px}
+ .home-v2-plain .home-v2-visual{min-height:360px;height:360px}
+ .home-v2-plain .home-v2-orbit.orbit-one{width:330px}
+ .home-v2-plain .home-v2-orbit.orbit-two{width:260px}
+ .home-v2-plain .home-v2-orbit.orbit-three{width:190px}
+}
+@media(max-width:600px){
+ .home-v2-plain .home-v2-hero{padding:34px 0 26px;gap:6px}
+ .home-v2-plain .home-v2 h1{font-size:clamp(52px,13vw,72px);margin:24px 0 18px}
+ .home-v2-plain .home-v2-lead{font-size:16px;line-height:1.6}
+ .home-v2-plain .home-v2-actions{margin:22px 0}
+ .home-v2-plain .home-v2-visual{min-height:290px;height:290px}
+ .home-v2-plain .home-v2-orbit.orbit-one{width:275px}
+ .home-v2-plain .home-v2-orbit.orbit-two{width:215px}
+ .home-v2-plain .home-v2-orbit.orbit-three{width:155px}
+ .home-v2-plain .home-v2-orbit-core{width:108px;height:108px;border-radius:26px}
+ .home-v2-plain .home-v2-orbit-core img{width:80px;height:80px}
+ .home-v2-plain .home-v2-orbit-label{bottom:calc(50% - 113px);font-size:14px}
+ .home-v2-plain .home-v2-orbit-caption{bottom:calc(50% - 137px);font-size:8px}
+}
