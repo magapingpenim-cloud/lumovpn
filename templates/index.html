@@ -4,7 +4,7 @@
 <section class="home-v2 home-v2-plain" aria-label="FlankVPN — главная">
   <div class="home-v2-hero">
     <div class="home-v2-copy">
-      <div class="home-v2-kicker">VPN ДЛЯ ПОВСЕДНЕВНЫХ ЗАДАЧ</div>
+      <div class="home-v2-kicker">FLANKVPN · ПРОСТОЕ ПОДКЛЮЧЕНИЕ</div>
       <h1>Интернет <span>без границ.</span></h1>
       <p class="home-v2-lead">Подключайся к нужным ресурсам и управляй своей подпиской в одном личном кабинете.</p>
       <div class="home-v2-actions">
@@ -13,23 +13,13 @@
         {% else %}
           <a class="home-v2-primary" href="{{ url_for('register') }}">Начать бесплатно <span aria-hidden="true">→</span></a>
         {% endif %}
-        <a class="home-v2-secondary" href="{{ url_for('tariffs') }}">Посмотреть тарифы</a>
+        <a class="home-v2-secondary" href="{{ url_for('tariffs') }}">Тарифы</a>
       </div>
       <ul class="home-v2-benefits">
         <li>Защита соединения</li>
-        <li>До 5 устройств</li>
+        <li>До 3 устройств</li>
         <li>Управление подпиской</li>
       </ul>
-    </div>
-    <div class="home-v2-visual" aria-hidden="true">
-      <div class="home-v2-orbit orbit-one"></div>
-      <div class="home-v2-orbit orbit-two"></div>
-      <div class="home-v2-orbit orbit-three"></div>
-      <div class="home-v2-orbit-core">
-        <img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt="">
-      </div>
-      <span class="home-v2-orbit-label">FLANKVPN</span>
-      <span class="home-v2-orbit-caption">SECURE CONNECTION</span>
     </div>
   </div>
 
@@ -37,7 +27,7 @@
     <article class="home-v2-feature">
       <span class="home-v2-feature-mark" aria-hidden="true">01</span>
       <h2>Простое подключение</h2>
-      <p>Личная ссылка и QR-код доступны в личном кабинете</p>
+      <p>Личная ссылка и QR-код доступны в кабинете</p>
     </article>
     <article class="home-v2-feature">
       <span class="home-v2-feature-mark" aria-hidden="true">02</span>
@@ -46,8 +36,8 @@
     </article>
     <article class="home-v2-feature">
       <span class="home-v2-feature-mark" aria-hidden="true">03</span>
-      <h2>Твои устройства</h2>
-      <p>Управляй своей подпиской в одном месте</p>
+      <h2>До 3 устройств</h2>
+      <p>Выбирай количество устройств в настройках тарифа</p>
     </article>
   </section>
 
