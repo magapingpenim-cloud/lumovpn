@@ -11,7 +11,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261123-olympus') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-rebrand.css', v='20261123-olympus') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-approved.css', v='20261123-olympus') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-olympus.css', v='20261125-menu-polish-1') }}">  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-v2.css', v='20261125-v2-5) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-olympus.css', v='20261125-menu-polish-1') }}">  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-v2.css', v='20261126-poster-1') }}">
+  {% if request.endpoint == 'index' %}
+  <link rel="preload" as="image" href="{{ url_for('static', filename='flankvpn-home-david-final.png') }}">
+  {% endif %}
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else 'inner-layout' }}">
   <div class="site-shell">
@@ -93,7 +96,7 @@
   </script>
   <script>
     (() => {
-      const menus = [...document.querySelectorAll('.mobile-menu, .image-menu')];
+      const menus = [...document.querySelectorAll('.mobile-menu, .image-menu, .home-poster-menu')];
       if (!menus.length) return;
       document.addEventListener('pointerdown', event => {
         menus.forEach(menu => {
