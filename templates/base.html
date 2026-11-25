@@ -95,37 +95,19 @@
     (() => {
       const menus = [...document.querySelectorAll('.mobile-menu, .image-menu')];
       if (!menus.length) return;
-      const close = menu => {
-        if (!menu.open || menu.dataset.closing === 'true') return;
-        menu.dataset.closing = 'true';
-        window.setTimeout(() => {
-          menu.removeAttribute('open');
-          delete menu.dataset.closing;
-        }, 180);
-      };
-      menus.forEach(menu => {
-        const summary = menu.querySelector(':scope > summary');
-        if (!summary) return;
-        summary.addEventListener('click', event => {
-          event.preventDefault();
-          if (menu.open) close(menu);
-          else {
-            menus.forEach(other => { if (other !== menu) close(other); });
-            delete menu.dataset.closing;
-            menu.setAttribute('open', '');
-          }
-        });
-      });
       document.addEventListener('pointerdown', event => {
         menus.forEach(menu => {
-          if (menu.open && !menu.contains(event.target)) close(menu);
+          if (menu.open && !menu.contains(event.target)) menu.removeAttribute('open');
         });
       });
       document.addEventListener('keydown', event => {
-        if (event.key === 'Escape') {
-          menus.forEach(menu => close(menu));
-          menus.find(menu => menu.open)?.querySelector(':scope > summary')?.focus();
-        }
+        if (event.key !== 'Escape') return;
+        menus.forEach(menu => {
+          if (menu.open) {
+            menu.removeAttribute('open');
+            menu.querySelector(':scope > summary')?.focus();
+          }
+        });
       });
     })();
   </script>
