@@ -419,7 +419,7 @@ def index():
  return render_template("index.html")
 @app.route("/business")
 def business():
- prices={str(month):int(TARIFFS[str(month)]["price"]) for month in range(1,13)}
+ prices={str(month):int(_tariff_price(month)) for month in range(1,37)}
  return render_template("business.html",business_prices=prices)
  
 @app.route("/tariffs")
