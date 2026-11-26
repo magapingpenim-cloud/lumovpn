@@ -283,3 +283,77 @@ html body.business-layout .business-form small { color:#7b858d !important; line-
     line-height:0 !important;
   }
 }
+
+
+/* Final text-first homepage for every screen size: no people, statues, or poster artwork. */
+html body.home-layout, html body.home-layout .site-shell { background:#f4f5f6 !important; color:#101216 !important; }
+html body.home-layout .site-shell > .site-nav-home {
+  display:grid !important; grid-template-columns:180px minmax(0,1fr) auto !important;
+  align-items:center !important; min-height:84px !important; padding:0 clamp(18px,5vw,72px) !important;
+  background:#fff !important; border-bottom:1px solid #e4e6e8 !important;
+}
+html body.home-layout .site-nav-home .brand,
+html body.home-layout .site-nav-home .brand-wordmark,
+html body.home-layout .site-nav-home .desktop-nav a { color:#15171a !important; }
+html body.home-layout .site-nav-home .nav-login { background:#101216 !important; color:#fff !important; }
+html body.home-layout main.home-main { width:100% !important; max-width:none !important; padding:0 !important; margin:0 !important; }
+html body.home-layout .home-mobile-poster { display:none !important; }
+html body.home-layout .home-desktop {
+  display:flex !important; flex-direction:column !important; justify-content:space-between !important;
+  width:100% !important; min-height:calc(100vh - 84px) !important;
+  padding:clamp(54px,8vh,108px) clamp(22px,9vw,140px) 30px !important;
+  background:#f4f5f6 !important;
+}
+html body.home-layout .home-desktop-inner { width:min(100%,1120px) !important; margin:0 auto !important; }
+html body.home-layout .home-eyebrow { color:#77818a !important; font-size:12px !important; font-weight:850 !important; letter-spacing:.22em !important; }
+html body.home-layout .home-desktop h1 { max-width:1050px !important; margin:26px 0 22px !important; color:#101216 !important; font-size:clamp(54px,7.6vw,108px) !important; line-height:.98 !important; letter-spacing:-.075em !important; font-weight:850 !important; }
+html body.home-layout .home-desktop h1 span { color:#7b858d !important; }
+html body.home-layout .home-lead { max-width:700px !important; margin:0 !important; color:#525c65 !important; font-size:clamp(18px,1.8vw,23px) !important; line-height:1.6 !important; }
+html body.home-layout .home-actions { display:flex !important; flex-wrap:wrap !important; gap:12px !important; margin-top:32px !important; }
+html body.home-layout .home-primary, html body.home-layout .home-secondary {
+  display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:20px !important;
+  min-height:56px !important; padding:0 25px !important; border-radius:999px !important; font-size:15px !important; font-weight:850 !important;
+}
+html body.home-layout .home-primary { background:#111519 !important; color:#fff !important; }
+html body.home-layout .home-secondary { background:#fff !important; color:#15191d !important; border:1px solid #d9dde0 !important; }
+html body.home-layout .home-proof { display:grid !important; grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:16px !important; max-width:920px !important; margin-top:clamp(42px,7vh,76px) !important; border-top:1px solid #d8dcdf !important; }
+html body.home-layout .home-proof>div { display:flex !important; flex-direction:column !important; gap:7px !important; padding:20px 16px 0 0 !important; }
+html body.home-layout .home-proof strong { color:#111519 !important; font-size:32px !important; line-height:1 !important; }
+html body.home-layout .home-proof span { color:#68727b !important; font-size:13px !important; }
+html body.home-layout .home-business-panel {
+  display:flex !important; align-items:center !important; justify-content:space-between !important; gap:30px !important;
+  width:min(100%,1120px) !important; margin:52px auto 0 !important; padding:28px 30px !important;
+  background:#fff !important; border:1px solid #e0e4e7 !important; border-radius:18px !important;
+}
+html body.home-layout .home-business-panel h2 { margin:10px 0 !important; color:#111519 !important; font-size:clamp(24px,3vw,36px) !important; letter-spacing:-.05em !important; }
+html body.home-layout .home-business-panel p { max-width:680px !important; margin:0 !important; color:#59636c !important; font-size:15px !important; line-height:1.6 !important; }
+html body.home-layout .home-business-panel>a { flex:0 0 auto !important; display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:12px !important; min-height:52px !important; padding:0 20px !important; border-radius:999px !important; background:#111519 !important; color:#fff !important; font-size:14px !important; font-weight:800 !important; }
+html body.home-layout .home-desktop-bottom { display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-top:38px !important; padding-top:18px !important; border-top:1px solid #d8dcdf !important; color:#858d95 !important; font-size:10px !important; font-weight:800 !important; letter-spacing:.15em !important; }
+html body.home-layout .home-desktop-bottom a { color:#15191d !important; font-size:13px !important; letter-spacing:0 !important; }
+@media (max-width: 900px) {
+  html body.home-layout .site-shell > .site-nav-home {
+    grid-template-columns:44px minmax(0,1fr) auto !important; min-height:72px !important;
+    padding:0 14px !important;
+  }
+  html body.home-layout .site-nav-home .desktop-nav { display:none !important; }
+  html body.home-layout .site-nav-home .mobile-menu { display:block !important; }
+  html body.home-layout .home-desktop {
+    display:flex !important; min-height:calc(100vh - 72px) !important;
+    padding:54px 22px 24px !important;
+  }
+  html body.home-layout .home-desktop h1 { font-size:clamp(48px,10.5vw,76px) !important; margin:22px 0 18px !important; }
+  html body.home-layout .home-lead { font-size:17px !important; line-height:1.55 !important; }
+  html body.home-layout .home-proof { margin-top:46px !important; gap:10px !important; }
+  html body.home-layout .home-proof>div { padding:16px 8px 0 0 !important; }
+  html body.home-layout .home-proof strong { font-size:27px !important; }
+  html body.home-layout .home-proof span { font-size:11px !important; line-height:1.4 !important; }
+  html body.home-layout .home-business-panel { flex-direction:column !important; align-items:flex-start !important; gap:20px !important; margin-top:38px !important; padding:22px !important; }
+  html body.home-layout .home-business-panel>a { width:100% !important; }
+  html body.home-layout .home-desktop-bottom { margin-top:30px !important; font-size:9px !important; letter-spacing:.08em !important; }
+}
+@media (max-width: 390px) {
+  html body.home-layout .home-proof { grid-template-columns:1fr 1fr !important; }
+  html body.home-layout .home-proof>div:last-child { grid-column:1/-1 !important; }
+  html body.home-layout .home-actions { flex-direction:column !important; }
+  html body.home-layout .home-primary, html body.home-layout .home-secondary { width:100% !important; }
+}
