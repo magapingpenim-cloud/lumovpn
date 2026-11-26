@@ -5,7 +5,7 @@
   <div class="eyebrow">FLANKVPN / ТАРИФЫ</div>
   <h1>Выберите свой план<span class="heading-dot">.</span></h1>
   <p>Безлимитный интернет-трафик на весь оплаченный срок — без подсчёта гигабайтов. До 3 устройств на одну личную подписку. Начните с бесплатного доступа на 10 дней.</p>
-  <div class="trial-banner"><span class="trial-glyph">✳</span><div><strong>10 дней бесплатно</strong><small>Для новых пользователей после регистрации и подтверждения email</small></div><a href="{{ url_for('register') if not current_user.is_authenticated else url_for('dashboard') }}">Начать ↗</a></div>
+  <div class="trial-banner"><span class="trial-glyph">✳</span><div><strong>10 дней бесплатно</strong><small>Для новых пользователей после регистрации и подтверждения email</small></div><a href="{{ url_for('register') if not current_user.is_authenticated else url_for('dashboard') }}">Начать</a></div>
 </section>
 <section class="pricing-grid" aria-label="Тарифные планы">
   {% for k,t in tariffs.items() if k in ['1','3','12'] %}
@@ -16,7 +16,7 @@
     <p class="plan-monthly">≈ {{ (t.price / t.months)|round(0)|int }} ₽ / месяц</p>
     <ul class="plan-features"><li>Безлимитный трафик на весь срок подписки</li><li>Подписка по ссылке и QR-коду</li><li>Инструкции для устройств</li><li>До 3 устройств на личную подписку</li><li>Управление в личном кабинете</li></ul>
     {% if current_user.is_authenticated %}
-      <form method="post" action="{{ url_for('checkout') }}"><input type="hidden" name="tariff" value="{{ k }}"><button type="submit" class="plan-select">{% if k == '12' %}Выбрать годовой план{% else %}Выбрать тариф{% endif %} <span>↗</span></button></form>
+      <form method="post" action="{{ url_for('checkout') }}"><input type="hidden" name="tariff" value="{{ k }}"><button type="submit" class="plan-select">{% if k == '12' %}Выбрать годовой план{% else %}Выбрать тариф{% endif %}</button></form>
     {% else %}
       <a class="plan-select" href="{{ url_for('register') }}">Выбрать тариф <span>↗</span></a>
     {% endif %}
