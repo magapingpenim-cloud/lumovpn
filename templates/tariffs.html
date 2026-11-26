@@ -1,10 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Тарифы — FlankVPN{% endblock %}
+{% block title %}Тарифы — FlankVPN<section class="business-teaser"><div><span class="eyebrow">FLANKVPN BUSINESS</span><h2>Нужно подключить команду?</h2><p>Одна заявка на 5–5 000 сотрудников и срок от 1 до 36 месяцев. Безлимитный трафик для каждого пользователя.</p></div><a class="plan-select" href="{{ url_for('business') }}">Решение для бизнеса ↗</a></section>
+{% endblock %}
 {% block content %}
 <section class="page-hero">
   <div class="eyebrow">FLANKVPN / ТАРИФЫ</div>
   <h1>Выберите свой план<span class="heading-dot">.</span></h1>
-  <p>Один понятный тарифный план с безлимитным трафиком. До 3 устройств на одну подписку. Начните с бесплатного доступа на 10 дней.</p>
+  <p>Безлимитный интернет-трафик на весь оплаченный срок — без подсчёта гигабайтов. До 3 устройств на одну личную подписку. Начните с бесплатного доступа на 10 дней.</p>
   <div class="trial-banner"><span class="trial-glyph">✳</span><div><strong>10 дней бесплатно</strong><small>Для новых пользователей после регистрации и подтверждения email</small></div><a href="{{ url_for('register') if not current_user.is_authenticated else url_for('dashboard') }}">Начать ↗</a></div>
 </section>
 <section class="pricing-grid" aria-label="Тарифные планы">
@@ -14,7 +15,7 @@
     <h2>{{ t.title }}</h2>
     <div class="plan-price">{{ "{:,.0f}".format(t.price).replace(",", " ") }} <small>₽</small></div>
     <p class="plan-monthly">≈ {{ (t.price / t.months)|round(0)|int }} ₽ / месяц</p>
-    <ul class="plan-features"><li>Безлимитный интернет-трафик</li><li>Подписка по ссылке и QR-коду</li><li>Инструкции для устройств</li><li>До 3 устройств на подписку</li><li>Управление в личном кабинете</li></ul>
+    <ul class="plan-features"><li>Безлимитный трафик на весь срок подписки</li><li>Подписка по ссылке и QR-коду</li><li>Инструкции для устройств</li><li>До 3 устройств на личную подписку</li><li>Управление в личном кабинете</li></ul>
     {% if current_user.is_authenticated %}
       <form method="post" action="{{ url_for('checkout') }}"><input type="hidden" name="tariff" value="{{ k }}"><button type="submit" class="plan-select">{% if k == '12' %}Выбрать годовой план{% else %}Выбрать тариф{% endif %} <span>↗</span></button></form>
     {% else %}
@@ -26,4 +27,3 @@
 </section>
 <p class="pricing-footnote">Платная подписка активируется после подтверждения оплаты. Новым пользователям доступен пробный период на 10 дней.</p>
 {% endblock %}
-<section class="business-teaser"><div><span class="eyebrow">FLANKVPN BUSINESS</span><h2>Нужно подключить команду?</h2><p>Оформите одну заявку на 5–5 000 сотрудников и срок от 1 до 36 месяцев. Безлимитный трафик для каждого пользователя.</p></div><a class="plan-select" href="{{ url_for('business') }}">Решение для бизнеса ↗</a></section>
