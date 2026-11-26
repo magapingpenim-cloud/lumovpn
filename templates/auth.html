@@ -13,7 +13,7 @@
       <label>Пароль<input name="password" type="password" minlength="8" autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}" required></label>
       {% if mode == 'register' %}<label>Повтори пароль<input name="confirm_password" type="password" minlength="8" autocomplete="new-password" required></label>{% endif %}
       {% if mode == 'register' %}<p class="auth-hint">Для регистрации по email мы отправим код подтверждения.</p>{% endif %}
-      <button class="btn primary full">{{ 'Создать аккаунт' if mode == 'register' else 'Войти' }} <span aria-hidden="true">↗</span></button>
+      <button class="btn primary full">{{ 'Создать аккаунт' if mode == 'register' else 'Войти' }}</button>
     </form>
     {% if mode == 'login' %}<p class="tiny muted"><a href="{{ url_for('forgot_password') }}">Забыли пароль?</a></p>{% endif %}
     <p class="tiny muted auth-switch">{% if mode == 'register' %}Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a>{% else %}Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a>{% endif %}</p>
