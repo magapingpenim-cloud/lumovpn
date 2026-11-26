@@ -1,0 +1,161 @@
+/* Final visual corrections: high-contrast CTAs, real app marks, and the approved homepage artwork. */
+html body.home-layout .site-shell > .site-nav-home {
+  display: flex !important;
+  position: relative !important;
+  inset: auto !important;
+  z-index: 100 !important;
+  width: 100% !important;
+  max-width: 1280px !important;
+  min-height: 76px !important;
+  margin: 0 auto !important;
+  padding: 0 clamp(16px, 4vw, 48px) !important;
+  background: #080f19 !important;
+  border-bottom: 1px solid #2b4052 !important;
+}
+html body.home-layout main.home-main {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+html body.home-layout .home-poster {
+  position: relative !important;
+  display: block !important;
+  width: min(100%, 793px) !important;
+  max-width: 793px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  line-height: 0 !important;
+  overflow: visible !important;
+}
+html body.home-layout .home-poster-art {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  object-fit: contain !important;
+  object-position: top center !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+}
+html body.home-layout .home-poster-hotspot {
+  position: absolute !important;
+  z-index: 20 !important;
+  display: block !important;
+  background: transparent !important;
+  border: 0 !important;
+  cursor: pointer !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+html body.home-layout .home-poster-start {
+  left: 8% !important;
+  top: 60.5% !important;
+  width: 84.5% !important;
+  height: 4.9% !important;
+}
+html body.home-layout .home-poster-tariffs {
+  left: 8% !important;
+  top: 66.4% !important;
+  width: 84.5% !important;
+  height: 4.9% !important;
+}
+html body.home-layout .home-poster-hotspot:focus-visible {
+  outline: 3px solid #72e4d2 !important;
+  outline-offset: 3px !important;
+  border-radius: 16px !important;
+}
+/* The CTA labels must remain visible even if a legacy rule applies transparent text fill. */
+html body.inner-layout .download-cta,
+html body.inner-layout .connection-note-link {
+  color: #05211f !important;
+  -webkit-text-fill-color: #05211f !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+}
+html body.inner-layout .download-cta *,
+html body.inner-layout .connection-note-link * {
+  color: #05211f !important;
+  -webkit-text-fill-color: #05211f !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+html body.inner-layout .download-cta {
+  min-height: 58px !important;
+  background: #72e4d2 !important;
+  border: 1px solid #72e4d2 !important;
+}
+html body.inner-layout .connection-note-link {
+  min-height: 56px !important;
+  background: #72e4d2 !important;
+  border: 1px solid #72e4d2 !important;
+}
+/* Replace letter placeholders with recognizable HAPP and INCY app artwork. */
+.download-card-icon {
+  width: 76px !important;
+  height: 76px !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+.download-card-icon img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+.download-card {
+  grid-template-columns: 76px minmax(0, 1fr) !important;
+  column-gap: 18px !important;
+  row-gap: 18px !important;
+  align-items: center !important;
+}
+.download-card-copy h3 {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  font-size: 24px !important;
+  line-height: 1.15 !important;
+}
+.download-card-copy p {
+  color: #e8f0f6 !important;
+  -webkit-text-fill-color: #e8f0f6 !important;
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+}
+@media (max-width: 760px) {
+  html body.home-layout .site-shell > .site-nav-home {
+    display: flex !important;
+    min-height: 76px !important;
+    padding: 0 14px !important;
+  }
+  html body.home-layout .home-poster {
+    width: 100vw !important;
+    max-width: 793px !important;
+  }
+  html body.inner-layout .page-main {
+    width: calc(100% - 28px) !important;
+    padding: 32px 0 52px !important;
+  }
+  .download-card {
+    grid-template-columns: 76px minmax(0, 1fr) !important;
+    padding: 20px !important;
+  }
+  .download-card-icon {
+    width: 76px !important;
+    height: 76px !important;
+  }
+  .download-card-copy h3 {
+    font-size: 23px !important;
+  }
+  .download-card-copy p {
+    font-size: 14px !important;
+  }
+}
