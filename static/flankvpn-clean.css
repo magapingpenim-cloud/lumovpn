@@ -838,3 +838,36 @@ html body .pricing-card .plan-price {
 }
 html body .pricing-card .plan-features { border:0 !important; }
 html body .pricing-card hr { display:none !important; }
+
+
+/* Mobile app download choices */
+html body .download-platforms {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:10px !important;
+  width:100% !important;
+  margin-top:18px !important;
+}
+html body .download-platforms .download-cta {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:100% !important;
+  min-height:50px !important;
+  padding:12px 14px !important;
+  border:1px solid #171a18 !important;
+  border-radius:999px !important;
+  background:#171a18 !important;
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  text-decoration:none !important;
+  font-size:15px !important;
+  font-weight:700 !important;
+  text-align:center !important;
+}
+html body .download-platforms .download-cta::after,
+html body .download-platforms .download-cta span { content:none !important;display:none !important; }
+@media(max-width:600px) {
+  html body .download-grid { grid-template-columns:1fr !important; }
+  html body .download-card { min-width:0 !important;width:100% !important; }
+}
