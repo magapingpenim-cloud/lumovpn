@@ -440,9 +440,9 @@ def business():
   else:
    lead=BusinessRequest(company=company,contact_name=contact_name,email=email,seats=seats,months=months,comment=comment or None)
    db.session.add(lead); db.session.commit()
-   message=(f"Новая заявка FlankVPN Business #{lead.id}\\n"
-    f"Компания: {company}\\nКонтакт: {contact_name}\\nEmail: {email}\\n"
-    f"Пользователей: {seats}\\nСрок: {months} мес.\\nКомментарий: {comment or '—'}")
+   message=(f"Новая заявка FlankVPN Business #{lead.id}\n"
+    f"Компания: {company}\nКонтакт: {contact_name}\nEmail: {email}\n"
+    f"Пользователей: {seats}\nСрок: {months} мес.\nКомментарий: {comment or '—'}")
    notify_admin_telegram(message)
    flash("Заявка отправлена. Команда FlankVPN свяжется с тобой для расчёта и оформления.","success")
    return redirect(url_for("business"))
