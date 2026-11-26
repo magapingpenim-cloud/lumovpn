@@ -25,6 +25,7 @@
         <div class="mobile-menu-panel">
           <a href="{{ url_for('index') }}">Главная</a>
           <a href="{{ url_for('tariffs') }}">Тарифы</a>
+          <a href="{{ url_for('business') }}">Для бизнеса</a>
           <a href="{{ url_for('connection') }}">Подключение</a>
           <a href="{{ url_for('support') }}">Поддержка</a>
           {% if current_user.is_authenticated %}
@@ -45,6 +46,7 @@
       <nav class="desktop-nav" aria-label="Основная навигация">
         <a class="{{ 'active' if request.endpoint == 'index' else '' }}" href="{{ url_for('index') }}">Главная</a>
         <a class="{{ 'active' if request.endpoint == 'tariffs' else '' }}" href="{{ url_for('tariffs') }}">Тарифы</a>
+        <a class="{{ 'active' if request.endpoint in ['business','admin_business'] else '' }}" href="{{ url_for('business') }}">Для бизнеса</a>
         <a class="{{ 'active' if request.endpoint == 'connection' else '' }}" href="{{ url_for('connection') }}">Подключение</a>
         <a class="{{ 'active' if request.endpoint in ['support','my_support'] else '' }}" href="{{ url_for('support') }}">Поддержка</a>
       </nav>
