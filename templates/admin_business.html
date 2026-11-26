@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Заявки FlankVPN Business{% endblock %}
+{% block content %}
+<section class="page-hero"><div class="eyebrow">ADMIN / BUSINESS</div><h1>Заявки бизнеса<span class="heading-dot">.</span></h1><p>Массовые подключения и запросы на корпоративные тарифы.</p></section>
+<div class="business-admin-list">
+{% for item in business_requests %}
+<article class="business-admin-card">
+  <div><strong>#{{ item.id }} · {{ item.company }}</strong><span>{{ item.created_at.strftime('%d.%m.%Y %H:%M') }} · {{ item.status }}</span></div>
+  <p>{{ item.contact_name }} · <a href="mailto:{{ item.email }}">{{ item.email }}</a></p>
+  <p><b>{{ item.seats }}</b> пользователей · <b>{{ item.months }}</b> месяцев · безлимитный трафик</p>
+  {% if item.comment %}<p>{{ item.comment }}</p>{% endif %}
+</article>
+{% else %}<p>Заявок пока нет.</p>{% endfor %}
+</div>
+{% endblock %}
