@@ -2,15 +2,17 @@
 {% block title %}FlankVPN — интернет без границ{% endblock %}
 {% block content %}
 <section class="home-poster" aria-label="FlankVPN — главная страница">
-  <img
-    class="home-poster-art"
-    src="{{ url_for('static', filename='flankvpn-home-david-final.png') }}"
-    alt="FlankVPN — интернет без границ. Быстрый и безопасный VPN с образом Давида в бирюзовых очках."
-    width="941"
-    height="1672"
-    fetchpriority="high"
-    decoding="async"
-  >
+  <div class="home-poster-crop">
+    <img
+      class="home-poster-art"
+      src="{{ url_for('static', filename='flankvpn-home-david-final.png') }}"
+      alt="FlankVPN — интернет без границ. Быстрый и безопасный VPN с образом Давида в бирюзовых очках."
+      width="941"
+      height="1672"
+      fetchpriority="high"
+      decoding="async"
+    >
+  </div>
   <a class="home-poster-hotspot home-poster-start"
      href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('register') }}"
      aria-label="{{ 'Открыть личный кабинет' if current_user.is_authenticated else 'Начать бесплатно' }}"></a>
