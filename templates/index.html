@@ -1,22 +1,32 @@
 {% extends "base.html" %}
-{% block title %}FlankVPN — интернет без границ{% endblock %}
+{% block title %}FlankVPN — безлимитный VPN для свободы в сети{% endblock %}
 {% block content %}
-<section class="home-poster" aria-label="FlankVPN — главная страница">
-  <div class="home-poster-crop">
-    <img
-      class="home-poster-art"
-      src="{{ url_for('static', filename='flankvpn-home-david-final.png') }}"
-      alt="FlankVPN — интернет без границ. Быстрый и безопасный VPN с образом Давида в бирюзовых очках."
-      width="941"
-      height="1672"
-      fetchpriority="high"
-      decoding="async"
-    >
+<section class="home-desktop" aria-label="FlankVPN">
+  <div class="home-desktop-inner">
+    <div class="home-eyebrow">FLANKVPN / PRIVATE NETWORK</div>
+    <h1>Интернет без<br><span>границ и ограничений.</span></h1>
+    <p class="home-lead">Защищённое подключение для работы, общения и привычных цифровых сервисов. Безлимитный трафик — без подсчёта гигабайтов.</p>
+    <div class="home-actions">
+      <a class="home-primary" href="{{ url_for('register') }}">Начать бесплатно <span>↗</span></a>
+      <a class="home-secondary" href="{{ url_for('tariffs') }}">Посмотреть тарифы</a>
+    </div>
+    <div class="home-proof">
+      <div><strong>∞</strong><span>Безлимитный трафик</span></div>
+      <div><strong>3</strong><span>Устройства на подписку</span></div>
+      <div><strong>10</strong><span>Дней пробного доступа</span></div>
+    </div>
   </div>
-  <a class="home-poster-hotspot home-poster-start"
-     href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('register') }}"
-     aria-label="{{ 'Открыть личный кабинет' if current_user.is_authenticated else 'Начать бесплатно' }}"></a>
-  <a class="home-poster-hotspot home-poster-tariffs"
-     href="{{ url_for('tariffs') }}" aria-label="Тарифы"></a>
+  <div class="home-desktop-bottom">
+    <span>СВОБОДА. СКОРОСТЬ. ЗАЩИТА.</span>
+    <a href="{{ url_for('business') }}">FlankVPN для бизнеса <span>↗</span></a>
+  </div>
+</section>
+<section class="home-mobile-poster" aria-label="FlankVPN — главная страница">
+  <div class="home-poster-crop">
+    <img class="home-poster-art" src="{{ url_for('static', filename='flankvpn-home-david-final.png') }}"
+      alt="FlankVPN — интернет без границ" width="941" height="1672" fetchpriority="high" decoding="async">
+  </div>
+  <a class="home-poster-hotspot home-poster-start" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('register') }}" aria-label="Начать бесплатно"></a>
+  <a class="home-poster-hotspot home-poster-tariffs" href="{{ url_for('tariffs') }}" aria-label="Тарифы"></a>
 </section>
 {% endblock %}
