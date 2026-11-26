@@ -159,3 +159,32 @@ html body.inner-layout .connection-note-link {
     font-size: 14px !important;
   }
 }
+
+/* Crop the baked-in poster navigation at the top; the real site header stays above it. */
+html body.home-layout .home-poster-crop {
+  position: relative !important;
+  width: 100% !important;
+  aspect-ratio: 941 / 1597 !important;
+  overflow: hidden !important;
+  line-height: 0 !important;
+}
+html body.home-layout .home-poster-crop .home-poster-art {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  transform: translateY(-4.5%) !important;
+  object-fit: contain !important;
+}
+html body.home-layout .home-poster-start {
+  top: 58.1% !important;
+}
+html body.home-layout .home-poster-tariffs {
+  top: 64.3% !important;
+}
+@media (min-width: 794px) {
+  html body.home-layout .home-poster-crop {
+    aspect-ratio: 941 / 1597 !important;
+  }
+}
