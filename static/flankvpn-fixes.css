@@ -600,3 +600,45 @@ html body .flash.success { border-radius:0 !important; }
   html body .download-grid { grid-template-columns:1fr !important; }
   html body .business-layout { grid-template-columns:1fr !important; }
 }
+
+
+/* Business order calculator — strict editorial layout, no decorative icons. */
+html body .business-order {
+  display:grid !important; grid-template-columns:minmax(0,1fr) minmax(320px,.82fr) !important;
+  gap:0 !important; border:1px solid var(--ff-ink) !important; background:transparent !important;
+}
+html body .business-order-controls,
+html body .business-order-summary { padding:clamp(22px,4vw,42px) !important; }
+html body .business-order-controls { border-right:1px solid var(--ff-ink) !important; }
+html body .business-order .eyebrow { margin-bottom:30px !important; }
+html body .business-order label {
+  display:block !important; margin:28px 0 10px !important; color:var(--ff-ink) !important;
+  font-size:13px !important; font-weight:850 !important; letter-spacing:.04em !important;
+}
+html body .business-number-control { display:grid !important; grid-template-columns:48px minmax(0,1fr) 48px !important; gap:0 !important; }
+html body .business-number-control input {
+  width:100% !important; min-width:0 !important; min-height:58px !important;
+  border-left:0 !important; border-right:0 !important; text-align:center !important;
+  font-size:25px !important; font-weight:900 !important;
+}
+html body .business-step {
+  min-height:58px !important; border:1px solid var(--ff-ink) !important; border-radius:0 !important;
+  background:transparent !important; color:var(--ff-ink) !important; font-size:24px !important;
+}
+html body #business-seats-range { width:100% !important; accent-color:var(--ff-red) !important; margin:22px 0 0 !important; }
+html body .business-range-labels { display:flex !important; justify-content:space-between !important; color:var(--ff-muted) !important; font-size:11px !important; }
+html body #business-months { width:100% !important; min-height:54px !important; padding:0 14px !important; font-size:15px !important; }
+html body .business-unlimited { margin-top:28px !important; padding-top:18px !important; border-top:1px solid var(--ff-line) !important; color:var(--ff-muted) !important; font-size:13px !important; line-height:1.6 !important; }
+html body .business-summary-line { display:flex !important; justify-content:space-between !important; gap:14px !important; padding:15px 0 !important; border-bottom:1px solid var(--ff-line) !important; color:var(--ff-muted) !important; font-size:13px !important; }
+html body .business-summary-line strong { color:var(--ff-ink) !important; font-weight:900 !important; text-align:right !important; }
+html body .business-summary-line.business-discount strong { color:var(--ff-red) !important; }
+html body .business-total-label { margin-top:35px !important; color:var(--ff-muted) !important; font-size:12px !important; font-weight:800 !important; text-transform:uppercase !important; letter-spacing:.12em !important; }
+html body .business-total { margin:8px 0 !important; color:var(--ff-ink) !important; font-size:clamp(38px,5vw,62px) !important; font-weight:950 !important; letter-spacing:-.07em !important; line-height:1 !important; }
+html body .business-summary-note { color:var(--ff-red) !important; font-size:13px !important; margin:12px 0 24px !important; }
+html body .business-submit:disabled { width:100% !important; opacity:.45 !important; cursor:not-allowed !important; }
+html body .business-checkout-note { margin-top:16px !important; color:var(--ff-muted) !important; font-size:11px !important; line-height:1.55 !important; }
+@media(max-width:760px) {
+ html body .business-order { grid-template-columns:1fr !important; }
+ html body .business-order-controls { border-right:0 !important; border-bottom:1px solid var(--ff-ink) !important; }
+ html body .business-order-controls, html body .business-order-summary { padding:22px !important; }
+}
