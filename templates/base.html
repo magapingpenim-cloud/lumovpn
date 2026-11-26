@@ -17,7 +17,7 @@
   <link rel="preload" as="image" href="{{ url_for('static', filename='flankvpn-home-david-final.png') }}">
   {% endif %}
 </head>
-<body class="{{ 'home-layout' if request.endpoint == 'index' else 'inner-layout' }}">
+<body class="{{ 'home-layout' if request.endpoint == 'index' else ('business-layout' if request.endpoint == 'business' else 'inner-layout') }}">
   <div class="site-shell">
     <header class="site-nav {{ 'site-nav-home' if request.endpoint == 'index' else '' }}">
       <details class="mobile-menu">
