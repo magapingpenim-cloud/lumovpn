@@ -157,3 +157,94 @@ body.home-layout .home-desktop-bottom a { color:var(--clean-ink) !important; }
  body.home-layout .home-business-panel { flex-direction:column !important; align-items:flex-start !important; padding:22px !important; }
  body.home-layout .home-business-panel>a { width:100% !important; }
 }
+
+/* High-specificity final overrides: loaded after legacy stylesheets. */
+html body, html body .site-shell, html body main, html body .page-main,
+html body.home-layout, html body.business-layout {
+  background:#f5f3ee !important;
+  color:#202522 !important;
+}
+html body * {
+  -webkit-text-fill-color:currentColor !important;
+}
+html body .site-nav, html body .site-nav-home, html body.business-layout .site-nav {
+  background:#fffefa !important;
+  color:#202522 !important;
+  border-bottom:1px solid #deded5 !important;
+}
+html body .site-nav .brand, html body .site-nav .brand-wordmark,
+html body .site-nav .desktop-nav a, html body .site-nav .nav-login,
+html body .mobile-menu-panel a, html body .mobile-menu-panel button {
+  color:#202522 !important;
+  -webkit-text-fill-color:#202522 !important;
+}
+html body .site-nav .nav-login {
+  background:#202522 !important; color:#fff !important; -webkit-text-fill-color:#fff !important;
+  border-radius:999px !important; border-color:#202522 !important;
+}
+html body .page-hero h1, html body .business-hero h1, html body .referral-hero h1,
+html body .dashboard-welcome h1, html body .settings-page h1,
+html body .page-main h1, html body .page-main h2, html body .page-main h3,
+html body .page-main h4, html body .page-main strong, html body .page-main label,
+html body .page-main p, html body .page-main li, html body .page-main small,
+html body .page-main span, html body .page-main div {
+  color:#202522 !important;
+  -webkit-text-fill-color:#202522 !important;
+}
+html body .page-main .muted, html body .page-main .eyebrow,
+html body .page-main .plan-features li, html body .page-main .plan-monthly,
+html body .page-main .pricing-footnote, html body .page-main .business-checkout-note,
+html body .page-main .business-unlimited, html body .page-main .download-card-copy p,
+html body .page-main .connection-step p {
+  color:#68716c !important; -webkit-text-fill-color:#68716c !important;
+}
+html body .page-main .plan-select, html body .page-main .btn.primary,
+html body .page-main .btn-main, html body .page-main .download-cta,
+html body .page-main .connection-note-link, html body .page-main .business-submit,
+html body .home-primary, html body .home-business-panel>a {
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+  background:#202522 !important; border:1px solid #202522 !important;
+  border-radius:999px !important;
+}
+html body .page-main .btn.secondary, html body .home-secondary {
+  color:#202522 !important; -webkit-text-fill-color:#202522 !important;
+  background:#fffefa !important; border:1px solid #deded5 !important;
+  border-radius:999px !important;
+}
+html body .pricing-card, html body .download-card, html body .connection-step,
+html body .connection-note, html body .support-intro, html body .support-form,
+html body .business-form, html body .business-admin-card, html body .settings-card,
+html body .auth-card, html body .referral-link-card, html body .referral-how,
+html body .referral-stat, html body .ready-card, html body .trial-banner,
+html body .business-teaser, html body .referral-dashboard-banner,
+html body .account-quickline, html body .business-order,
+html body .expired-subscription-notice {
+  background:#fffefa !important; color:#202522 !important;
+  border:1px solid #deded5 !important; border-radius:20px !important;
+  box-shadow:0 8px 26px rgba(32,37,34,.04) !important;
+}
+html body input, html body textarea, html body select {
+  background:#fffefa !important; color:#202522 !important;
+  -webkit-text-fill-color:#202522 !important; border:1px solid #deded5 !important;
+  border-radius:12px !important;
+}
+html body .site-footer { background:#f5f3ee !important; color:#68716c !important; border-color:#deded5 !important; }
+html body .site-footer a { color:#202522 !important; -webkit-text-fill-color:#202522 !important; }
+html body .home-desktop { background:#f5f3ee !important; }
+html body .home-desktop h1, html body .home-desktop h2,
+html body .home-desktop p, html body .home-desktop span,
+html body .home-desktop a { -webkit-text-fill-color:currentColor !important; }
+html body .home-desktop h1 { color:#202522 !important; }
+html body .home-desktop h1 span { color:#68716c !important; }
+html body .home-desktop .home-lead, html body .home-desktop .home-proof span,
+html body .home-desktop .home-business-panel p { color:#68716c !important; }
+html body .home-desktop .home-business-panel {
+  background:#fffefa !important; border:1px solid #deded5 !important; border-radius:20px !important;
+}
+html body .home-desktop .home-primary { color:#fff !important; -webkit-text-fill-color:#fff !important; }
+html body .home-desktop .home-secondary { color:#202522 !important; -webkit-text-fill-color:#202522 !important; }
+@media(max-width:900px) {
+  html body .page-main { width:calc(100% - 32px) !important; }
+  html body .pricing-grid, html body .download-grid { grid-template-columns:1fr !important; }
+  html body .business-order { grid-template-columns:1fr !important; }
+}
