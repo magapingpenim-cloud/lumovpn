@@ -1,41 +1,77 @@
 {% extends "base.html" %}
-{% block title %}FlankVPN для бизнеса — массовое подключение сотрудников{% endblock %}
+{% block title %}FlankVPN Business — корпоративное подключение{% endblock %}
 {% block content %}
 <section class="business-hero">
   <div class="eyebrow">FLANKVPN / BUSINESS</div>
-  <h1>Один VPN.<br><span>Вся команда.</span></h1>
-  <p>Подключайте сотрудников массово: от 5 до 5 000 пользователей, на срок от 1 до 36 месяцев. Каждому пользователю — безлимитный трафик на весь согласованный срок.</p>
-  <div class="business-points">
-    <div><strong>∞</strong><span>Трафик без лимита</span></div>
-    <div><strong>5–5 000</strong><span>Пользователей в заявке</span></div>
-    <div><strong>1–36</strong><span>Месяцев подписки</span></div>
-  </div>
+  <h1>Один доступ.<br><span>Вся команда.</span></h1>
+  <p>Подключение сотрудников с безлимитным трафиком. Выберите количество мест и срок — стоимость и скидка рассчитываются сразу.</p>
 </section>
-<section class="business-layout">
-  <div class="business-copy">
-    <span class="eyebrow">МАССОВОЕ ПОДКЛЮЧЕНИЕ</span>
-    <h2>Решение для вашей компании</h2>
-    <p>Оставьте параметры команды — мы подготовим предложение по стоимости и организации подключения.</p>
-    <ul>
-      <li>Единая заявка на большое количество сотрудников</li>
-      <li>Выбор срока подписки в месяцах</li>
-      <li>Безлимитный трафик для каждого пользователя на весь срок заказа</li>
-      <li>Помощь с подключением и запуском команды</li>
-    </ul>
-    <p class="business-footnote">Личная подписка рассчитана на 3 устройства. Для бизнеса количество пользователей рассчитывается по заявке отдельно; трафик для каждого пользователя безлимитный.</p>
-  </div>
-  <form class="business-form" method="post" action="{{ url_for('business') }}">
-    <h2>Запросить расчёт</h2>
-    <label>Компания<input name="company" maxlength="120" required placeholder="Название компании"></label>
-    <label>Контактное лицо<input name="contact_name" maxlength="100" required placeholder="Как к вам обращаться"></label>
-    <label>Рабочий email<input name="email" type="email" maxlength="160" required placeholder="name@company.com"></label>
-    <div class="business-form-row">
-      <label>Количество пользователей<input name="seats" type="number" min="5" max="5000" value="25" required></label>
-      <label>Срок, месяцев<input name="months" type="number" min="1" max="36" value="12" required></label>
+<section class="business-order">
+  <div class="business-order-controls">
+    <div class="eyebrow">01 / ПАРАМЕТРЫ ЗАКАЗА</div>
+    <label for="business-seats">Количество сотрудников</label>
+    <div class="business-number-control">
+      <button type="button" class="business-step" data-step="-1" aria-label="Уменьшить количество">−</button>
+      <input id="business-seats" type="number" min="5" max="5000" step="1" value="5" inputmode="numeric">
+      <button type="button" class="business-step" data-step="1" aria-label="Увеличить количество">+</button>
     </div>
-    <label>Комментарий (необязательно)<textarea name="comment" maxlength="1200" rows="4" placeholder="Расскажите о задаче и сроках"></textarea></label>
-    <button class="business-submit" type="submit">Отправить заявку <span>↗</span></button>
-    <small>Это заявка на индивидуальный расчёт, а не автоматическое списание средств.</small>
-  </form>
+    <input id="business-seats-range" type="range" min="5" max="5000" step="1" value="5" aria-label="Количество сотрудников">
+    <div class="business-range-labels"><span>5 сотрудников</span><span>5 000 сотрудников</span></div>
+    <label for="business-months">Срок подписки</label>
+    <select id="business-months">
+      {% for month in range(1,13) %}
+      <option value="{{ month }}" {% if month == 12 %}selected{% endif %}>{{ month }} {% if month == 1 %}месяц{% elif month in [2,3,4] %}месяца{% else %}месяцев{% endif %}</option>
+      {% endfor %}
+    </select>
+    <p class="business-unlimited">Безлимитный трафик для каждого сотрудника на весь срок подписки.</p>
+  </div>
+  <div class="business-order-summary">
+    <div class="eyebrow">02 / РАСЧЁТ СТОИМОСТИ</div>
+    <div class="business-summary-line"><span>Цена за сотрудника</span><strong id="business-unit-price">—</strong></div>
+    <div class="business-summary-line"><span>Количество мест</span><strong id="business-summary-seats">5</strong></div>
+    <div class="business-summary-line"><span>Срок</span><strong id="business-summary-months">12 месяцев</strong></div>
+    <div class="business-summary-line business-discount"><span>Скидка за объём</span><strong id="business-discount">5%</strong></div>
+    <div class="business-total-label">Итого к оплате</div>
+    <div class="business-total" id="business-total">—</div>
+    <div class="business-summary-note" id="business-savings">Экономия за счёт объёма заказа</div>
+    <button class="business-submit" type="button" disabled>Переход к оплате — следующий этап</button>
+    <p class="business-checkout-note">Расчёт предварительный. Онлайн-оплата и автоматическая выдача отдельных VPN-доступов сотрудникам будут подключены после интеграции массового создания клиентов в H1.</p>
+  </div>
 </section>
+<script>
+(() => {
+  const prices = {{ business_prices|tojson }};
+  const seats = document.getElementById('business-seats');
+  const range = document.getElementById('business-seats-range');
+  const months = document.getElementById('business-months');
+  const money = value => new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
+  const discountFor = count => count >= 1000 ? 25 : count >= 500 ? 20 : count >= 100 ? 15 : count >= 25 ? 10 : 5;
+  const monthWord = count => count === 1 ? 'месяц' : count >= 2 && count <= 4 ? 'месяца' : 'месяцев';
+  const update = () => {
+    let count = Math.max(5, Math.min(5000, Number.parseInt(seats.value || '5',10)));
+    let term = Math.max(1, Math.min(12, Number.parseInt(months.value || '12',10)));
+    seats.value = count;
+    range.value = count;
+    const regular = Number(prices[String(term)] || 0);
+    const percent = discountFor(count);
+    const unit = Math.round(regular * (100-percent) / 100);
+    const total = unit * count;
+    const saving = (regular * count) - total;
+    document.getElementById('business-unit-price').textContent = money(unit);
+    document.getElementById('business-summary-seats').textContent = count.toLocaleString('ru-RU');
+    document.getElementById('business-summary-months').textContent = term + ' ' + monthWord(term);
+    document.getElementById('business-discount').textContent = percent + '%';
+    document.getElementById('business-total').textContent = money(total);
+    document.getElementById('business-savings').textContent = 'Экономия: ' + money(saving);
+  };
+  seats.addEventListener('input', update);
+  range.addEventListener('input', () => { seats.value = range.value; update(); });
+  months.addEventListener('change', update);
+  document.querySelectorAll('.business-step').forEach(button => button.addEventListener('click', () => {
+    seats.value = Math.max(5, Math.min(5000, Number(seats.value || 5) + Number(button.dataset.step)));
+    update();
+  }));
+  update();
+})();
+</script>
 {% endblock %}
