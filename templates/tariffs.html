@@ -18,7 +18,7 @@
     {% if current_user.is_authenticated %}
       <form method="post" action="{{ url_for('checkout') }}"><input type="hidden" name="tariff" value="{{ k }}"><button type="submit" class="plan-select">{% if k == '12' %}Выбрать годовой план{% else %}Выбрать тариф{% endif %}</button></form>
     {% else %}
-      <a class="plan-select" href="{{ url_for('register') }}">Выбрать тариф <span>↗</span></a>
+      <a class="plan-select" href="{{ url_for('register') }}">Выбрать тариф</a>
     {% endif %}
     {% if t.discount and t.save %}<p class="plan-saving">Экономия {{ t.save }} ₽ относительно помесячной оплаты</p>{% endif %}
   </article>
