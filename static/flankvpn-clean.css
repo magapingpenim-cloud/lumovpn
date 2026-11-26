@@ -248,3 +248,178 @@ html body .home-desktop .home-secondary { color:#202522 !important; -webkit-text
   html body .pricing-grid, html body .download-grid { grid-template-columns:1fr !important; }
   html body .business-order { grid-template-columns:1fr !important; }
 }
+
+
+/* 2026-11-27 contrast repair: inputs, dark panels, navigation and business controls. */
+html body .page-main input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+html body .page-main textarea,
+html body .page-main select,
+html body .auth-card input,
+html body .support-form input,
+html body .support-form textarea {
+  background:#fff !important;
+  color:#202522 !important;
+  -webkit-text-fill-color:#202522 !important;
+  border:1px solid #cfd3cc !important;
+  box-shadow:inset 0 1px 2px rgba(20,30,25,.035) !important;
+  caret-color:#202522 !important;
+}
+html body .page-main input::placeholder,
+html body .page-main textarea::placeholder,
+html body .auth-card input::placeholder,
+html body .support-form input::placeholder,
+html body .support-form textarea::placeholder {
+  color:#737d76 !important;
+  -webkit-text-fill-color:#737d76 !important;
+  opacity:1 !important;
+}
+html body .page-main input:focus,
+html body .page-main textarea:focus,
+html body .page-main select:focus {
+  outline:2px solid #9bcfc2 !important;
+  outline-offset:2px !important;
+  border-color:#79aa9d !important;
+}
+
+/* Connection instructions: light cards with consistently dark readable copy. */
+html body .page-main .connection-step,
+html body .page-main .connection-step *,
+html body .page-main .connection-note,
+html body .page-main .connection-note * {
+  background-color:#fffefa !important;
+  color:#202522 !important;
+  -webkit-text-fill-color:#202522 !important;
+}
+html body .page-main .connection-step p,
+html body .page-main .connection-note p {
+  color:#68716c !important;
+  -webkit-text-fill-color:#68716c !important;
+}
+html body .page-main .connection-step>span {
+  background:#def4ec !important;
+  color:#18332e !important;
+  -webkit-text-fill-color:#18332e !important;
+}
+
+/* Business calculator: compact, aligned +/- controls and a legible number field. */
+html body .business-number-control {
+  display:grid !important;
+  grid-template-columns:52px minmax(0,1fr) 52px !important;
+  align-items:stretch !important;
+  gap:8px !important;
+  width:100% !important;
+}
+html body .business-number-control .business-step {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:0 !important;
+  min-height:56px !important;
+  padding:0 !important;
+  border:1px solid #cfd3cc !important;
+  border-radius:13px !important;
+  background:#f1f3ee !important;
+  color:#202522 !important;
+  -webkit-text-fill-color:#202522 !important;
+  font-size:27px !important;
+  font-weight:600 !important;
+  line-height:1 !important;
+  box-shadow:none !important;
+}
+html body .business-number-control input#business-seats {
+  width:100% !important;
+  min-width:0 !important;
+  min-height:56px !important;
+  padding:8px 12px !important;
+  text-align:center !important;
+  font-size:22px !important;
+  font-weight:750 !important;
+  background:#fff !important;
+  color:#202522 !important;
+  -webkit-text-fill-color:#202522 !important;
+  border:1px solid #cfd3cc !important;
+  border-radius:13px !important;
+}
+html body #business-seats-range {
+  width:100% !important;
+  accent-color:#75a99b !important;
+  cursor:pointer !important;
+}
+html body .business-range-labels {
+  display:flex !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  color:#68716c !important;
+  font-size:13px !important;
+}
+html body .business-range-labels span {
+  color:#68716c !important;
+  -webkit-text-fill-color:#68716c !important;
+}
+html body .business-order-controls label {
+  display:block !important;
+  margin:22px 0 10px !important;
+  color:#202522 !important;
+  -webkit-text-fill-color:#202522 !important;
+  font-weight:700 !important;
+}
+html body .business-order-controls select {
+  min-height:50px !important;
+  padding:0 14px !important;
+  background:#fff !important;
+  color:#202522 !important;
+  -webkit-text-fill-color:#202522 !important;
+}
+
+/* Mobile menu must not inherit the navy legacy dropdown. */
+html body .mobile-menu-panel {
+  background:#fffefa !important;
+  border:1px solid #deded5 !important;
+}
+html body .mobile-menu-panel a,
+html body .mobile-menu-panel button {
+  color:#202522 !important;
+  -webkit-text-fill-color:#202522 !important;
+  background:transparent !important;
+}
+html body .mobile-menu-panel a:active,
+html body .mobile-menu-panel a:hover {
+  background:#eef5f1 !important;
+}
+
+/* Buttons keep a reliable foreground even when legacy rules style nested spans. */
+html body .page-main .btn-main,
+html body .page-main .btn-main *,
+html body .page-main .download-cta,
+html body .page-main .download-cta *,
+html body .page-main .business-submit,
+html body .page-main .business-submit * {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+}
+html body .page-main .download-cta,
+html body .page-main .business-submit,
+html body .page-main .btn-main {
+  background:#202522 !important;
+  border-color:#202522 !important;
+}
+html body .site-footer,
+html body .site-footer * {
+  color:#68716c !important;
+  -webkit-text-fill-color:#68716c !important;
+}
+html body .site-footer .footer-brand {
+  color:#202522 !important;
+  -webkit-text-fill-color:#202522 !important;
+}
+html body .download-cta span,
+html body .connection-note-link span,
+html body .btn-main span,
+html body .ready-card .ready-icon {
+  display:none !important;
+}
+@media(max-width:600px) {
+  html body .business-number-control { grid-template-columns:48px minmax(0,1fr) 48px !important; gap:7px !important; }
+  html body .business-number-control .business-step,
+  html body .business-number-control input#business-seats { min-height:52px !important; }
+}
