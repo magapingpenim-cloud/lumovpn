@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}FlankVPN для бизнеса — массовое подключение сотрудников{% endblock %}
+{% block content %}
+<section class="business-hero">
+  <div class="eyebrow">FLANKVPN / BUSINESS</div>
+  <h1>Один VPN.<br><span>Вся команда.</span></h1>
+  <p>Подключайте сотрудников массово: от 5 до 5 000 пользователей, на срок от 1 до 36 месяцев. Для каждого пользователя — безлимитный трафик.</p>
+  <div class="business-points">
+    <div><strong>∞</strong><span>Трафик без лимита</span></div>
+    <div><strong>5–5 000</strong><span>Пользователей в заявке</span></div>
+    <div><strong>1–36</strong><span>Месяцев подписки</span></div>
+  </div>
+</section>
+<section class="business-layout">
+  <div class="business-copy">
+    <span class="eyebrow">МАССОВОЕ ПОДКЛЮЧЕНИЕ</span>
+    <h2>Решение для вашей компании</h2>
+    <p>Оставьте параметры команды — мы подготовим предложение по стоимости и организации подключения.</p>
+    <ul>
+      <li>Единая заявка на большое количество сотрудников</li>
+      <li>Выбор срока подписки в месяцах</li>
+      <li>Безлимитный трафик для каждого пользователя</li>
+      <li>Помощь с подключением и запуском команды</li>
+    </ul>
+    <p class="business-footnote">Одна обычная подписка поддерживает до 3 устройств. Для корпоративного заказа количество пользователей задаётся отдельно.</p>
+  </div>
+  <form class="business-form" method="post" action="{{ url_for('business') }}">
+    <h2>Запросить расчёт</h2>
+    <label>Компания<input name="company" maxlength="120" required placeholder="Название компании"></label>
+    <label>Контактное лицо<input name="contact_name" maxlength="100" required placeholder="Как к вам обращаться"></label>
+    <label>Рабочий email<input name="email" type="email" maxlength="160" required placeholder="name@company.com"></label>
+    <div class="business-form-row">
+      <label>Количество пользователей<input name="seats" type="number" min="5" max="5000" value="25" required></label>
+      <label>Срок, месяцев<input name="months" type="number" min="1" max="36" value="12" required></label>
+    </div>
+    <label>Комментарий (необязательно)<textarea name="comment" maxlength="1200" rows="4" placeholder="Расскажите о задаче и сроках"></textarea></label>
+    <button class="business-submit" type="submit">Отправить заявку <span>↗</span></button>
+    <small>Это заявка на индивидуальный расчёт, а не автоматическое списание средств.</small>
+  </form>
+</section>
+{% endblock %}
