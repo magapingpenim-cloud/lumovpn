@@ -40,7 +40,7 @@
       <article class="connection-step"><span>03</span><div><h2>Добавь подписку</h2><p>Открой HAPP или INCY, выбери добавление подписки по ссылке и вставь ссылку из кабинета. Также можно отсканировать QR-код.</p></div></article>
       <article class="connection-step"><span>04</span><div><h2>Подключись</h2><p>Выбери конфигурацию FlankVPN в приложении и нажми «Подключить».</p></div></article>
     </div>
-    <aside class="connection-note"><div class="connection-note-icon">✓</div><h2>Готово к работе</h2><p>Одна подписка поддерживает до 3 устройств. Ссылка и QR-код всегда доступны в личном кабинете.</p><a class="connection-note-link" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('register') }}">Открыть кабинет <span aria-hidden="true">↗</span></a></aside>
+    <aside class="connection-note"><div class="connection-note-icon">✓</div><h2>Готово к работе</h2><p>Безлимитный трафик и до 3 устройств на одну подписку. Ссылка и QR-код всегда доступны в личном кабинете.</p><a class="connection-note-link" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('register') }}">Открыть кабинет <span aria-hidden="true">↗</span></a></aside>
   </div>
 </section>
 {% endblock %}
