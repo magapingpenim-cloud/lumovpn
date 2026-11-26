@@ -271,3 +271,15 @@ html body.business-layout .business-form small { color:#7b858d !important; line-
  html body.business-layout .business-points span { font-size:12px !important; }
  .business-teaser { flex-direction:column !important; align-items:flex-start !important; padding:22px !important; }
 }
+
+@media (max-width: 900px) {
+  html body.home-layout .home-mobile-poster {
+    position:relative !important;
+    display:block !important;
+    width:min(100%,793px) !important;
+    max-width:793px !important;
+    margin:0 auto !important;
+    padding:0 !important;
+    line-height:0 !important;
+  }
+}
