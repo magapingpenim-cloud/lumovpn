@@ -423,3 +423,164 @@ html body .ready-card .ready-icon {
   html body .business-number-control .business-step,
   html body .business-number-control input#business-seats { min-height:52px !important; }
 }
+
+
+/* Final user pass: pure white surfaces, black copy, visible mobile menu. */
+html, html body, html body .site-shell, html body main,
+html body .page-main, html body.home-layout, html body.business-layout,
+html body.home-layout .home-desktop {
+  background:#ffffff !important;
+  color:#171a18 !important;
+}
+html body .site-nav,
+html body.home-layout .site-shell>.site-nav-home,
+html body.business-layout .site-nav,
+html body .site-footer {
+  background:#ffffff !important;
+  color:#171a18 !important;
+  border-color:#e5e7e3 !important;
+}
+html body .mobile-menu {
+  display:block !important;
+  position:relative !important;
+  z-index:500 !important;
+  align-self:center !important;
+}
+html body .mobile-menu>summary {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:44px !important;
+  height:44px !important;
+  min-width:44px !important;
+  min-height:44px !important;
+  padding:0 !important;
+  list-style:none !important;
+  cursor:pointer !important;
+  background:#ffffff !important;
+  border:1px solid #202522 !important;
+  border-radius:10px !important;
+  color:#171a18 !important;
+  box-shadow:none !important;
+}
+html body .mobile-menu>summary::-webkit-details-marker { display:none !important; }
+html body .mobile-menu>summary span {
+  display:block !important;
+  width:19px !important;
+  height:2px !important;
+  flex:0 0 2px !important;
+  margin:2px 0 !important;
+  background:#171a18 !important;
+  border-radius:2px !important;
+}
+html body .mobile-menu-panel,
+html body .site-nav .mobile-menu[open]>.mobile-menu-panel,
+html body .site-nav details.mobile-menu[open] .mobile-menu-panel {
+  position:absolute !important;
+  top:calc(100% + 10px) !important;
+  left:0 !important;
+  right:auto !important;
+  z-index:1000 !important;
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:4px !important;
+  min-width:min(280px,calc(100vw - 32px)) !important;
+  max-width:calc(100vw - 32px) !important;
+  padding:12px !important;
+  background:#ffffff !important;
+  color:#171a18 !important;
+  border:1px solid #d9ddd8 !important;
+  border-radius:16px !important;
+  box-shadow:0 18px 48px rgba(20,28,24,.16) !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  transform:none !important;
+}
+html body .mobile-menu-panel a,
+html body .mobile-menu-panel button,
+html body .site-nav .mobile-menu[open]>.mobile-menu-panel a,
+html body .site-nav .mobile-menu[open]>.mobile-menu-panel button {
+  display:flex !important;
+  align-items:center !important;
+  min-height:46px !important;
+  padding:12px 14px !important;
+  background:#ffffff !important;
+  color:#171a18 !important;
+  -webkit-text-fill-color:#171a18 !important;
+  border:0 !important;
+  border-radius:10px !important;
+  font-size:16px !important;
+  font-weight:650 !important;
+  text-align:left !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+html body .mobile-menu-panel a:hover,
+html body .mobile-menu-panel button:hover,
+html body .mobile-menu-panel a:focus-visible {
+  background:#f1f4f1 !important;
+  color:#171a18 !important;
+  -webkit-text-fill-color:#171a18 !important;
+}
+html body .page-main .pricing-card,
+html body .page-main .download-card,
+html body .page-main .connection-step,
+html body .page-main .connection-note,
+html body .page-main .support-intro,
+html body .page-main .support-form,
+html body .page-main .business-form,
+html body .page-main .business-order,
+html body .page-main .auth-card,
+html body .page-main .settings-card,
+html body .page-main .ready-card {
+  background:#ffffff !important;
+  color:#171a18 !important;
+}
+html body .page-main h1,
+html body .page-main h2,
+html body .page-main h3,
+html body .page-main p,
+html body .page-main label,
+html body .page-main strong {
+  color:#171a18 !important;
+  -webkit-text-fill-color:#171a18 !important;
+}
+html body .page-main p,
+html body .page-main .muted,
+html body .page-main .download-card-copy p,
+html body .page-main .connection-step p {
+  color:#59635d !important;
+  -webkit-text-fill-color:#59635d !important;
+}
+
+/* Homepage typography: modern sans headline + expressive editorial serif second line. */
+html body.home-layout .home-desktop h1 {
+  font-family:Inter,"Avenir Next",Avenir,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif !important;
+  font-weight:780 !important;
+  letter-spacing:-.065em !important;
+  color:#171a18 !important;
+}
+html body.home-layout .home-desktop h1 span {
+  display:inline-block !important;
+  margin-top:.04em !important;
+  font-family:Georgia,"Times New Roman",serif !important;
+  font-weight:400 !important;
+  font-style:italic !important;
+  letter-spacing:-.045em !important;
+  color:#527b70 !important;
+}
+html body.home-layout .home-desktop .home-lead,
+html body.home-layout .home-desktop .home-proof span,
+html body.home-layout .home-desktop .home-business-panel p {
+  color:#59635d !important;
+  -webkit-text-fill-color:#59635d !important;
+}
+@media(max-width:900px) {
+  html body .site-nav,
+  html body.home-layout .site-shell>.site-nav-home,
+  html body.business-layout .site-nav {
+    grid-template-columns:48px minmax(0,1fr) auto !important;
+  }
+  html body .site-nav .mobile-menu { display:block !important; }
+  html body.home-layout .site-nav-home .mobile-menu { display:block !important; }
+}
