@@ -12,9 +12,9 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-rebrand.css', v='20261123-olympus') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-approved.css', v='20261123-olympus') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-olympus.css', v='20261125-menu-polish-1') }}">  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-v2.css', v='20261126-poster-2') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-fixes.css', v='20261126-1') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-fixes.css', v='20261126-business-2') }}">
   {% if request.endpoint == 'index' %}
-  <link rel="preload" as="image" href="{{ url_for('static', filename='flankvpn-home-david-final.png') }}">
+  <link rel="preload" as="image" href="{{ url_for('static', filename='flankvpn-home-david-final.png') }}" media="(max-width: 900px)">
   {% endif %}
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else ('business-layout' if request.endpoint == 'business' else 'inner-layout') }}">
