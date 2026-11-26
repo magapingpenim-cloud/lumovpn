@@ -414,8 +414,6 @@ def apply_security_headers(response):
 
 @app.route("/")
 def index():
- if current_user.is_authenticated:
-  return redirect(url_for("dashboard"))
  return render_template("index.html")
 @app.route("/business")
 def business():
