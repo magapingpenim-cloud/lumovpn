@@ -188,3 +188,86 @@ html body.home-layout .home-poster-tariffs {
     aspect-ratio: 941 / 1597 !important;
   }
 }
+
+/* Desktop homepage: clean text-first layout inspired by the supplied reference. */
+@media (min-width: 901px) {
+  html body.home-layout { background:#f4f5f6 !important; color:#101216 !important; }
+  html body.home-layout .site-shell { background:#f4f5f6 !important; }
+  html body.home-layout .site-shell > .site-nav-home {
+    display:grid !important; grid-template-columns:220px 1fr auto !important;
+    min-height:88px !important; padding:0 clamp(28px,6vw,96px) !important;
+    background:#fff !important; border-bottom:1px solid #e4e6e8 !important;
+  }
+  html body.home-layout .site-nav-home .brand,
+  html body.home-layout .site-nav-home .brand-wordmark,
+  html body.home-layout .site-nav-home .desktop-nav a { color:#15171a !important; }
+  html body.home-layout .site-nav-home .nav-login { background:#101216 !important; color:#fff !important; }
+  html body.home-layout .home-desktop { display:flex !important; flex-direction:column !important; justify-content:space-between !important; min-height:calc(100vh - 88px) !important; padding:clamp(70px,10vh,130px) clamp(28px,9vw,140px) 34px !important; background:#f4f5f6 !important; }
+  html body.home-layout .home-desktop-inner { width:min(100%,1120px) !important; margin:0 auto !important; }
+  html body.home-layout .home-eyebrow { color:#78818b !important; font-size:12px !important; font-weight:800 !important; letter-spacing:.22em !important; }
+  html body.home-layout .home-desktop h1 { max-width:1000px !important; margin:28px 0 22px !important; color:#101216 !important; font-size:clamp(64px,8.2vw,118px) !important; line-height:.98 !important; letter-spacing:-.075em !important; font-weight:850 !important; }
+  html body.home-layout .home-desktop h1 span { color:#7c858e !important; }
+  html body.home-layout .home-lead { max-width:660px !important; margin:0 !important; color:#525b64 !important; font-size:clamp(19px,2vw,24px) !important; line-height:1.55 !important; }
+  html body.home-layout .home-actions { display:flex !important; flex-wrap:wrap !important; gap:12px !important; margin-top:34px !important; }
+  html body.home-layout .home-primary, html body.home-layout .home-secondary { display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:22px !important; min-height:58px !important; padding:0 26px !important; border-radius:999px !important; font-size:16px !important; font-weight:800 !important; }
+  html body.home-layout .home-primary { background:#111519 !important; color:#fff !important; }
+  html body.home-layout .home-secondary { background:#fff !important; color:#15191d !important; border:1px solid #d9dde0 !important; }
+  html body.home-layout .home-proof { display:grid !important; grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:16px !important; max-width:920px !important; margin-top:clamp(55px,8vh,100px) !important; border-top:1px solid #d8dcdf !important; }
+  html body.home-layout .home-proof > div { display:flex !important; flex-direction:column !important; gap:7px !important; padding:22px 18px 0 0 !important; }
+  html body.home-layout .home-proof strong { color:#111519 !important; font-size:34px !important; line-height:1 !important; }
+  html body.home-layout .home-proof span { color:#6a737c !important; font-size:14px !important; }
+  html body.home-layout .home-desktop-bottom { display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-top:50px !important; padding-top:20px !important; border-top:1px solid #d8dcdf !important; color:#858d95 !important; font-size:11px !important; font-weight:800 !important; letter-spacing:.15em !important; }
+  html body.home-layout .home-desktop-bottom a { color:#15191d !important; font-size:14px !important; letter-spacing:0 !important; }
+  html body.home-layout .home-mobile-poster { display:none !important; }
+}
+@media (max-width: 900px) {
+  html body.home-layout .home-desktop { display:none !important; }
+  html body.home-layout .home-mobile-poster { display:block !important; }
+}
+/* Dedicated light business page */
+html body.business-layout, html body.business-layout .site-shell { background:#f4f5f6 !important; color:#111519 !important; }
+html body.business-layout .site-nav { background:#fff !important; border-bottom:1px solid #e3e6e8 !important; }
+html body.business-layout .site-nav .brand,
+html body.business-layout .site-nav .brand-wordmark,
+html body.business-layout .site-nav .desktop-nav a { color:#15191d !important; }
+html body.business-layout .site-nav .nav-login { background:#111519 !important; color:#fff !important; }
+html body.business-layout .page-main { width:min(1180px,calc(100% - 48px)) !important; padding:76px 0 90px !important; }
+html body.business-layout .business-hero { padding:0 0 58px !important; border-bottom:1px solid #dce0e3 !important; }
+html body.business-layout .business-hero .eyebrow,
+html body.business-layout .business-copy .eyebrow { color:#7a838b !important; }
+html body.business-layout .business-hero h1 { margin:24px 0 !important; color:#101418 !important; font-size:clamp(58px,8vw,100px) !important; line-height:.98 !important; letter-spacing:-.075em !important; }
+html body.business-layout .business-hero h1 span { color:#89929a !important; }
+html body.business-layout .business-hero>p { max-width:720px !important; color:#515b64 !important; font-size:21px !important; line-height:1.6 !important; }
+html body.business-layout .business-points { display:grid !important; grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:20px !important; max-width:900px !important; margin-top:45px !important; }
+html body.business-layout .business-points>div { display:flex !important; flex-direction:column !important; gap:7px !important; padding-top:18px !important; border-top:1px solid #d8dcdf !important; }
+html body.business-layout .business-points strong { color:#111519 !important; font-size:30px !important; }
+html body.business-layout .business-points span { color:#69737c !important; font-size:14px !important; }
+html body.business-layout .business-layout { display:grid !important; grid-template-columns:minmax(0,1fr) minmax(360px,.82fr) !important; gap:clamp(36px,7vw,100px) !important; align-items:start !important; padding-top:58px !important; }
+html body.business-layout .business-copy h2, html body.business-layout .business-form h2 { color:#101418 !important; font-size:clamp(30px,4vw,42px) !important; line-height:1.08 !important; letter-spacing:-.055em !important; }
+html body.business-layout .business-copy p, html body.business-layout .business-copy li { color:#56616a !important; font-size:16px !important; line-height:1.7 !important; }
+html body.business-layout .business-copy ul { display:grid !important; gap:12px !important; padding-left:20px !important; }
+html body.business-layout .business-footnote { margin-top:28px !important; padding-top:18px !important; border-top:1px solid #dce0e3 !important; font-size:13px !important; }
+html body.business-layout .business-form { display:grid !important; gap:16px !important; padding:28px !important; background:#fff !important; border:1px solid #e0e4e7 !important; border-radius:22px !important; }
+html body.business-layout .business-form label { display:grid !important; gap:8px !important; color:#303941 !important; font-size:13px !important; font-weight:750 !important; }
+html body.business-layout .business-form input, html body.business-layout .business-form textarea { width:100% !important; min-height:48px !important; padding:12px 14px !important; border:1px solid #d7dde1 !important; border-radius:10px !important; background:#f8f9fa !important; color:#14191e !important; }
+html body.business-layout .business-form textarea { min-height:100px !important; }
+html body.business-layout .business-form-row { display:grid !important; grid-template-columns:1fr 1fr !important; gap:12px !important; }
+html body.business-layout .business-submit { display:flex !important; align-items:center !important; justify-content:space-between !important; min-height:54px !important; padding:0 18px !important; border:0 !important; border-radius:12px !important; background:#111519 !important; color:#fff !important; font-weight:800 !important; cursor:pointer !important; }
+html body.business-layout .business-form small { color:#7b858d !important; line-height:1.5 !important; }
+.business-teaser { display:flex !important; align-items:center !important; justify-content:space-between !important; gap:24px !important; margin-top:54px !important; padding:30px !important; background:#fff !important; border:1px solid #e1e5e8 !important; border-radius:20px !important; }
+.business-teaser h2 { margin:10px 0 !important; color:#111519 !important; font-size:28px !important; }
+.business-teaser p { max-width:680px !important; color:#5d6871 !important; line-height:1.6 !important; }
+.business-admin-list { display:grid !important; gap:14px !important; }
+.business-admin-card { padding:20px !important; background:#fff !important; border:1px solid #e0e4e7 !important; border-radius:14px !important; color:#15191d !important; }
+.business-admin-card strong { color:#111519 !important; }
+.business-admin-card span, .business-admin-card p { display:block !important; color:#58636c !important; line-height:1.5 !important; }
+@media (max-width: 760px) {
+ html body.business-layout .page-main { width:calc(100% - 32px) !important; padding:38px 0 58px !important; }
+ html body.business-layout .business-layout { grid-template-columns:1fr !important; gap:28px !important; padding-top:34px !important; }
+ html body.business-layout .business-hero h1 { font-size:clamp(48px,13vw,68px) !important; }
+ html body.business-layout .business-hero>p { font-size:17px !important; }
+ html body.business-layout .business-points { gap:10px !important; }
+ html body.business-layout .business-points strong { font-size:23px !important; }
+ html body.business-layout .business-points span { font-size:12px !important; }
+ .business-teaser { flex-direction:column !important; align-items:flex-start !important; padding:22px !important; }
+}
