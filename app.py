@@ -417,37 +417,11 @@ def index():
  if current_user.is_authenticated:
   return redirect(url_for("dashboard"))
  return render_template("index.html")
-@app.route("/business",methods=["GET","POST"])
-@limiter.limit("5 per hour",methods=["POST"])
+@app.route("/business")
 def business():
- if request.method=="POST":
-  company=request.form.get("company","").strip()
-  contact_name=request.form.get("contact_name","").strip()
-  email=request.form.get("email","").strip().lower()
-  comment=request.form.get("comment","").strip()
-  try:
-   seats=int(request.form.get("seats",""))
-   months=int(request.form.get("months",""))
-  except (TypeError,ValueError):
-   flash("Укажи количество сотрудников и срок подписки.","error")
-   return render_template("business.html")
-  if not company or len(company)>120 or not contact_name or len(contact_name)>100:
-   flash("Проверь название компании и имя контактного лица.","error")
-  elif "@" not in email or len(email)>160 or len(comment)>1200:
-   flash("Проверь email и длину комментария.","error")
-  elif seats<5 or seats>5000 or months<1 or months>36:
-   flash("Для бизнес-заявки доступно от 5 до 5 000 пользователей и от 1 до 36 месяцев.","error")
-  else:
-   lead=BusinessRequest(company=company,contact_name=contact_name,email=email,seats=seats,months=months,comment=comment or None)
-   db.session.add(lead); db.session.commit()
-   message=(f"Новая заявка FlankVPN Business #{lead.id}\n"
-    f"Компания: {company}\nКонтакт: {contact_name}\nEmail: {email}\n"
-    f"Пользователей: {seats}\nСрок: {months} мес.\nКомментарий: {comment or '—'}")
-   notify_admin_telegram(message)
-   flash("Заявка отправлена. Команда FlankVPN свяжется с тобой для расчёта и оформления.","success")
-   return redirect(url_for("business"))
- return render_template("business.html")
-
+ prices={str(month):int(TARIFFS[str(month)]["price"]) for month in range(1,13)}
+ return render_template("business.html",business_prices=prices)
+ 
 @app.route("/tariffs")
 def tariffs(): return render_template("tariffs.html")
 @app.route("/connection")
