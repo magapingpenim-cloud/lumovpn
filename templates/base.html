@@ -39,6 +39,57 @@
       }
     }
   </style>
+  <style>
+    /* H1-inspired shared navigation and surfaces. */
+    html body .site-shell > header.site-nav.site-nav {
+      display:flex !important; align-items:center !important; justify-content:flex-start !important;
+      gap:12px !important; max-width:none !important; min-height:76px !important;
+      padding:12px clamp(16px,3vw,40px) !important; background:#fff !important;
+      border-bottom:1px solid #dedee5 !important; box-sizing:border-box !important;
+    }
+    html body .site-shell > header.site-nav.site-nav > .mobile-menu { flex:0 0 auto !important; margin:0 !important; }
+    html body .site-shell > header.site-nav.site-nav > .mobile-menu > summary {
+      width:48px !important; height:48px !important; min-width:48px !important; min-height:48px !important;
+      padding:0 !important; display:flex !important; flex-direction:column !important;
+      align-items:center !important; justify-content:center !important; gap:4px !important;
+      background:#fff !important; border:1px solid #cbcbd5 !important; border-radius:14px !important; box-shadow:none !important;
+    }
+    html body .site-shell > header.site-nav.site-nav > .mobile-menu > summary > span {
+      display:block !important; width:16px !important; height:2px !important; margin:0 !important; background:#17171d !important;
+    }
+    html body .site-shell > header.site-nav.site-nav > .brand {
+      display:flex !important; align-items:center !important; gap:9px !important; margin:0 !important;
+      min-width:0 !important; flex:0 1 auto !important; text-decoration:none !important;
+    }
+    html body .site-shell > header.site-nav.site-nav .brand-wordmark {
+      font-size:20px !important; font-weight:750 !important; letter-spacing:-.045em !important; white-space:nowrap !important;
+    }
+    html body .site-shell > header.site-nav.site-nav > .desktop-nav { flex:1 1 auto !important; }
+    html body .site-shell > header.site-nav.site-nav > .nav-actions { margin-left:auto !important; flex:0 0 auto !important; display:flex !important; align-items:center !important; }
+    html body .site-shell > header.site-nav.site-nav .nav-actions > a.nav-login {
+      display:inline-flex !important; align-items:center !important; justify-content:center !important;
+      min-height:48px !important; padding:0 18px !important; border-radius:14px !important;
+      background:#5950e5 !important; border:1px solid #5950e5 !important; box-shadow:none !important;
+      font-size:15px !important; font-weight:700 !important; white-space:nowrap !important;
+    }
+    html body .site-shell > header.site-nav.site-nav .nav-actions > a.nav-account {
+      width:48px !important; min-width:48px !important; padding:0 !important;
+      background:#eae7ff !important; border-color:#eae7ff !important;
+      color:#4940cf !important; -webkit-text-fill-color:#4940cf !important; font-size:18px !important;
+    }
+    html body .site-shell > header.site-nav.site-nav .nav-actions > a.nav-login:focus-visible,
+    html body .site-shell > header.site-nav.site-nav > .mobile-menu > summary:focus-visible { outline:2px solid #5950e5 !important; outline-offset:3px !important; }
+    html body .site-shell > main :is(.pricing-card,.auth-card,.order,.dashboard-help,.support-intro,.support-form,.download-card,.business-form,.business-order,.ready-card,.payment-flow-card,.trial-banner) {
+      border:1px solid #dedee5 !important; border-radius:18px !important; box-shadow:none !important;
+    }
+    html body.home-layout .site-shell .home-desktop .home-desktop-inner h1 > span {
+      background:none !important; color:#5950e5 !important; -webkit-text-fill-color:#5950e5 !important;
+    }
+    @media(max-width:900px) {
+      html body .site-shell > header.site-nav.site-nav > .desktop-nav { display:none !important; }
+      html body .site-shell > header.site-nav.site-nav { gap:12px !important; padding:12px 16px !important; }
+    }
+  </style>
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else ('business-layout' if request.endpoint == 'business' else 'inner-layout') }}">
   <div class="site-shell">
@@ -74,7 +125,7 @@
       </nav>
       <div class="nav-actions">
         {% if current_user.is_authenticated %}
-          <a class="nav-login" href="{{ url_for('dashboard') }}">Кабинет</a>
+          <a class="nav-login nav-account" href="{{ url_for('dashboard') }}" aria-label="Личный кабинет" title="Личный кабинет">{{ (current_user.email or 'F')[0]|upper }}</a>
         {% else %}
           <a class="nav-login" href="{{ url_for('login') }}">Войти</a>
         {% endif %}
