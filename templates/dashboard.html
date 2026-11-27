@@ -83,7 +83,7 @@
     {% set o = current_subscription %}
     <article class="ready-card">
       <div class="ready-card-head">
-        <div><span class="subscription-state">Подписка активна</span><h3>{{ "Доступ до " ~ subscription_expiry.strftime("%d.%m.%Y") if subscription_expiry else tariffs[o.tariff_key].title }}</h3><p class="muted tiny">{{ ((subscription_expiry - now).days if subscription_expiry else 0) }} дн. осталось · последний платёж {{ o.created_at.strftime("%d.%m.%Y") }}</p></div>
+        <div><span class="subscription-state">Подписка активна</span><h3>{{ "Доступ до " ~ subscription_expiry.strftime("%d.%m.%Y") if subscription_expiry else tariffs[o.tariff_key].title }}</h3><p class="muted tiny">{{ subscription_days_left }} дн. осталось · последний платёж {{ o.created_at.strftime("%d.%m.%Y") }}</p></div>
       </div>
       <div class="ready-card-body">
         <a class="ready-qr-link" href="{{ url_for('qr',oid=o.id) }}" target="_blank" rel="noopener"><img class="ready-qr" src="{{ url_for('qr',oid=o.id) }}" alt="QR-код подписки"><span>Открыть QR-код</span></a>
