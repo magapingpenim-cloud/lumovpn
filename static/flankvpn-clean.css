@@ -936,3 +936,46 @@ html body .download-platforms .download-cta::after { display:none !important; co
  html body .download-platforms { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
  html body .download-platforms .download-cta { min-height:50px !important; padding:10px 6px !important; font-size:14px !important; }
 }
+
+
+/* Unified readable light theme for account, support and payment surfaces. */
+html body.inner-layout, html body.inner-layout .site-shell, html body.inner-layout .page-main, html body.inner-layout .site-footer { background:#fff !important; color:#171a18 !important; }
+html body.inner-layout .order, html body.inner-layout .admin-help, html body.inner-layout .dashboard-help,
+html body.inner-layout .support-intro, html body.inner-layout .support-form, html body.inner-layout .support-signed-in,
+html body.inner-layout .selected-plan, html body.inner-layout .payment-provider-note, html body.inner-layout .payment-flow-card,
+html body.inner-layout .ready-card, html body.inner-layout .expired-subscription-notice,
+html body.inner-layout .referral-dashboard-banner, html body.inner-layout .account-quickline {
+ background:#fff !important; background-image:none !important; color:#171a18 !important;
+ border:1px solid #dedfd9 !important; box-shadow:none !important;
+}
+html body.inner-layout .order *, html body.inner-layout .admin-help *, html body.inner-layout .dashboard-help *,
+html body.inner-layout .support-intro *, html body.inner-layout .support-form *, html body.inner-layout .support-signed-in *,
+html body.inner-layout .selected-plan *, html body.inner-layout .payment-provider-note *,
+html body.inner-layout .payment-flow-card *, html body.inner-layout .ready-card *,
+html body.inner-layout .expired-subscription-notice * { -webkit-text-fill-color:currentColor !important; }
+html body.inner-layout .order h1, html body.inner-layout .order h2, html body.inner-layout .order h3,
+html body.inner-layout .order b, html body.inner-layout .order strong, html body.inner-layout .admin-help strong,
+html body.inner-layout .dashboard-help h2, html body.inner-layout .support-intro h2,
+html body.inner-layout .support-form label, html body.inner-layout .support-signed-in,
+html body.inner-layout .selected-plan strong, html body.inner-layout .selected-plan-price,
+html body.inner-layout .payment-provider-note strong, html body.inner-layout .payment-flow-card h1,
+html body.inner-layout .ready-card h3, html body.inner-layout .ready-card strong {
+ color:#171a18 !important; -webkit-text-fill-color:#171a18 !important;
+}
+html body.inner-layout .order p, html body.inner-layout .admin-help p, html body.inner-layout .dashboard-help p,
+html body.inner-layout .support-intro p, html body.inner-layout .selected-plan-label,
+html body.inner-layout .payment-provider-note p, html body.inner-layout .payment-flow-card .muted,
+html body.inner-layout .ready-card .muted {
+ color:#59635d !important; -webkit-text-fill-color:#59635d !important;
+}
+html body.inner-layout .subscription-state { display:inline-block !important; margin:0 0 14px !important; padding:0 !important; border:0 !important; border-radius:0 !important; background:transparent !important; color:#59635d !important; -webkit-text-fill-color:#59635d !important; font-size:14px !important; font-weight:700 !important; }
+html body.inner-layout .status, html body.inner-layout .status-active, html body.inner-layout .status-awaiting_review {
+ background:#f1f2ef !important; border:1px solid #dedfd9 !important; color:#252a27 !important; -webkit-text-fill-color:#252a27 !important;
+}
+html body.inner-layout .admin-help, html body.inner-layout .selected-plan, html body.inner-layout .payment-provider-note { background:#f7f8f6 !important; border-color:#dedfd9 !important; }
+html body.inner-layout input, html body.inner-layout textarea, html body.inner-layout select { background:#fff !important; color:#171a18 !important; -webkit-text-fill-color:#171a18 !important; border-color:#cfd3ce !important; }
+html body.inner-layout input::placeholder, html body.inner-layout textarea::placeholder { color:#818982 !important; -webkit-text-fill-color:#818982 !important; }
+html body.inner-layout .btn.primary, html body.inner-layout .btn-main, html body.inner-layout .copy-subscription, html body.inner-layout .pay-yookassa { background:#171a18 !important; color:#fff !important; -webkit-text-fill-color:#fff !important; border-color:#171a18 !important; }
+html body.inner-layout .btn.secondary { background:#fff !important; color:#171a18 !important; -webkit-text-fill-color:#171a18 !important; border-color:#dedfd9 !important; }
+html body.inner-layout .dashboard-help { padding:26px !important; border-radius:20px !important; }
+html body.inner-layout .dashboard-help .eyebrow { color:#737d76 !important; }
