@@ -844,7 +844,7 @@ def telegram_webhook(secret):
    send("Неизвестный тариф. Открой раздел «Тарифы» ещё раз.")
    return
   send(f"Тариф: {tariff['title']}\nСтоимость: {tariff['price']} ₽\n\nОплата проходит через СБП. Нажми кнопку, чтобы перейти к оплате:",keyboard=False,
-   inline=[[{"text":"Оплатить через СБП","callback_data":f"buy:{key}:sbp"}],
+   inline=[[{"text":"Оплатить","callback_data":f"buy:{key}:sbp"}],
            [{"text":"⬅️ К тарифам","callback_data":"show_tariffs"}]])
  cmd=text_in.split(maxsplit=1)[0].lower() if text_in else ""
  arg=text_in.split(maxsplit=1)[1].strip() if len(text_in.split(maxsplit=1))>1 else ""
