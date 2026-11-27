@@ -78,18 +78,18 @@
 .expired-subscription-notice .btn{margin-top:9px}
 </style>
 <section class="ready-subscriptions" aria-label="Мои подписки">
-  <div class="section-title-row"><div><div class="eyebrow">🔌 ТВОЙ ДОСТУП</div><h2>Твоя подписка</h2><p class="muted">Все продления добавляются к этой же подписке. Покупка и продление доступны на главной странице в разделе «Тарифы».</p></div></div>
+  <div class="section-title-row"><div><div class="eyebrow">ТВОЙ ДОСТУП</div><h2>Твоя подписка</h2><p class="muted">Все продления добавляются к этой же подписке. Покупка и продление доступны на главной странице в разделе «Тарифы».</p></div></div>
   {% if current_subscription %}
     {% set o = current_subscription %}
     <article class="ready-card">
       <div class="ready-card-head">
-        <div><span class="status status-active">Подписка активна</span><h3>{{ tariffs[o.tariff_key].title }}</h3><p class="muted tiny">Заказ #{{ o.id }} · {{ o.created_at.strftime('%d.%m.%Y') }}</p></div>
+        <div><span class="subscription-state">Подписка активна</span><h3>{{ tariffs[o.tariff_key].title }}</h3><p class="muted tiny">Заказ #{{ o.id }} · {{ o.created_at.strftime('%d.%m.%Y') }}</p></div>
       </div>
       <div class="ready-card-body">
         <a class="ready-qr-link" href="{{ url_for('qr',oid=o.id) }}" target="_blank" rel="noopener"><img class="ready-qr" src="{{ url_for('qr',oid=o.id) }}" alt="QR-код подписки"><span>Открыть QR-код</span></a>
         <div class="ready-actions">
-          <button type="button" class="btn primary full copy-subscription" data-copy-subscription="{{ o.subscription_url }}">📋 Скопировать ссылку</button>
-          <a class="btn secondary full" href="{{ url_for('subscription_page',oid=o.id) }}">Открыть подключение ↗</a>
+          <button type="button" class="btn primary full copy-subscription" data-copy-subscription="{{ o.subscription_url }}">Скопировать ссылку</button>
+          <a class="btn secondary full" href="{{ url_for('subscription_page',oid=o.id) }}">Открыть подключение</a>
         </div>
       </div>
     </article>
@@ -104,7 +104,7 @@
         <div class="expired-subscription-notice">
           <strong>⏳ Подписка FlankVPN закончилась</strong>
           <p>Серверы временно недоступны. Продли подписку, чтобы восстановить доступ.</p>
-          <a class="btn primary full" href="{{ url_for('tariffs') }}">💳 Продлить подписку</a>
+          <a class="btn primary full" href="{{ url_for('tariffs') }}">Продлить подписку</a>
           <a class="btn secondary full" href="https://t.me/flankvpn_bot" target="_blank" rel="noopener">Открыть Telegram-бота ↗</a>
         </div>
       </div>
