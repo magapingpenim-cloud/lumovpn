@@ -998,3 +998,16 @@ html body.home-layout .home-desktop h1 span {
   -webkit-text-fill-color: #202522 !important;
   font-style: normal !important;
 }
+
+/* H1-inspired light interface */
+html, html body, html body .site-shell, html body .site-shell>main, html body .site-shell>main.page-main, html body.home-layout .home-desktop, html body.inner-layout .page-main {background:#f0f0f3!important;color:#17171d!important}
+html body .site-shell>header.site-nav,html body.home-layout .site-shell>header.site-nav-home {background:#fff!important;border-bottom:1px solid #dedee5!important;box-shadow:none!important}
+html body .site-shell>header.site-nav .brand-wordmark {color:#17171d!important;-webkit-text-fill-color:#17171d!important}
+html body .site-shell>header.site-nav .nav-login,html body .site-shell>main .btn-main,html body .site-shell>main .btn.primary,html body .site-shell>main button[type="submit"],html body .site-shell>main .copy-subscription,html body .site-shell>main .pay-yookassa,html body .site-shell>main .download-cta {background:#5950e5!important;border-color:#5950e5!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-radius:14px!important}
+html body .site-shell>main :is(.pricing-card,.auth-card,.order,.dashboard-help,.support-intro,.support-form,.download-card,.business-form,.business-order,.ready-card,.payment-flow-card,.trial-banner) {background:#fff!important;border:1px solid #dddde5!important;border-radius:18px!important;box-shadow:none!important}
+html body .site-shell>main :is(input,textarea,select) {background:#fff!important;border:1px solid #d0d0da!important;border-radius:12px!important;color:#17171d!important;-webkit-text-fill-color:#17171d!important}
+html body .site-shell>header.site-nav details.mobile-menu[open]>.mobile-menu-panel {position:fixed!important;top:76px!important;left:0!important;right:auto!important;width:min(82vw,340px)!important;max-height:calc(100dvh - 76px)!important;overflow-y:auto!important;background:#fff!important;border:1px solid #dddde5!important;border-radius:0 20px 20px 0!important;padding:16px!important;box-shadow:0 0 0 100vmax #0005!important}
+html body .site-shell>header.site-nav details.mobile-menu[open]>.mobile-menu-panel a:hover {background:#ece9ff!important;color:#4940cf!important;-webkit-text-fill-color:#4940cf!important}
+html body .site-shell>header.site-nav .desktop-nav a.active {background:#ece9ff!important;color:#4940cf!important;-webkit-text-fill-color:#4940cf!important;border-radius:12px!important}
+html body .site-shell>footer {background:#fff!important}
+@media(min-width:900px){html body .site-shell>main.page-main {padding-left:max(32px,calc((100vw - 1160px)/2))!important;padding-right:max(32px,calc((100vw - 1160px)/2))!important}html body .pricing-grid {display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}}
