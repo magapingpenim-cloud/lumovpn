@@ -825,7 +825,7 @@ def telegram_webhook(secret):
   if inline is not None:
    payload["reply_markup"]={"inline_keyboard":inline}
   elif keyboard:
-   payload["reply_markup"]={"keyboard":[[{"text":"🌐 Тарифы"},{"text":"📦 Мои заказы"}],[{"text":"🔐 Моя подписка"}],[{"text":"👤 Аккаунт"},{"text":"💬 Поддержка"}]],"resize_keyboard":True}
+   payload["reply_markup"]={"remove_keyboard":True}
   try:
    resp=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",json=payload,timeout=8)
    resp.raise_for_status()
@@ -1143,10 +1143,10 @@ def telegram_webhook(secret):
    "📱 До 3 устройств в одной подписке\n"
    "🌐 Удобное подключение к сайтам и приложениям\n\n"
    "Попробуй FlankVPN и выбери подходящий тариф.")
-  welcome_buttons=[[{"text":"👤 Регистрация / вход","callback_data":"account_auth"}],
+  welcome_buttons=[[{"text":"👤 Регистрация / вход","url":"https://flankvpn.ru/login"}],
    [{"text":"🎁 10 дней бесплатно","url":"https://flankvpn.ru/"}],
-   [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],[{"text":"О VPN","callback_data":"about_vpn"}],
-   [{"text":"💬 Поддержка","callback_data":"support_info"}]]
+   [{"text":"⚡ Подключить VPN","url":"https://flankvpn.ru/tariffs"}],[{"text":"О VPN","url":"https://flankvpn.ru/"}],
+   [{"text":"💬 Поддержка","url":"https://flankvpn.ru/support"}]]
   image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
   if image_url:
    try:
@@ -1159,7 +1159,7 @@ def telegram_webhook(secret):
     send(welcome,keyboard=False,inline=welcome_buttons)
   else:
    send(welcome,keyboard=False,inline=welcome_buttons)
-  send("Основное меню обновлено.",keyboard=True)
+  send("Выбери нужный раздел на сайте.",keyboard=True)
  elif text_in in ("🌐 Тарифы","/tariffs"):
   show_tariffs()
  elif text_in in ("📦 Мои заказы","/orders"):
