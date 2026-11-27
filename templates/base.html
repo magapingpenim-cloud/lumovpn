@@ -90,6 +90,14 @@
       html body .site-shell > header.site-nav.site-nav { gap:12px !important; padding:12px 16px !important; }
     }
   </style>
+  <style>
+    /* Shared homepage typography across all site pages and controls. */
+    html body, html body .site-shell, html body .site-shell :is(h1,h2,h3,h4,h5,h6,p,a,span,div,li,label,button,input,textarea,select,summary,small,strong,b,table,th,td) {
+      font-family: Inter,"Avenir Next",Avenir,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif !important;
+    }
+    html body .site-shell :is(h1,h2,h3,h4) { font-style:normal !important; }
+    html body .site-shell :is(button,input,textarea,select) { font-family:inherit !important; }
+  </style>
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else ('business-layout' if request.endpoint == 'business' else 'inner-layout') }}">
   <div class="site-shell">
