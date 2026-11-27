@@ -121,7 +121,7 @@ def send_subscription_email(order):
   app.logger.exception("Failed to email subscription for order %s to %s.",order.id,order.email)
   return False
 class User(UserMixin,db.Model):
- id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False); google_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); apple_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); h1_client_name=db.Column(db.String(100),unique=True,nullable=True,index=True); subscription_expires_at=db.Column(db.DateTime,nullable=True,index=True); reminder_email_sent_for=db.Column(db.String(32),nullable=True); reminder_telegram_sent_for=db.Column(db.String(32),nullable=True); expiry_notice_telegram_sent_for=db.Column(db.String(32),nullable=True); referral_code=db.Column(db.String(20),unique=True,nullable=True,index=True); referred_by_user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=True,index=True)
+ id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False); google_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); apple_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); h1_client_name=db.Column(db.String(100),unique=True,nullable=True,index=True); h1_subscription_url=db.Column(db.Text,nullable=True); subscription_expires_at=db.Column(db.DateTime,nullable=True,index=True); reminder_email_sent_for=db.Column(db.String(32),nullable=True); reminder_telegram_sent_for=db.Column(db.String(32),nullable=True); expiry_notice_telegram_sent_for=db.Column(db.String(32),nullable=True); referral_code=db.Column(db.String(20),unique=True,nullable=True,index=True); referred_by_user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=True,index=True)
  def set_password(self,p): self.password_hash=generate_password_hash(p)
  def check_password(self,p): return check_password_hash(self.password_hash,p)
 class Order(db.Model):
@@ -1861,17 +1861,25 @@ def provision(o):
  if not sub and c.get("uuid") and os.getenv("H1_SUBSCRIPTION_BASE"): sub=urllib.parse.urljoin(os.getenv("H1_SUBSCRIPTION_BASE").rstrip("/")+"/",c["uuid"])
  if not sub: raise RuntimeError("H1 не вернула sub_url для клиента.")
  user.h1_client_name=name
- # Track the subscription expiry for reminder delivery.
+ # Keep one canonical subscription URL per account, even if H1 returns a new URL after edit.
+ canonical=(user.h1_subscription_url or "").strip()
+ if not canonical:
+  previous=Order.query.filter_by(user_id=user.id,status="active").filter(
+   Order.subscription_url.isnot(None)
+  ).order_by(Order.created_at.desc()).first()
+  if previous and previous.subscription_url:
+   canonical=previous.subscription_url.strip().replace("&format=json","").replace("?format=json","")
+ if not canonical:
+  canonical=sub.strip()
+ user.h1_subscription_url=canonical
+ # H1's reported expiry is authoritative; otherwise extend the stored expiry by the paid days.
  now=datetime.utcnow()
  existing_expiry=user.subscription_expires_at
- if existing_expiry and existing_expiry>now:
-  user.subscription_expires_at=existing_expiry+timedelta(days=days)
- else:
-  user.subscription_expires_at=now+timedelta(days=days)
+ calculated_expiry=(existing_expiry+timedelta(days=days)) if existing_expiry and existing_expiry>now else now+timedelta(days=days)
  remote_expiry=extract_subscription_expiry(c)
- if remote_expiry:
-  user.subscription_expires_at=remote_expiry
- o.subscription_url=sub+("&" if "?" in sub else "?")+"format=json"; o.status="active"; o.error_message=None; db.session.commit()
+ user.subscription_expires_at=remote_expiry or calculated_expiry
+ o.subscription_url=canonical+("&" if "?" in canonical else "?")+"format=json"
+ o.status="active"; o.error_message=None; db.session.commit()
 @app.route("/admin/confirm/<int:oid>",methods=["POST"])
 def confirm(oid):
  if not is_admin(): abort(403)
@@ -1935,6 +1943,8 @@ with app.app_context():
     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN apple_sub VARCHAR(255)'))
    if "h1_client_name" not in user_columns:
     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN h1_client_name VARCHAR(100)'))
+   if "h1_subscription_url" not in user_columns:
+    conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN h1_subscription_url TEXT'))
    conn.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS ix_user_h1_client_name ON "'+user_table+'" (h1_client_name)'))
    if "subscription_expires_at" not in user_columns:
     conn.execute(text('ALTER TABLE "'+user_table+'" ADD COLUMN subscription_expires_at TIMESTAMP'))
