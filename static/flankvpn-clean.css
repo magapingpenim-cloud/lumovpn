@@ -989,3 +989,12 @@ html body.inner-layout .support-round-icon { background:#f1f2ef !important; colo
 html body.inner-layout .flash, html body.inner-layout .flash.success, html body.inner-layout .flash.error {
  background:#f7f8f6 !important; color:#171a18 !important; border:1px solid #dedfd9 !important;
 }
+
+
+/* Homepage headline: keep both lines in one consistent ink color. */
+html body.home-layout .home-desktop h1,
+html body.home-layout .home-desktop h1 span {
+  color: #202522 !important;
+  -webkit-text-fill-color: #202522 !important;
+  font-style: normal !important;
+}
