@@ -1723,27 +1723,60 @@ def send_subscription_notice_email(user, expiry, days_left):
  api_key=os.getenv("RESEND_API_KEY","").strip()
  sender=os.getenv("RESEND_FROM_EMAIL","").strip()
  if not api_key or not sender or not user.email or user.email.endswith("@telegram.flankvpn.local"):
+  app.logger.warning("Subscription notice email skipped: check Resend settings and customer email for user %s",user.id)
   return False
- if days_left>0:
-  subject=f"FlankVPN: до окончания подписки осталось {days_left} дн."
-  headline=f"Осталось {days_left} дн." 
-  detail=f"Твоя подписка FlankVPN заканчивается {expiry.strftime('%d.%m.%Y')}."
+ expired=days_left<=0
+ if expired:
+  subject="FlankVPN — подписка закончилась"
+  headline="Подписка истекла"
+  detail=f"Срок действия твоей подписки закончился {expiry.strftime('%d.%m.%Y')}."
+  status="Доступ приостановлен"
+  remaining="0 дней"
+  action_label="Продлить подписку"
  else:
-  subject="FlankVPN: срок подписки закончился"
-  headline="Подписка закончилась"
-  detail=f"Срок действия подписки истёк {expiry.strftime('%d.%m.%Y')}."
- body=f"""<div style="font-family:Arial,sans-serif;color:#10203a;max-width:560px;margin:auto;padding:24px">
- <h2 style="color:#159f98">FLANKVPN</h2><h1>{headline}</h1>
- <p>Привет, {escape(user.nickname or "")}!</p><p>{detail}</p>
- <p>Чтобы сохранить доступ или снова подключиться, продли подписку на сайте.</p>
- <p><a href="https://flankvpn.ru" style="display:inline-block;background:#19bcae;color:#062b2a;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:bold">Продлить подписку</a></p>
- </div>"""
- text_body=f"Привет, {user.nickname}! {headline}. {detail} Продлить: https://flankvpn.ru"
+  subject=f"FlankVPN — до окончания подписки осталось {days_left} дн."
+  headline=f"Осталось {days_left} дн."
+  detail=f"Твоя подписка FlankVPN заканчивается {expiry.strftime('%d.%m.%Y')}."
+  status="Подписка скоро закончится"
+  remaining=f"{days_left} дн."
+  action_label="Продлить заранее"
+ name=escape(user.nickname or "друг")
+ tariffs_url="https://flankvpn.ru/tariffs"
+ cabinet_url="https://flankvpn.ru/dashboard"
+ support_url="https://flankvpn.ru/support"
+ bot_url="https://t.me/flankvpn_bot"
+ html_body=f"""
+ <!doctype html><html lang="ru"><body style="margin:0;padding:0;background:#f4f5f3;color:#171a18;font-family:Arial,Helvetica,sans-serif">
+ <div style="max-width:600px;margin:0 auto;padding:30px 14px">
+  <div style="padding:0 4px 18px;font-size:17px;font-weight:800;letter-spacing:2px;color:#171a18">FLANKVPN</div>
+  <div style="background:#fff;border:1px solid #dedfd9;border-radius:22px;overflow:hidden">
+   <div style="padding:30px 28px 24px">
+    <div style="font-size:11px;letter-spacing:2.5px;font-weight:700;color:#707a73">ТВОЙ ДОСТУП</div>
+    <h1 style="margin:12px 0 10px;font-size:30px;line-height:1.15;color:#171a18">{headline}</h1>
+    <p style="margin:0;font-size:16px;line-height:1.6;color:#59635d">Привет, {name}! {detail}</p>
+   </div>
+   <div style="margin:0 28px;padding:18px 20px;background:#f7f8f6;border:1px solid #e2e4df;border-radius:16px">
+    <div style="font-size:12px;letter-spacing:1.5px;color:#737d76;font-weight:700">СТАТУС ПОДПИСКИ</div>
+    <div style="margin-top:8px;font-size:20px;font-weight:700;color:#171a18">{status}</div>
+    <div style="margin-top:12px;font-size:14px;color:#59635d">Осталось: <strong style="color:#171a18">{remaining}</strong></div>
+    <div style="margin-top:5px;font-size:14px;color:#59635d">Дата окончания: <strong style="color:#171a18">{expiry.strftime('%d.%m.%Y')}</strong></div>
+   </div>
+   <div style="padding:24px 28px 30px">
+    <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#59635d">Продление добавляется к твоей текущей подписке. Используй тот же аккаунт FlankVPN — повторно устанавливать приложение и добавлять новую ссылку не нужно.</p>
+    <a href="{tariffs_url}" style="display:block;text-align:center;padding:16px 18px;border-radius:999px;background:#171a18;color:#fff;text-decoration:none;font-weight:700;font-size:15px">{action_label}</a>
+    <p style="margin:22px 0 8px;font-size:14px;font-weight:700;color:#171a18">Нужна помощь?</p>
+    <p style="margin:0;font-size:14px;line-height:1.7;color:#59635d">Telegram: <a href="{bot_url}" style="color:#171a18">@flankvpn_bot</a><br>Поддержка: <a href="{support_url}" style="color:#171a18">написать нам на сайте</a><br>Личный кабинет: <a href="{cabinet_url}" style="color:#171a18">flankvpn.ru/dashboard</a></p>
+   </div>
+  </div>
+  <p style="margin:18px 4px 0;font-size:12px;line-height:1.6;color:#858d87">Это автоматическое письмо FlankVPN о состоянии подписки. Если ты уже продлил доступ, просто дождись обновления статуса.</p>
+ </div></body></html>
+ """
+ text_body=(f"FlankVPN: {headline}. Привет, {user.nickname}! {detail} Осталось: {remaining}. Продлить: {tariffs_url}. Telegram: {bot_url}. Поддержка: {support_url}")
  try:
   response=requests.post("https://api.resend.com/emails",
    headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json",
     "Idempotency-Key":f"flankvpn-subscription-notice-{user.id}-{expiry.date().isoformat()}-{days_left}"},
-   json={"from":sender,"to":[user.email],"subject":subject,"html":body,"text":text_body},timeout=15)
+   json={"from":sender,"to":[user.email],"subject":subject,"html":html_body,"text":text_body},timeout=15)
   response.raise_for_status()
   return True
  except Exception:
