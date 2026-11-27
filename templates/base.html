@@ -6,7 +6,6 @@
   <meta name="theme-color" content="#070909">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="description" content="FlankVPN — быстрый и безопасный VPN. Свобода в интернете, удобная подписка и подключение за пару минут.">
-  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='flankvpn-logo.svg') }}">
   <title>{% block title %}FlankVPN — интернет без ограничений{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='20261123-olympus') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-rebrand.css', v='20261123-olympus') }}">
@@ -38,7 +37,6 @@
         </div>
       </details>
       <a class="brand" href="{{ url_for('index') }}" aria-label="FlankVPN — главная">
-        <img src="{{ url_for('static', filename='flankvpn-logo.svg') }}" alt="">
         <span class="brand-wordmark">FlankVPN</span>
       </a>
       <nav class="desktop-nav" aria-label="Основная навигация">
