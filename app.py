@@ -773,10 +773,12 @@ def dashboard():
  orders=Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all()
  trial_activated=any(o.tariff_key=="trial" and o.status=="active" for o in orders)
  expiry=current_user.subscription_expires_at
- subscription_active=bool(expiry and expiry>datetime.utcnow())
+ now=datetime.utcnow()
+ subscription_active=bool(expiry and expiry>now)
+ subscription_days_left=max(0,int((expiry-now).total_seconds()/86400+0.999999)) if expiry else 0
  latest_subscription=next((o for o in orders if o.status=="active" and o.subscription_url),None)
  show_connect_guide=bool(session.pop("show_connect_guide",False)) and subscription_active
- return render_template("dashboard.html",orders=orders,trial_activated=trial_activated,show_connect_guide=show_connect_guide,subscription_active=subscription_active,subscription_expiry=expiry,latest_subscription=latest_subscription)
+ return render_template("dashboard.html",orders=orders,trial_activated=trial_activated,show_connect_guide=show_connect_guide,subscription_active=subscription_active,subscription_expiry=expiry,subscription_days_left=subscription_days_left,latest_subscription=latest_subscription)
 
 @app.route("/telegram/link-code")
 @login_required
@@ -1858,7 +1860,7 @@ def provision(o):
   if d.get("ok") is False: raise RuntimeError(str(d))
  else:
   name="user_"+str(user.id)
-  r=requests.post(base+"/create",headers=h,json={"name":name,"days":days,"traffic_limit_gb":traffic_limit_gb,"device_limit":device_limit},timeout=25)
+  r=requests.post(base+"/create",headers=h,json={"name":name,"days":total_days,"traffic_limit_gb":traffic_limit_gb,"device_limit":device_limit},timeout=25)
   r.raise_for_status(); d=r.json()
   if d.get("ok") is False: raise RuntimeError(str(d))
  r=requests.get(base+"/info",headers=h,params={"name":name},timeout=25); r.raise_for_status(); c=r.json().get("client",r.json()); sub=c.get("sub_url") or c.get("subscription_url")
