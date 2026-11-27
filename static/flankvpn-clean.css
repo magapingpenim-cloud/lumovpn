@@ -872,35 +872,6 @@ html body .download-platforms .download-cta span { content:none !important;displ
   html body .download-card { min-width:0 !important;width:100% !important; }
 }
 
-/* Homepage hero with the branded illustration. */
-html body.home-layout .home-desktop { background:#fff !important; }
-html body.home-layout .home-hero-layout {
- display:grid !important; grid-template-columns:minmax(0,1fr) minmax(280px,.9fr) !important;
- align-items:center !important; gap:clamp(28px,5vw,76px) !important;
- width:100% !important; max-width:1240px !important; margin:0 auto !important;
-}
-html body.home-layout .home-desktop-inner { min-width:0 !important; }
-html body.home-layout .home-visual {
- display:flex !important; align-items:center !important; justify-content:center !important;
- min-width:0 !important; overflow:hidden !important; border-radius:28px !important; background:#020909 !important;
-}
-html body.home-layout .home-visual img {
- display:block !important; width:100% !important; height:auto !important; max-height:650px !important; object-fit:contain !important;
-}
-html body.home-layout .home-desktop .home-actions { display:flex !important; flex-wrap:wrap !important; gap:14px !important; }
-html body.home-layout .home-desktop .home-primary, html body.home-layout .home-desktop .home-secondary {
- display:inline-flex !important; align-items:center !important; justify-content:center !important;
- min-height:58px !important; padding:15px 25px !important; border-radius:999px !important; text-decoration:none !important; font-weight:750 !important;
-}
-html body.home-layout .home-desktop .home-primary { background:#171a18 !important; color:#fff !important; }
-html body.home-layout .home-desktop .home-secondary { background:#fff !important; color:#171a18 !important; border:1px solid #d9dedb !important; }
-html body.home-layout .home-desktop .home-primary::after, html body.home-layout .home-desktop .home-secondary::after { content:none !important; display:none !important; }
-@media(max-width:760px) {
- html body.home-layout .home-hero-layout { grid-template-columns:minmax(0,1fr) !important; gap:26px !important; }
- html body.home-layout .home-visual, html body.home-layout .home-visual img { max-height:440px !important; }
- html body.home-layout .home-desktop .home-actions { display:grid !important; grid-template-columns:1fr !important; }
- html body.home-layout .home-desktop .home-primary, html body.home-layout .home-desktop .home-secondary { width:100% !important; }
-}
 /* The backend issues 10 trial days after email verification. */
 html body .trial-banner strong { color:#171a18 !important; }
 html body .trial-banner small { color:#59635d !important; }
@@ -925,3 +896,43 @@ html body .pricing-grid > .pricing-card { order:0 !important; width:100% !import
 html body .pricing-grid > .pricing-card:nth-child(1) { order:1 !important; }
 html body .pricing-grid > .pricing-card:nth-child(2) { order:2 !important; }
 html body .pricing-grid > .pricing-card:nth-child(3) { order:3 !important; }
+
+/* Restore the original text-first homepage concept; no added phone illustration. */
+html body.home-layout .home-desktop-inner { width:min(100%,1080px) !important; max-width:1080px !important; margin:0 auto !important; }
+html body.home-layout .home-proof { display:grid !important; grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:20px !important; }
+html body.home-layout .home-desktop { background:#fff !important; }
+html body.home-layout .home-desktop h1 { max-width:1000px !important; }
+html body.home-layout .home-actions { display:flex !important; flex-wrap:wrap !important; gap:14px !important; }
+
+/* App cards: actual app marks, readable labels and two full-width platform buttons. */
+html body .download-card {
+ display:grid !important; grid-template-columns:112px minmax(0,1fr) !important;
+ grid-template-areas:"icon copy" "platforms platforms" !important;
+ align-items:center !important; column-gap:24px !important; row-gap:18px !important;
+ min-width:0 !important; overflow:hidden !important; padding:24px !important;
+}
+html body .download-card-icon { grid-area:icon !important; width:112px !important; height:112px !important; margin:0 !important; }
+html body .download-card-icon img { display:block !important; width:100% !important; height:100% !important; object-fit:cover !important; border-radius:24px !important; }
+html body .download-card-copy { grid-area:copy !important; min-width:0 !important; }
+html body .download-card-copy h3 { margin:0 0 8px !important; font-size:26px !important; }
+html body .download-card-copy p { margin:0 !important; line-height:1.45 !important; overflow-wrap:anywhere !important; }
+html body .download-platforms {
+ grid-area:platforms !important; display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+ gap:12px !important; width:100% !important; min-width:0 !important; margin:0 !important;
+}
+html body .download-platforms .download-cta {
+ box-sizing:border-box !important; width:100% !important; min-width:0 !important; min-height:54px !important;
+ padding:12px 10px !important; margin:0 !important; white-space:normal !important; overflow:visible !important;
+ border-radius:999px !important; font-size:15px !important; line-height:1.2 !important;
+ letter-spacing:0 !important; text-transform:none !important; text-align:center !important;
+}
+html body .download-platforms .download-cta::before,
+html body .download-platforms .download-cta::after { display:none !important; content:none !important; }
+@media(max-width:560px) {
+ html body .download-card { grid-template-columns:76px minmax(0,1fr) !important; column-gap:16px !important; padding:20px !important; }
+ html body .download-card-icon { width:76px !important; height:76px !important; }
+ html body .download-card-icon img { border-radius:18px !important; }
+ html body .download-card-copy h3 { font-size:23px !important; }
+ html body .download-platforms { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+ html body .download-platforms .download-cta { min-height:50px !important; padding:10px 6px !important; font-size:14px !important; }
+}
