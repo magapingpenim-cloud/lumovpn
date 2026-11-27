@@ -1846,10 +1846,14 @@ def provision(o):
  traffic_limit_gb=max(0,min(1000,int(getattr(o,"traffic_limit_gb",0) or 0)))
  user=db.session.get(User,o.user_id)
  if not user: raise RuntimeError("Не найден аккаунт клиента для заказа.")
- # Один постоянный H1-клиент на аккаунт: повторная покупка добавляет дни к нему.
+ # One H1 client per account. Include all remaining days when extending its term.
+ now=datetime.utcnow()
+ existing_expiry=user.subscription_expires_at
+ remaining_days=max(0,int((existing_expiry-now).total_seconds()/86400+0.999999)) if existing_expiry and existing_expiry>now else 0
+ total_days=days+remaining_days
  name=(user.h1_client_name or "").strip()
  if name:
-  r=requests.patch(base+"/edit",headers=h,json={"name":name,"days":days,"traffic_limit_gb":traffic_limit_gb,"device_limit":device_limit},timeout=25)
+  r=requests.patch(base+"/edit",headers=h,json={"name":name,"days":total_days,"traffic_limit_gb":traffic_limit_gb,"device_limit":device_limit},timeout=25)
   r.raise_for_status(); d=r.json()
   if d.get("ok") is False: raise RuntimeError(str(d))
  else:
@@ -1873,9 +1877,7 @@ def provision(o):
   canonical=sub.strip()
  user.h1_subscription_url=canonical
  # H1's reported expiry is authoritative; otherwise extend the stored expiry by the paid days.
- now=datetime.utcnow()
- existing_expiry=user.subscription_expires_at
- calculated_expiry=(existing_expiry+timedelta(days=days)) if existing_expiry and existing_expiry>now else now+timedelta(days=days)
+ calculated_expiry=now+timedelta(days=total_days)
  remote_expiry=extract_subscription_expiry(c)
  user.subscription_expires_at=remote_expiry or calculated_expiry
  o.subscription_url=canonical+("&" if "?" in canonical else "?")+"format=json"
