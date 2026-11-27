@@ -13,6 +13,32 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-olympus.css', v='20261125-menu-polish-1') }}">  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-v2.css', v='20261126-poster-2') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-fixes.css', v='20261127-editorial-2') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-clean.css', v='20261127-h1-light-1') }}">
+  <style>
+    /* Purple accents — preserve existing layout and responsive rules. */
+    html body .site-shell > header.site-nav .nav-actions > a.nav-login {
+      background: #6941e8 !important;
+      background-image: none !important;
+      border-color: #6941e8 !important;
+      color: #fff !important;
+      -webkit-text-fill-color: #fff !important;
+    }
+    html body .site-shell > header.site-nav .nav-actions > a.nav-login:hover {
+      background: #5630ce !important;
+      border-color: #5630ce !important;
+    }
+    html body.home-layout .site-shell .home-desktop .home-desktop-inner h1 > span {
+      color: #6941e8 !important;
+      -webkit-text-fill-color: #6941e8 !important;
+    }
+    @supports ((background-clip: text) or (-webkit-background-clip: text)) {
+      html body.home-layout .site-shell .home-desktop .home-desktop-inner h1 > span {
+        background: linear-gradient(105deg, #5930d5, #8650e9) !important;
+        background-clip: text !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+      }
+    }
+  </style>
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else ('business-layout' if request.endpoint == 'business' else 'inner-layout') }}">
   <div class="site-shell">
