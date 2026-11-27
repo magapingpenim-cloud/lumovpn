@@ -98,6 +98,17 @@
     html body .site-shell :is(h1,h2,h3,h4) { font-style:normal !important; }
     html body .site-shell :is(button,input,textarea,select) { font-family:inherit !important; }
   </style>
+  <style>
+    /* Compact login and platform download buttons. */
+    html body .site-shell > header.site-nav.site-nav .nav-actions > a.nav-login:not(.nav-account) {
+      min-height:42px !important; height:42px !important; padding:0 15px !important;
+      font-size:14px !important; font-weight:550 !important; border-radius:12px !important;
+    }
+    html body .site-shell > main .download-platforms a.download-cta {
+      min-height:44px !important; height:auto !important; padding:9px 10px !important;
+      font-size:14px !important; font-weight:550 !important; border-radius:12px !important;
+    }
+  </style>
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else ('business-layout' if request.endpoint == 'business' else 'inner-layout') }}">
   <div class="site-shell">
