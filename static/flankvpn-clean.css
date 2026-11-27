@@ -979,3 +979,13 @@ html body.inner-layout .btn.primary, html body.inner-layout .btn-main, html body
 html body.inner-layout .btn.secondary { background:#fff !important; color:#171a18 !important; -webkit-text-fill-color:#171a18 !important; border-color:#dedfd9 !important; }
 html body.inner-layout .dashboard-help { padding:26px !important; border-radius:20px !important; }
 html body.inner-layout .dashboard-help .eyebrow { color:#737d76 !important; }
+
+html body.inner-layout .text-link, html body.inner-layout .text-link:hover,
+html body.inner-layout .support-intro a, html body.inner-layout .support-form a,
+html body.inner-layout .order a, html body.inner-layout .admin-help a {
+ color:#171a18 !important; -webkit-text-fill-color:#171a18 !important;
+}
+html body.inner-layout .support-round-icon { background:#f1f2ef !important; color:#171a18 !important; }
+html body.inner-layout .flash, html body.inner-layout .flash.success, html body.inner-layout .flash.error {
+ background:#f7f8f6 !important; color:#171a18 !important; border:1px solid #dedfd9 !important;
+}
