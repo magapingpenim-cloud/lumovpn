@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#070909">
+  <meta name="theme-color" content="#f0f0f3">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="description" content="FlankVPN — быстрый и безопасный VPN. Свобода в интернете, удобная подписка и подключение за пару минут.">
   <title>{% block title %}FlankVPN — интернет без ограничений{% endblock %}</title>
@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-approved.css', v='20261123-olympus') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-olympus.css', v='20261125-menu-polish-1') }}">  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-v2.css', v='20261126-poster-2') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-fixes.css', v='20261127-editorial-2') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-clean.css', v='20261127-account-renewal-light-11') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='flankvpn-clean.css', v='20261127-h1-light-1') }}">
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else ('business-layout' if request.endpoint == 'business' else 'inner-layout') }}">
   <div class="site-shell">
