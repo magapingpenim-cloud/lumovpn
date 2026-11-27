@@ -861,6 +861,8 @@ def telegram_webhook(secret):
   if auth: db.session.delete(auth); db.session.commit()
   send("Действие отменено. Используй /register или /login для входа.",keyboard=True)
   return {"ok":True}
+ if auth and cmd=="/start":
+  db.session.delete(auth); db.session.commit(); auth=None
  if auth and not callback_data:
   value=text_in.strip()
   if auth.stage in ("register_email","login_email"):
@@ -1023,6 +1025,8 @@ def telegram_webhook(secret):
      if failed:
       failed.status="error"; failed.error_message=str(e)[:400]; db.session.commit()
      send("Не удалось автоматически выдать пробные 10 дней. Попробуй позже или напиши в поддержку FlankVPN.")
+  elif callback_data=="about_vpn":
+   send("FlankVPN — VPN для повседневного использования. Подключение через Happ или INCY, до 3 устройств в одной подписке.",keyboard=False,inline=[[{"text":"10 дней бесплатно","url":"https://flankvpn.ru/"}],[{"text":"Тарифы","callback_data":"show_tariffs"}]])
   elif callback_data=="show_tariffs":
    show_tariffs()
   elif callback_data=="support_info":
@@ -1140,8 +1144,8 @@ def telegram_webhook(secret):
    "🌐 Удобное подключение к сайтам и приложениям\n\n"
    "Попробуй FlankVPN и выбери подходящий тариф.")
   welcome_buttons=[[{"text":"👤 Регистрация / вход","callback_data":"account_auth"}],
-   [{"text":"🎁 Бесплатные 10 дней","callback_data":"claim_trial"}],
-   [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],
+   [{"text":"🎁 10 дней бесплатно","url":"https://flankvpn.ru/"}],
+   [{"text":"⚡ Подключить VPN","callback_data":"show_tariffs"}],[{"text":"О VPN","callback_data":"about_vpn"}],
    [{"text":"💬 Поддержка","callback_data":"support_info"}]]
   image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
   if image_url:
