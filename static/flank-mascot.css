@@ -1,0 +1,14 @@
+/* Flik mascot — homepage integration */
+html body.home-layout .home-desktop-inner { position:relative !important; }
+html body.home-layout .home-mascot {
+  position:absolute; right:clamp(0px,2vw,28px); top:50%; transform:translateY(-48%);
+  width:clamp(210px,28vw,360px); aspect-ratio:8/9; object-fit:contain;
+  pointer-events:none; filter:drop-shadow(0 18px 36px rgba(0,190,175,.16));
+}
+html body.home-layout .home-desktop-inner { padding-right:clamp(220px,31vw,390px) !important; }
+html body.home-layout .home-desktop h1 { max-width:780px !important; }
+@media(max-width:760px) {
+ html body.home-layout .home-desktop-inner { padding-right:0 !important; }
+ html body.home-layout .home-mascot { position:relative; display:block; top:auto; right:auto; transform:none; width:min(68vw,270px); margin:28px auto 0; }
+ html body.home-layout .home-desktop { padding-top:42px !important; }
+}
