@@ -843,8 +843,8 @@ def telegram_webhook(secret):
   if not tariff or key not in ("1","3","12"):
    send("Неизвестный тариф. Открой раздел «Тарифы» ещё раз.")
    return
-  send(f"Тариф: {tariff['title']}\nСтоимость: {tariff['price']} ₽\n\nОплата проходит через ЮKassa. Нажми кнопку, чтобы перейти на защищённую страницу оплаты:",keyboard=False,
-   inline=[[{"text":"💳 Оплатить через ЮKassa","callback_data":f"buy:{key}:yookassa"}],
+  send(f"Тариф: {tariff['title']}\nСтоимость: {tariff['price']} ₽\n\nОплата проходит через СБП. Нажми кнопку, чтобы перейти к оплате:",keyboard=False,
+   inline=[[{"text":"Оплатить через СБП","callback_data":f"buy:{key}:sbp"}],
            [{"text":"⬅️ К тарифам","callback_data":"show_tariffs"}]])
  cmd=text_in.split(maxsplit=1)[0].lower() if text_in else ""
  arg=text_in.split(maxsplit=1)[1].strip() if len(text_in.split(maxsplit=1))>1 else ""
@@ -1044,7 +1044,7 @@ def telegram_webhook(secret):
 
   elif callback_data.startswith("buy:"):
    parts=callback_data.split(":")
-   if len(parts)!=3 or parts[1] not in ("1","3","12") or parts[2]!="yookassa":
+   if len(parts)!=3 or parts[1] not in ("1","3","12") or parts[2]!="sbp":
     send("Не удалось определить тариф или способ оплаты. Выбери тариф ещё раз.")
    else:
     key=parts[1]; tariff=TARIFFS[key]
@@ -1071,13 +1071,13 @@ def telegram_webhook(secret):
          shadow=User(nickname=internal_nick,email=shadow_email,password_hash=generate_password_hash(secrets.token_urlsafe(32)))
          db.session.add(shadow); db.session.flush()
        amount=int(tariff["price"])
-       order=Order(user_id=shadow.id,nickname=shadow.nickname,email=(shadow.email if linked else ""),telegram_id=telegram_id,tariff_key=key,amount=amount,payment_method="yookassa",status="awaiting_payment")
+       order=Order(user_id=shadow.id,nickname=shadow.nickname,email=(shadow.email if linked else ""),telegram_id=telegram_id,tariff_key=key,amount=amount,payment_method="sbp",status="awaiting_payment")
        db.session.add(order)
        db.session.flush()
        response=requests.post("https://api.yookassa.ru/v3/payments",
         auth=(shop_id,secret_key),
         headers={"Idempotence-Key":f"flankvpn-telegram-order-{order.id}","Content-Type":"application/json"},
-        json={"amount":{"value":f"{order.amount}.00","currency":"RUB"},"capture":True,
+        json={"amount":{"value":f"{order.amount}.00","currency":"RUB"},"payment_method_data":{"type":"sbp"},"capture":True,
          "confirmation":{"type":"redirect","return_url":"https://flankvpn.ru/"},
          "description":f"FlankVPN Telegram order #{order.id}",
          "metadata":{"order_id":str(order.id),"user_id":str(order.user_id),"tariff_key":order.tariff_key,"telegram_id":telegram_id}},
@@ -1089,7 +1089,7 @@ def telegram_webhook(secret):
        if not payment_id or not confirmation_url: raise RuntimeError("ЮKassa не вернула ID платежа или ссылку оплаты.")
        order.yookassa_payment_id=payment_id
        db.session.commit()
-       send(f"🧾 Заказ FlankVPN #{order.id}\n\nТариф: {tariff['title']}\n"+f"К оплате: {order.amount} ₽\nСпособ оплаты: ЮKassa\n\nЗаверши оплату на защищённой странице ЮKassa. Не отправляй данные карты в чат. После подтверждения платежа подписка автоматически придёт сюда отдельным сообщением.",
+       send(f"🧾 Заказ FlankVPN #{order.id}\n\nТариф: {tariff['title']}\n"+f"К оплате: {order.amount} ₽\nСпособ оплаты: СБП\n\nЗаверши оплату на защищённой странице ЮKassa. Не отправляй данные карты в чат. После подтверждения платежа подписка автоматически придёт сюда отдельным сообщением.",
         keyboard=False,inline=[[{"text":"💳 Перейти к оплате","url":confirmation_url}]])
       except Exception as exc:
        db.session.rollback()
@@ -1218,7 +1218,7 @@ def checkout():
  shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip()
  secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
  if not shop_id or not secret_key:
-  flash("Онлайн-оплата ЮKassa временно не настроена. Попробуй позже.","error")
+  flash("Оплата через СБП временно не настроена. Попробуй позже.","error")
   return redirect(url_for("dashboard"))
  t=TARIFFS[k]
  entered_code=(request.form.get("promo_code") or "").strip().upper()
@@ -1239,7 +1239,7 @@ def checkout():
   flash("Проверь выбранные устройства и лимит трафика.","error"); return redirect(url_for("tariffs"))
  if requested_devices not in (1,2,3) or traffic_limit_gb<0 or traffic_limit_gb>1000 or (traffic_limit_gb and traffic_limit_gb%50):
   flash("Допустимо от 1 до 3 устройств и трафик от 0 до 1000 ГБ с шагом 50 ГБ.","error"); return redirect(url_for("tariffs"))
- o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=amount,payment_method="yookassa",status="awaiting_payment",promo_code=promo.code if promo else None,discount_percent=discount,requested_devices=requested_devices,traffic_limit_gb=traffic_limit_gb)
+ o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=amount,payment_method="sbp",status="awaiting_payment",promo_code=promo.code if promo else None,discount_percent=discount,requested_devices=requested_devices,traffic_limit_gb=traffic_limit_gb)
  db.session.add(o)
  db.session.commit()
  return redirect(url_for("payment",oid=o.id))
@@ -1278,7 +1278,7 @@ def payment(oid):
   flash("Платёж требует проверки. Если деньги уже списались, не создавай новый заказ.","error" if o.status=="error" else "info")
   return redirect(url_for("dashboard"))
  shop_id=os.getenv("YOOKASSA_SHOP_ID","").strip(); secret_key=os.getenv("YOOKASSA_SECRET_KEY","").strip()
- if not shop_id or not secret_key: flash("Онлайн-оплата ЮKassa временно не настроена.","error"); return redirect(url_for("dashboard"))
+ if not shop_id or not secret_key: flash("Оплата через СБП временно не настроена.","error"); return redirect(url_for("dashboard"))
  try:
   if o.yookassa_payment_id:
    response=requests.get("https://api.yookassa.ru/v3/payments/"+urllib.parse.quote(o.yookassa_payment_id,safe=""),auth=(shop_id,secret_key),timeout=15); response.raise_for_status(); data=response.json()
@@ -1286,11 +1286,11 @@ def payment(oid):
    confirmation_url=(data.get("confirmation") or {}).get("confirmation_url")
    if not confirmation_url: raise RuntimeError("ЮKassa не вернула ссылку оплаты.")
   else:
-   response=requests.post("https://api.yookassa.ru/v3/payments",auth=(shop_id,secret_key),headers={"Idempotence-Key":f"flankvpn-order-{o.id}","Content-Type":"application/json"},json={"amount":{"value":f"{o.amount}.00","currency":"RUB"},"capture":True,"confirmation":{"type":"redirect","return_url":url_for("payment_return",oid=oid,_external=True)},"description":f"FlankVPN order #{o.id}","metadata":{"order_id":str(o.id),"user_id":str(o.user_id),"tariff_key":o.tariff_key}},timeout=20); response.raise_for_status(); data=response.json()
+   response=requests.post("https://api.yookassa.ru/v3/payments",auth=(shop_id,secret_key),headers={"Idempotence-Key":f"flankvpn-order-{o.id}","Content-Type":"application/json"},json={"amount":{"value":f"{o.amount}.00","currency":"RUB"},"payment_method_data":{"type":"sbp"},"capture":True,"confirmation":{"type":"redirect","return_url":url_for("payment_return",oid=oid,_external=True)},"description":f"FlankVPN order #{o.id}","metadata":{"order_id":str(o.id),"user_id":str(o.user_id),"tariff_key":o.tariff_key}},timeout=20); response.raise_for_status(); data=response.json()
    payment_id=data.get("id"); confirmation_url=(data.get("confirmation") or {}).get("confirmation_url")
    if not payment_id or not confirmation_url: raise RuntimeError("ЮKassa не вернула ID платежа или ссылку оплаты.")
    o.yookassa_payment_id=payment_id; db.session.commit()
-  return render_template("payment.html",order=o,tariff=TARIFFS[o.tariff_key],payment={"title":"ЮKassa"},confirmation_url=confirmation_url)
+  return render_template("payment.html",order=o,tariff=TARIFFS[o.tariff_key],payment={"title":"СБП"},confirmation_url=confirmation_url)
  except Exception:
   db.session.rollback(); app.logger.exception("Could not create or resume YooKassa payment for order %s",o.id)
   flash("Не удалось подготовить оплату. Если деньги уже списались, не создавай новый заказ.","error"); return redirect(url_for("dashboard"))
