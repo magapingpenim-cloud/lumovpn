@@ -11,5 +11,21 @@
 {% endfor %}
 </div>
 <p class="muted">Покупки и сумма рассчитаны по успешно активированным платным заказам. Повторные покупки — заказы сверх первой покупки каждого клиента. Отношение покупателей к посещениям приблизительное: не связывает покупателя с конкретным визитом и включает заказы из бота. Исторические посещения недоступны. Пользователи бота считаются по уникальным Telegram ID при взаимодействии с ботом. Переходы из бота учитываются по помеченным ссылкам и могут пересекаться с общим числом посещений сайта.</p>
-</section>
+<section style="background:#fff;color:#171723;border:1px solid #dedee8;border-radius:18px;padding:20px;margin:24px 0">
+<h2>Воронка и точки ухода</h2>
+<form method="get" action="{{ url_for('admin_statistics') }}" style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0">
+<select name="period" aria-label="Период">{% for v,t in [('1','24 часа'),('7','7 дней'),('30','30 дней'),('all','Всё время')] %}<option value="{{ v }}" {% if period==v %}selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+<select name="source" aria-label="Источник">{% for v,t in [('all','Все источники'),('website','Сайт'),('telegram','Telegram Mini App')] %}<option value="{{ v }}" {% if source==v %}selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+<button class="btn primary">Применить</button></form>
+<p>Сессий за выбранный период: <strong>{{ total }}</strong></p>
+{% for key,label in [('home','Главная'),('register','Регистрация'),('verify','Подтверждение email'),('registered','Аккаунт создан'),('trial_active','Пробный доступ выдан'),('tariffs','Тарифы'),('checkout','Заказ создан'),('payment','Страница оплаты'),('purchase','Подписка оплачена и выдана')] %}
+{% set n=counts.get(key,0) %}
+<div style="margin:14px 0"><div style="display:flex;justify-content:space-between;gap:8px"><span>{{ label }}</span><strong>{{ n }} / {{ total }}</strong></div><div style="height:8px;background:#efedf8;border-radius:8px;margin-top:7px;overflow:hidden"><div style="height:100%;background:#5950e5;width:{{ (100*n/total)|round(1) if total else 0 }}%"></div></div></div>
+{% endfor %}
+<h3 style="margin-top:24px">Где остановились</h3>
+{% for item in losses %}
+<div style="border-top:1px solid #e5e5ed;padding:14px 0"><strong>{{ item.label }}</strong><p style="margin:6px 0;color:#555563">Начали: {{ item.base }} · Завершили: {{ item.done }} · Не завершили: {{ item.lost }}{% if item.rate is not none %} ({{ item.rate }}%){% endif %}</p></div>
+{% endfor %}
+<p style="font-size:13px;color:#555563">Этапы могут идти в разном порядке; Google и Apple могут пропускать подтверждение email. «Не завершили» включает пользователей, которые ещё продолжают действие или вернулись в другой сессии. Сессия завершается после 30 минут бездействия. Оплата связывается с сессией создания заказа даже при позднем подтверждении. Данные собираются только после обновления.</p>
+</section></section>
 {% endblock %}
