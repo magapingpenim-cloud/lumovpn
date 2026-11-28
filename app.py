@@ -104,6 +104,13 @@ def notify_admin_email(event, detail, key):
 def notify_site_visit(response):
  if request.method=="GET" and request.endpoint in ("index","tariffs","connection","support","business","login","register","dashboard") and response.status_code==200:
   if not session.get("admin_visit_notified") and not request.headers.get("Purpose","").lower()=="prefetch":
+   if not session.get("flankadmin"):
+    try:
+     db.session.add(SiteVisit())
+     db.session.commit()
+    except Exception:
+     db.session.rollback()
+     app.logger.exception("Could not record site visit")
    session["admin_visit_notified"]=True
    notify_admin_email("Новое посещение сайта","Посещение FlankVPN. Время UTC: "+datetime.utcnow().isoformat(timespec="seconds"),"visit-"+secrets.token_hex(16))
  return response
@@ -156,6 +163,10 @@ def send_subscription_email(order):
  except Exception:
   app.logger.exception("Failed to email subscription for order %s to %s.",order.id,order.email)
   return False
+class SiteVisit(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False,index=True)
+
 class User(UserMixin,db.Model):
  id=db.Column(db.Integer,primary_key=True); nickname=db.Column(db.String(40),unique=True,nullable=False); email=db.Column(db.String(160),unique=True,nullable=False); password_hash=db.Column(db.String(255),nullable=False); google_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); apple_sub=db.Column(db.String(255),unique=True,nullable=True,index=True); h1_client_name=db.Column(db.String(100),unique=True,nullable=True,index=True); h1_subscription_url=db.Column(db.Text,nullable=True); subscription_expires_at=db.Column(db.DateTime,nullable=True,index=True); reminder_email_sent_for=db.Column(db.String(32),nullable=True); reminder_telegram_sent_for=db.Column(db.String(32),nullable=True); expiry_notice_telegram_sent_for=db.Column(db.String(32),nullable=True); referral_code=db.Column(db.String(20),unique=True,nullable=True,index=True); referred_by_user_id=db.Column(db.Integer,db.ForeignKey("user.id"),nullable=True,index=True)
  def set_password(self,p): self.password_hash=generate_password_hash(p)
@@ -1727,6 +1738,29 @@ def admin_business():
  if not is_admin(): return redirect(url_for("admin_login"))
  business_requests=BusinessRequest.query.order_by(BusinessRequest.created_at.desc()).all()
  return render_template("admin_business.html",business_requests=business_requests)
+
+@app.route("/admin/statistics")
+def admin_statistics():
+ if not is_admin(): return redirect(url_for("admin_login"))
+ now=datetime.utcnow()
+ today=now.replace(hour=0,minute=0,second=0,microsecond=0)
+ visits=SiteVisit.query.count()
+ paid=Order.query.filter(Order.status=="active",Order.amount>0,Order.tariff_key!="trial")
+ trials=Order.query.filter_by(status="active",tariff_key="trial")
+ buyers=paid.with_entities(func.count(func.distinct(Order.user_id))).scalar() or 0
+ purchases=paid.count()
+ first_visit=db.session.query(func.min(SiteVisit.created_at)).scalar()
+ stats={"visits":visits,"today":SiteVisit.query.filter(SiteVisit.created_at>=today).count(),
+ "week":SiteVisit.query.filter(SiteVisit.created_at>=today-timedelta(days=6)).count(),
+ "users":User.query.count(),"trials":trials.count(),"purchases":purchases,"buyers":buyers,
+ "renewals":max(0,purchases-buyers),"revenue":paid.with_entities(func.sum(Order.amount)).scalar() or 0,
+ "active":User.query.filter(User.subscription_expires_at>now).count(),
+ "expired":User.query.filter(User.subscription_expires_at<=now).count()}
+ # Historical orders and new session counts are not a comparable cohort.
+ # Show only orders created since tracking began as a rough ratio, not attribution.
+ recent_buyers=paid.filter(Order.created_at>=first_visit).with_entities(func.count(func.distinct(Order.user_id))).scalar() if first_visit else 0
+ stats["ratio"]=round(100*(recent_buyers or 0)/visits,1) if visits else None
+ return render_template("admin_statistics.html",stats=stats,first_visit=first_visit)
 
 @app.route("/admin/support")
 def admin_support():
