@@ -109,6 +109,11 @@
       font-size:14px !important; font-weight:550 !important; border-radius:12px !important;
     }
   </style>
+<style>
+html body .site-shell > header.site-nav.site-nav > .mobile-menu > summary { position:relative !important; }
+html body .site-shell > header.site-nav.site-nav > .mobile-menu > summary > span { display:block !important; visibility:visible !important; opacity:1 !important; background:#171723 !important; width:20px !important; height:2px !important; border-radius:2px !important; position:static !important; transform:none !important; margin:0 !important; }
+html body .site-shell > header.site-nav.site-nav > .mobile-menu > summary { display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; gap:5px !important; }
+</style>
 </head>
 <body class="{{ 'home-layout' if request.endpoint == 'index' else ('business-layout' if request.endpoint == 'business' else 'inner-layout') }}">
   <div class="site-shell">
