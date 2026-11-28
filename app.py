@@ -572,7 +572,7 @@ def verify_email():
     provision(trial)
     email_sent=send_subscription_email(trial)
     notify_admin_telegram(f"🆓 Бесплатный пробный период выдан\nНикнейм: {trial.nickname}\nEmail: {trial.email}\nСрок: 10 дней\nПисьмо со ссылкой: {'отправлено' if email_sent else 'не отправлено — проверь Resend'}")
-    session["show_connect_guide"]=True
+    session.pop("show_connect_guide",None)
     if email_sent:
      flash("Аккаунт создан! Твои первые 10 дней FlankVPN бесплатны. Ссылка также отправлена на email.","success")
     else:
