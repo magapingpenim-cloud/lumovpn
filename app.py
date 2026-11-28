@@ -72,6 +72,42 @@ def notify_admin_telegram(message):
   app.logger.exception("Telegram admin notification failed")
   return False
 
+# Administrative email alerts; never block a request on the email provider.
+from concurrent.futures import ThreadPoolExecutor
+from threading import BoundedSemaphore
+_admin_mail_pool=ThreadPoolExecutor(max_workers=2)
+_admin_mail_slots=BoundedSemaphore(32)
+def notify_admin_email(event, detail, key):
+ api_key=os.getenv("RESEND_API_KEY","").strip()
+ sender=os.getenv("RESEND_FROM_EMAIL","").strip()
+ recipient=os.getenv("ADMIN_NOTIFICATION_EMAIL","magapingpenim@gmail.com").strip()
+ if not api_key or not sender or not recipient: return
+ if not _admin_mail_slots.acquire(blocking=False):
+  app.logger.warning("Admin email queue full; alert skipped")
+  return
+ def deliver():
+  try:
+   response=requests.post("https://api.resend.com/emails",
+    headers={"Authorization":"Bearer "+api_key,"Idempotency-Key":"flankvpn-admin-"+key},
+    json={"from":sender,"to":[recipient],"subject":"FlankVPN — "+event,"text":detail},timeout=8)
+   response.raise_for_status()
+  except Exception:
+   app.logger.warning("Admin email delivery failed for %s",key)
+  finally:
+   _admin_mail_slots.release()
+ try: _admin_mail_pool.submit(deliver)
+ except Exception:
+  _admin_mail_slots.release()
+  app.logger.warning("Could not queue admin email")
+
+@app.after_request
+def notify_site_visit(response):
+ if request.method=="GET" and request.endpoint in ("index","tariffs","connection","support","business","login","register","dashboard") and response.status_code==200:
+  if not session.get("admin_visit_notified") and not request.headers.get("Purpose","").lower()=="prefetch":
+   session["admin_visit_notified"]=True
+   notify_admin_email("Новое посещение сайта","Посещение FlankVPN. Время UTC: "+datetime.utcnow().isoformat(timespec="seconds"),"visit-"+secrets.token_hex(16))
+ return response
+
 def send_subscription_email(order):
  api_key=os.getenv("RESEND_API_KEY","").strip()
  sender=os.getenv("RESEND_FROM_EMAIL","").strip()
@@ -505,6 +541,7 @@ def verify_email():
    ensure_referral_code(user)
    trial=Order(user_id=user.id,nickname=user.nickname,email=user.email,tariff_key="trial",amount=0,payment_method="trial",status="processing")
    db.session.add(trial); db.session.delete(pending); db.session.commit(); session.pop("verify_email",None); session.pop("referral_referrer_id",None); login_user(user)
+   notify_admin_email("Новая регистрация",f"Аккаунт #{user.id}. Email: {user.email}","registration-"+str(user.id))
    try:
     provision(trial)
     email_sent=send_subscription_email(trial)
@@ -575,6 +612,7 @@ def create_social_account(email, provider_sub, provider):
  except Exception:
   db.session.rollback()
   raise
+ notify_admin_email("Новая регистрация",f"Аккаунт #{user.id}. Email: {user.email}","registration-"+str(user.id))
  try:
   provision(trial)
   send_subscription_email(trial)
@@ -1921,6 +1959,8 @@ def provision(o):
  user.subscription_expires_at=remote_expiry or calculated_expiry
  o.subscription_url=canonical+("&" if "?" in canonical else "?")+"format=json"
  o.status="active"; o.error_message=None; db.session.commit()
+ event="Пробная подписка" if o.tariff_key=="trial" else ("Продление подписки" if existing_expiry else "Новая подписка")
+ notify_admin_email(event,f"Заказ #{o.id}\nEmail: {o.email}\nТариф: {tariff.get('title',o.tariff_key)}\nСумма: {o.amount} RUB\nСрок до (UTC): {user.subscription_expires_at}","order-"+str(o.id))
 @app.route("/admin/confirm/<int:oid>",methods=["POST"])
 def confirm(oid):
  if not is_admin(): abort(403)
