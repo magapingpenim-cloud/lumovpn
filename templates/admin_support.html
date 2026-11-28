@@ -5,7 +5,7 @@
   <div class="eyebrow">FLANKVPN ADMIN / SUPPORT</div>
   <h1>Чат с клиентами</h1>
   <p class="muted">Здесь отображаются обращения клиентов. Ответы сохраняются в разделе клиента «Мои вопросы». Уведомления в Telegram не отправляются.</p>
-  <div class="actions" style="margin-top:16px"><a class="btn secondary" href="{{ url_for('admin_support') }}">Обновить обращения ↻</a></div>
+  <div class="actions" style="margin-top:16px"><a class="btn secondary" href="{{ url_for('admin_support') }}">Обновить обращения ↻</a> <a class="btn primary" href="{{ url_for('admin_statistics') }}">Статистика</a></div>
 </section>
 {% for m in support_messages %}
 <article class="order">
