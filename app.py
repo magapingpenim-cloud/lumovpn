@@ -122,6 +122,37 @@ def notify_site_visit(response):
     app.logger.exception("Could not record bot referral")
  return response
 
+def funnel_mark(stage, order_id=None, user_id=None):
+ if session.get("flankadmin"): return
+ try:
+  sid=session.get("funnel_id")
+  row=db.session.get(FunnelSession,sid) if sid else None
+  now=datetime.utcnow()
+  if not row or row.last_seen<now-timedelta(minutes=30):
+   sid=secrets.token_hex(16)
+   row=FunnelSession(id=sid,source="telegram" if request.args.get("source")=="telegram" else "website",last_seen=now)
+   db.session.add(row); db.session.flush()
+   session["funnel_id"]=sid
+  row.last_seen=now
+  if user_id: row.user_id=user_id
+  if not db.session.get(FunnelEvent,(sid,"visit")):
+   db.session.add(FunnelEvent(session_id=sid,stage="visit"))
+  if stage!="visit" and not db.session.get(FunnelEvent,(sid,stage)):
+   db.session.add(FunnelEvent(session_id=sid,stage=stage))
+  if order_id and not db.session.get(FunnelOrder,order_id):
+   db.session.add(FunnelOrder(order_id=order_id,session_id=sid))
+  db.session.commit()
+ except Exception:
+  db.session.rollback()
+  app.logger.exception("Funnel tracking failed")
+
+@app.after_request
+def funnel_page(response):
+ if request.method=="GET" and response.status_code==200 and not session.get("flankadmin") and request.headers.get("Purpose","").lower()!="prefetch":
+  stage={"index":"home","register":"register","verify_email":"verify","tariffs":"tariffs","payment":"payment","dashboard":"dashboard","login":"login","connection":"connection","business":"business","support":"support"}.get(request.endpoint)
+  if stage: funnel_mark(stage,user_id=current_user.id if current_user.is_authenticated else None)
+ return response
+
 def send_subscription_email(order):
  api_key=os.getenv("RESEND_API_KEY","").strip()
  sender=os.getenv("RESEND_FROM_EMAIL","").strip()
@@ -177,6 +208,22 @@ class BotVisitor(db.Model):
 class BotSiteVisit(db.Model):
  id=db.Column(db.Integer,primary_key=True)
  created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False,index=True)
+
+class FunnelSession(db.Model):
+ id=db.Column(db.String(40),primary_key=True)
+ source=db.Column(db.String(16),nullable=False,default="website")
+ created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False,index=True)
+ last_seen=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+ user_id=db.Column(db.Integer,nullable=True,index=True)
+
+class FunnelEvent(db.Model):
+ session_id=db.Column(db.String(40),db.ForeignKey("funnel_session.id"),primary_key=True)
+ stage=db.Column(db.String(40),primary_key=True)
+ created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+
+class FunnelOrder(db.Model):
+ order_id=db.Column(db.Integer,primary_key=True)
+ session_id=db.Column(db.String(40),db.ForeignKey("funnel_session.id"),nullable=False,index=True)
 
 class SiteVisit(db.Model):
  id=db.Column(db.Integer,primary_key=True)
@@ -567,9 +614,11 @@ def verify_email():
    ensure_referral_code(user)
    trial=Order(user_id=user.id,nickname=user.nickname,email=user.email,tariff_key="trial",amount=0,payment_method="trial",status="processing")
    db.session.add(trial); db.session.delete(pending); db.session.commit(); session.pop("verify_email",None); session.pop("referral_referrer_id",None); login_user(user)
+   funnel_mark("registered",user_id=user.id)
    notify_admin_email("Новая регистрация",f"Аккаунт #{user.id}. Email: {user.email}","registration-"+str(user.id))
    try:
     provision(trial)
+    funnel_mark("trial_active",user_id=user.id)
     email_sent=send_subscription_email(trial)
     notify_admin_telegram(f"🆓 Бесплатный пробный период выдан\nНикнейм: {trial.nickname}\nEmail: {trial.email}\nСрок: 10 дней\nПисьмо со ссылкой: {'отправлено' if email_sent else 'не отправлено — проверь Resend'}")
     session.pop("show_connect_guide",None)
@@ -676,6 +725,9 @@ def finish_social_login(provider, claims):
    flash("Не удалось создать аккаунт. Попробуй позже.","error")
    return redirect(url_for("login"))
  login_user(user)
+ if created:
+  funnel_mark("registered",user_id=user.id)
+  if Order.query.filter_by(user_id=user.id,tariff_key="trial",status="active").first(): funnel_mark("trial_active",user_id=user.id)
  session.pop("referral_referrer_id",None)
  flash("Аккаунт создан. Проверь личный кабинет и статус пробного доступа." if created else "Вход выполнен.","success")
  return redirect(url_for("dashboard"))
@@ -1321,6 +1373,7 @@ def checkout():
  o=Order(user_id=current_user.id,nickname=current_user.nickname,email=current_user.email,tariff_key=k,amount=amount,payment_method="sbp",status="awaiting_payment",promo_code=promo.code if promo else None,discount_percent=discount,requested_devices=requested_devices,traffic_limit_gb=traffic_limit_gb)
  db.session.add(o)
  db.session.commit()
+ funnel_mark("checkout",order_id=o.id,user_id=current_user.id)
  return redirect(url_for("payment",oid=o.id))
 
 @app.route("/promo/preview",methods=["POST"])
@@ -1788,7 +1841,31 @@ def admin_statistics():
  stats["bot_users"]=BotVisitor.query.count()
  stats["bot_site_visits"]=BotSiteVisit.query.count()
  stats["ratio"]=round(100*(recent_buyers or 0)/visits,1) if visits else None
- return render_template("admin_statistics.html",stats=stats,first_visit=first_visit)
+ period=request.args.get("period","7")
+ if period not in ("1","7","30","all"): period="7"
+ source=request.args.get("source","all")
+ if source not in ("all","website","telegram"): source="all"
+ cohort=FunnelSession.query
+ if period!="all": cohort=cohort.filter(FunnelSession.created_at>=now-timedelta(days=int(period)))
+ if source!="all": cohort=cohort.filter_by(source=source)
+ ids=cohort.with_entities(FunnelSession.id).subquery()
+ events=db.session.query(FunnelEvent.stage,func.count()).filter(FunnelEvent.session_id.in_(db.session.query(ids.c.id))).group_by(FunnelEvent.stage).all()
+ counts=dict(events)
+ paid_sessions=db.session.query(func.count(func.distinct(FunnelOrder.session_id))).join(Order,Order.id==FunnelOrder.order_id).filter(FunnelOrder.session_id.in_(db.session.query(ids.c.id)),Order.status=="active",Order.amount>0).scalar() or 0
+ counts["purchase"]=paid_sessions
+ total=cohort.count()
+ # Compare only sessions that reached the prerequisite stage.
+ steps=[("register","verify","Открыли регистрацию → подтверждение почты"),("verify","registered","Подтверждение почты → аккаунт создан"),("registered","trial_active","Регистрация → пробная подписка"),("checkout","payment","Заказ → страница оплаты"),("payment","purchase","Страница оплаты → покупка")]
+ losses=[]
+ for a,b,label in steps:
+  base_ids=db.session.query(FunnelEvent.session_id).filter(FunnelEvent.stage==a,FunnelEvent.session_id.in_(db.session.query(ids.c.id))).subquery()
+  base=db.session.query(func.count()).select_from(base_ids).scalar() or 0
+  if b=="purchase":
+   done=db.session.query(func.count(func.distinct(FunnelOrder.session_id))).join(Order,Order.id==FunnelOrder.order_id).filter(FunnelOrder.session_id.in_(db.session.query(base_ids.c.session_id)),Order.status=="active",Order.amount>0).scalar() or 0
+  else:
+   done=FunnelEvent.query.filter(FunnelEvent.stage==b,FunnelEvent.session_id.in_(db.session.query(base_ids.c.session_id))).count()
+  losses.append(dict(label=label,base=base,done=done,lost=base-done,rate=round(100*(base-done)/base,1) if base else None))
+ return render_template("admin_statistics.html",stats=stats,first_visit=first_visit,counts=counts,total=total,losses=losses,period=period,source=source)
 
 @app.route("/admin/support")
 def admin_support():
