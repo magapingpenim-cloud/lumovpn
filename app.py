@@ -1214,10 +1214,14 @@ def telegram_webhook(secret):
    "📱 До 3 устройств в одной подписке\n"
    "🌐 Удобное подключение к сайтам и приложениям\n\n"
    "Попробуй FlankVPN и выбери подходящий тариф.")
-  welcome_buttons=[[{"text":"👤 Регистрация / вход","url":"https://flankvpn.ru/login?source=telegram"}],
-   [{"text":"🎁 10 дней бесплатно","url":"https://flankvpn.ru/?source=telegram"}],
-   [{"text":"⚡ Подключить VPN","url":"https://flankvpn.ru/tariffs?source=telegram"}],[{"text":"О VPN","url":"https://flankvpn.ru/?source=telegram"}],
-   [{"text":"💬 Поддержка","url":"https://flankvpn.ru/support?source=telegram"}]]
+  welcome_buttons=[[{"text":"🚀 Открыть FlankVPN","web_app":{"url":"https://flankvpn.ru/?source=telegram"}}]] if chat.get("type")=="private" else [[{"text":"Открыть FlankVPN","url":"https://flankvpn.ru/?source=telegram"}]]
+  if chat.get("type")=="private":
+   try:
+    menu_response=requests.post("https://api.telegram.org/bot"+token+"/setChatMenuButton",
+     json={"chat_id":chat_id,"menu_button":{"type":"web_app","text":"FlankVPN","web_app":{"url":"https://flankvpn.ru/?source=telegram"}}},timeout=8)
+    menu_response.raise_for_status()
+   except Exception:
+    app.logger.warning("Could not set Telegram Mini App menu button")
   image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
   if image_url:
    try:
@@ -1230,7 +1234,7 @@ def telegram_webhook(secret):
     send(welcome,keyboard=False,inline=welcome_buttons)
   else:
    send(welcome,keyboard=False,inline=welcome_buttons)
-  send("Выбери нужный раздел на сайте.",keyboard=True)
+  send("Открой приложение кнопкой FlankVPN.",keyboard=True)
  elif text_in in ("🌐 Тарифы","/tariffs"):
   show_tariffs()
  elif text_in in ("📦 Мои заказы","/orders"):
