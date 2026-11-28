@@ -1721,7 +1721,7 @@ def admin_award_game_contest():
 def admin_login():
  admin_username=os.getenv("ADMIN_USERNAME","").strip()
  admin_password=os.getenv("ADMIN_PASSWORD","")
- if not admin_username or len(admin_password)<16:
+ if not admin_username or not admin_password:
   abort(503,description="Admin credentials are not configured securely.")
  if request.method=="POST" and secrets.compare_digest(request.form.get("username","").strip().casefold(),admin_username.casefold()) and secrets.compare_digest(request.form.get("password",""),admin_password):
   session.clear(); session["flankadmin"]=True; session.permanent=True
