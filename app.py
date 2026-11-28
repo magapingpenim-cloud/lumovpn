@@ -113,6 +113,13 @@ def notify_site_visit(response):
      app.logger.exception("Could not record site visit")
    session["admin_visit_notified"]=True
    notify_admin_email("Новое посещение сайта","Посещение FlankVPN. Время UTC: "+datetime.utcnow().isoformat(timespec="seconds"),"visit-"+secrets.token_hex(16))
+  if request.args.get("source")=="telegram" and not session.get("bot_site_visit_notified") and not session.get("flankadmin"):
+   try:
+    db.session.add(BotSiteVisit()); db.session.commit()
+    session["bot_site_visit_notified"]=True
+   except Exception:
+    db.session.rollback()
+    app.logger.exception("Could not record bot referral")
  return response
 
 def send_subscription_email(order):
@@ -163,6 +170,14 @@ def send_subscription_email(order):
  except Exception:
   app.logger.exception("Failed to email subscription for order %s to %s.",order.id,order.email)
   return False
+class BotVisitor(db.Model):
+ telegram_id=db.Column(db.String(40),primary_key=True)
+ created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False)
+
+class BotSiteVisit(db.Model):
+ id=db.Column(db.Integer,primary_key=True)
+ created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False,index=True)
+
 class SiteVisit(db.Model):
  id=db.Column(db.Integer,primary_key=True)
  created_at=db.Column(db.DateTime,default=datetime.utcnow,nullable=False,index=True)
@@ -861,6 +876,13 @@ def telegram_webhook(secret):
  callback_data=(callback.get("data") or "").strip()
  if not chat_id or not telegram_id or (not text_in and not callback_data):
   return {"ok":True}
+ if chat.get("type")=="private" and not from_user.get("is_bot"):
+  try:
+   if not db.session.get(BotVisitor,telegram_id):
+    db.session.add(BotVisitor(telegram_id=telegram_id)); db.session.commit()
+  except Exception:
+   db.session.rollback()
+   app.logger.exception("Could not record bot visitor")
  def answer_callback(text_out=""):
   callback_id=callback.get("id")
   if not callback_id: return
@@ -1075,7 +1097,7 @@ def telegram_webhook(secret):
       failed.status="error"; failed.error_message=str(e)[:400]; db.session.commit()
      send("Не удалось автоматически выдать пробные 10 дней. Попробуй позже или напиши в поддержку FlankVPN.")
   elif callback_data=="about_vpn":
-   send("FlankVPN — VPN для повседневного использования. Подключение через Happ или INCY, до 3 устройств в одной подписке.",keyboard=False,inline=[[{"text":"10 дней бесплатно","url":"https://flankvpn.ru/"}],[{"text":"Тарифы","callback_data":"show_tariffs"}]])
+   send("FlankVPN — VPN для повседневного использования. Подключение через Happ или INCY, до 3 устройств в одной подписке.",keyboard=False,inline=[[{"text":"10 дней бесплатно","url":"https://flankvpn.ru/?source=telegram"}],[{"text":"Тарифы","callback_data":"show_tariffs"}]])
   elif callback_data=="show_tariffs":
    show_tariffs()
   elif callback_data=="support_info":
@@ -1192,10 +1214,10 @@ def telegram_webhook(secret):
    "📱 До 3 устройств в одной подписке\n"
    "🌐 Удобное подключение к сайтам и приложениям\n\n"
    "Попробуй FlankVPN и выбери подходящий тариф.")
-  welcome_buttons=[[{"text":"👤 Регистрация / вход","url":"https://flankvpn.ru/login"}],
-   [{"text":"🎁 10 дней бесплатно","url":"https://flankvpn.ru/"}],
-   [{"text":"⚡ Подключить VPN","url":"https://flankvpn.ru/tariffs"}],[{"text":"О VPN","url":"https://flankvpn.ru/"}],
-   [{"text":"💬 Поддержка","url":"https://flankvpn.ru/support"}]]
+  welcome_buttons=[[{"text":"👤 Регистрация / вход","url":"https://flankvpn.ru/login?source=telegram"}],
+   [{"text":"🎁 10 дней бесплатно","url":"https://flankvpn.ru/?source=telegram"}],
+   [{"text":"⚡ Подключить VPN","url":"https://flankvpn.ru/tariffs?source=telegram"}],[{"text":"О VPN","url":"https://flankvpn.ru/?source=telegram"}],
+   [{"text":"💬 Поддержка","url":"https://flankvpn.ru/support?source=telegram"}]]
   image_url=os.getenv("FLANKVPN_PROMO_IMAGE_URL","").strip()
   if image_url:
    try:
@@ -1759,6 +1781,8 @@ def admin_statistics():
  # Historical orders and new session counts are not a comparable cohort.
  # Show only orders created since tracking began as a rough ratio, not attribution.
  recent_buyers=paid.filter(Order.created_at>=first_visit).with_entities(func.count(func.distinct(Order.user_id))).scalar() if first_visit else 0
+ stats["bot_users"]=BotVisitor.query.count()
+ stats["bot_site_visits"]=BotSiteVisit.query.count()
  stats["ratio"]=round(100*(recent_buyers or 0)/visits,1) if visits else None
  return render_template("admin_statistics.html",stats=stats,first_visit=first_visit)
 
@@ -1873,7 +1897,7 @@ def send_subscription_notice_telegram(chat_id, user, expiry, days_left):
  try:
   response=requests.post("https://api.telegram.org/bot"+token+"/sendMessage",
    json={"chat_id":str(chat_id),"text":message,
-    "reply_markup":{"inline_keyboard":[[{"text":"💳 Продлить подписку","url":"https://flankvpn.ru"}]]},
+    "reply_markup":{"inline_keyboard":[[{"text":"💳 Продлить подписку","url":"https://flankvpn.ru/?source=telegram"}]]},
     "disable_web_page_preview":True},timeout=12)
   response.raise_for_status()
   return bool(response.json().get("ok"))
